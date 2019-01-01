@@ -12,16 +12,17 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
 library(stargazer)
+library(here)
 ```
 
 
 Import the individual arrests data
-```{r }
+```{r eval=FALSE}
 load("data/eventsClean_v1.RData")
 ```
 
 We checkout the names out all variables
-```{r}
+```{r eval=FALSE}
 names(events)
 
 minorities_var_names <- names(events) %>% 
@@ -31,35 +32,71 @@ minorities_var_names <- minorities_var_names[-1]
 ```
 
 We count the number of arrests for each minority by year.
-```{r}
+```{r eval=FALSE}
 var_enq <- enquo(minorities_var_names)
 min_by_year <- events %>%
   select(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
   group_by_all() %>% 
-  count()
+  count() %>% 
+  ungroup()
   
 write_csv(min_by_year, "min_arrests_by_year.csv")
 
 
-min_by_year <- events %>%
-  group_by(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
-  count()
+```
+
+
+```{r}
+
+  
+min_by_year <- read_csv(here("min_arrests_by_year.csv"))
+
+min_by_year <- min_by_year %>% 
+  ungroup() %>% 
+  mutate(n_of_eth_gr = rowSums(.[2:18])) %>% 
+  filter(n_of_eth_gr == 1) %>% 
+  select(-n_of_eth_gr) %>% 
+  gather(key= "ethnicity", value = "value", -c(YEAR, n)) %>% 
+  filter(value == 1) %>% 
+  select(-value)
+
+summary(min_by_year$ethnicity)
+
+```
+
+```{r}
+min_by_year <- min_by_year %>% 
+  complete(YEAR, ethnicity, fill = list(n = 0)) %>% 
+  filter(YEAR >= 1923) %>% 
+  mutate(ethnicity = as.factor(str_remove(ethnicity, "ETHNIC_")),
+         log_n = log(n + 1), 
+         GER = ifelse(ethnicity == "GER", 1, 0))
+
+years <- 1928:1936
+
+post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year$YEAR >= .)) %>% 
+  rename_all( funs( c(paste0("post_" ,years))))
+
+min_by_year <-bind_cols(min_by_year, post_year_dummies)
+```
+
+We create the formula 
+```{r}
+fmla <- as.formula(paste("log_n ~ ", 
+                         paste0("post_", years, ":GER", collapse = " + "),  "+ as.factor(YEAR) + ethnicity"))
+
+summary(lm(fmla,  data = min_by_year))
+
+fmla_simple <- as.formula(paste("log_n ~ ", 
+                         paste0("post_", years, ":GER", collapse = " + "),  "+ as.factor(YEAR) + GER"))
+
+summary(lm(fmla_simple,  data = min_by_year))
 
 ```
 
 
 ```{r}
 min_by_year %>% 
-  gather(key= "ethnicity", value = "value", -c(YEAR, n)) %>% 
-  View()
+  ggplot(aes(x = YEAR, y = log_n)) + geom_line() + facet_wrap(~ethnicity, scales = "free") + theme_bw()
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

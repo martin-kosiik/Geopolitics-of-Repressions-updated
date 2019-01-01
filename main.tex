@@ -6,10 +6,11 @@
 \author{Martin Kosík}
 \date{December 2018}
 
-\usepackage{natbib}
+\usepackage[round]{natbib}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 
 \begin{document}
@@ -31,6 +32,14 @@ We test this hypothesis on the case of German minority in Soviet using the rise 
 \label{fig:universe}
 \end{figure}
 \section{Literature review}
+The existing literature on the use of repression by a state have mostly focused on the impact of  of domestic factors such as institutions and economic growth \citep{davenport_state_2007, davenport_state_2007-1}.
+
+As was mentioned, \citet{mylonas_politics_2013} propses that a
+
+ \citet{blaydes_state_2018} 
+
+\citet{mcnamee_demographic_nodate} is methodologically and thematically closet study to ours. They analyse how the 1952 split in Soviet-
+Using difference-indifference strategy, they find that the both state is likely to. They conclude that the states use demographic engineering as a way to protect their vurnuable border against a hostile power.  
 
 \section{Historical Background}
 \subsection{German minority in the Soviet Union}
@@ -38,8 +47,8 @@ We test this hypothesis on the case of German minority in Soviet using the rise 
 We use declassified archival materials on the victims of political repressions in the Soviet Union digitized by Memorial and aggregated by Zhukov (). This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959.
 \section{Methodology}
 We follow the standard difference-in-difference method
-$$ \log\left(y_{it}\right) = \beta_0 + \beta_1 \: german + \delta_t + \beta_3 german \cdot post + u_{it} $$
-
+$$ \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i + \beta_1 \: german_{it} + \beta_3 german_{it} \cdot post_{it} + u_{it} $$
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in time $t$, $\lambda$ is time fixed effect, $a$ is ethnicity fixed effect, $german$ is dummy for German ethnicity and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\beta_3$. 
 \section{Results}
 
 \section{Conclusion}
@@ -47,6 +56,6 @@ $$ \log\left(y_{it}\right) = \beta_0 + \beta_1 \: german + \delta_t + \beta_3 ge
 
 
 
-\bibliographystyle{plain}
-\bibliography{references}
+\bibliographystyle{plainnat}
+\bibliography{bibliography.bib}
 \end{document}

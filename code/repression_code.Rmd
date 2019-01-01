@@ -3,20 +3,55 @@ title: "Geopolitics of repression"
 author: "Martin Kosík"
 date: "1 ledna 2019"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
-
-```{r setup, include=FALSE}
+Load the necessary packages
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(stargazer)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Import the individual arrests data
+```{r }
+load("data/eventsClean_v1.RData")
+```
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+We checkout the names out all variables
+```{r}
+names(events)
 
-```{r cars}
-summary(cars)
+minorities_var_names <- names(events) %>% 
+  str_subset("ETHNIC_")
+
+minorities_var_names <- minorities_var_names[-1]
+```
+
+We count the number of arrests for each minority by year.
+```{r}
+var_enq <- enquo(minorities_var_names)
+min_by_year <- events %>%
+  select(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
+  group_by_all() %>% 
+  count()
+  
+write_csv(min_by_year, "min_arrests_by_year.csv")
+
+
+min_by_year <- events %>%
+  group_by(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
+  count()
+
+```
+
+
+```{r}
+min_by_year %>% 
+  gather(key= "ethnicity", value = "value", -c(YEAR, n)) %>% 
+  View()
 ```
 
 ## Including Plots

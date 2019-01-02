@@ -76,6 +76,8 @@ We follow the standard difference-in-difference method
 $$ \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i + \beta_1 \: german_{it} + \beta_3 german_{it} \cdot post_{it} + u_{it} $$
 where $y_{it}$ is number of arrests of people with ethnicity $i$ in time $t$, $\lambda$ is time fixed effect, $a$ is ethnicity fixed effect, $german$ is dummy for German ethnicity and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\beta_3$. 
 
+ we apply logarithmic transformation on $y_{it}$ since it makes the.  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015}  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0).   
+
 Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations. Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead are significantly different from zero.  
 \section{Results}
 
@@ -83,10 +85,8 @@ Our identifying assumption is that the number of arrest of Germans after 1933 wo
 
 
 
-
-
-
-\bibliographystyle{plainnat}
+\bibliographystyle{agsm}
 \bibliography{bibliography.bib}
+\newpage
 \section*{Appendix}
 \end{document}

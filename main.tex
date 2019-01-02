@@ -19,10 +19,23 @@
 
 
 \section{Introduction}
-Why are some ethnic minorities excluded and persecuted by the state whereas other are given autonomy and accommodation? Some studies emphasize that certain domestic institution such as democracy can decrease the likelihood of persecutions. However this does not explain why the same states often treat its ethnic minorities so differently.  For example (give example, man)...\\
-We test hypothesis put forward by Mylonas (2012) according to which the host state is likely to choose repression and exclusion if the ethnic minority's country of origin is seen as geopolitical enemy. 
+What determines the attitude of a state toward ethnic minorities within its borders? Why are some minorities accommodated or assimilated and others are politically excluded and repressed? Finally, why the position of a state toward its minorities changes in time? For example Soviet Union largely accomodated its monorities by  for national minorities and promoting their language and culture establishing the autonomus republics. In 1930s however this radically changed when the soviet secret police started to target members
 
-We test this hypothesis on the case of German minority in Soviet using the rise of Hitler as a change of geopolitical relations. 
+%Some studies emphasize that certain domestic institution such as democracy can decrease the likelihood of persecutions. However this does not explain why the same states often treat its ethnic minorities so differently.  For example (give example, man)...\\
+%\citet{mylonas_politics_2013} argues that geopolitical concerns play inportant role. Specifically, the state is likely to choose repression and exclusion against a minority group if a external power with ethnic ties to the group is a geopolitical enemy.  
+\citet{mylonas_politics_2013} argues that geopolitical concerns play important role. Specifically, state is likely to choose repression and exclusion if the ethnic minority's country of origin is seen as geopolitical enemy. The minority is then seen by the state as unreliable and  as potential fifth column in a case of conflict.  
+
+We test this hypothesis on the case of German minority in Soviet union.
+In 1933, Hitlers rise to power changed Germany from a neutral actor to ideological and geopolitical enemy in the perspective of the Soviet Union. We can then see how the repression changed before and after 1933 and compare it with other minorities. In particular, we use the individual arrests by soviet secret police (NKVD) as a dependent variable from the recently declassified archival materials and employ the difference in difference strategy. 
+
+%First, the Soviet Union was large multiethnic state whose attitude to its minorities drastically changed throughout the year with   
+
+%We use the case of German minority in the Soviet Union to test this hypothesis for several reason.  
+
+%We test hypothesis put forward by Mylonas (2012) according to which the host state is likely to choose repression and exclusion if the ethnic minority's country of origin is seen as geopolitical enemy. 
+
+
+%We test this hypothesis on the case of German minority in Soviet using the rise of Hitler as a change of geopolitical relations. 
 
 
 \begin{figure}[h!]
@@ -34,21 +47,35 @@ We test this hypothesis on the case of German minority in Soviet using the rise 
 \section{Literature review}
 The existing literature on the use of repression by a state have mostly focused on the impact of  of domestic factors such as institutions and economic growth \citep{davenport_state_2007, davenport_state_2007-1}.
 
-As was mentioned, \citet{mylonas_politics_2013} propses that a
+As was mentioned, \citet{mylonas_politics_2013} propses that a. He also tests his theory with data on nationbuilding policies (accommodation, assimilation and exclusion) toward  90 ethnic groups in the post-World War I Balkans and their support by external powers. However, the results of the cross-sectional regression, used in the study, might easily be biased due to omitted variables or reverse causality. 
 
  \citet{blaydes_state_2018} 
 
-\citet{mcnamee_demographic_nodate} is methodologically and thematically closet study to ours. They analyse how the 1952 split in Soviet-
-Using difference-indifference strategy, they find that the both state is likely to. They conclude that the states use demographic engineering as a way to protect their vurnuable border against a hostile power.  
+\citet{mcnamee_demographic_nodate} is methodologically and thematically closet study to ours. They analyze how the 1952 split in Soviet-
+Using difference-indifference strategy, they find that the both state is likely to. They conclude that the states use demographic engineering as a way to protect their vurnuable border against a hostile power. 
 
 \section{Historical Background}
+\subsection{German–Soviet Union relations in the interwar period}
+The relations between Weimar republic and Soviet can be characterized as neutral or even cooperative. Both countries were somewhat isolated in the international system dominated by western powers (Great Britain, France, USA) and sought to find allies. The good relations were affirmed by several bilateral treaties: first, treaty of Rappalo in 1922 in which both countries renounced the territorial and financial claims against the other and established secret military cooperation and second, Treaty of Berlin in 1926. Furthermore, a trade treaty was signed between the two countries in 1925 \citep{morgan_political_1963}.
+
+The relations quickly turned hostile after the rise of Hitler to power in 1933. After 
+
 \subsection{German minority in the Soviet Union}
+The origins of Germans in Russia go back to 18th, when Catherine II. encouraged their immigration to settle largely uninhabited russian frontiers. The lived mostly 
+
+In the 1920s, Soviet union try to 
+
+In 
 \section{Data}
 We use declassified archival materials on the victims of political repressions in the Soviet Union digitized by Memorial and aggregated by Zhukov (). This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959.
+
+In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). This gives us us in total of 
 \section{Methodology}
 We follow the standard difference-in-difference method
 $$ \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i + \beta_1 \: german_{it} + \beta_3 german_{it} \cdot post_{it} + u_{it} $$
 where $y_{it}$ is number of arrests of people with ethnicity $i$ in time $t$, $\lambda$ is time fixed effect, $a$ is ethnicity fixed effect, $german$ is dummy for German ethnicity and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\beta_3$. 
+
+Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations. Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead are significantly different from zero.  
 \section{Results}
 
 \section{Conclusion}

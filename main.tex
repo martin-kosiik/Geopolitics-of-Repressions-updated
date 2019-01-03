@@ -10,6 +10,8 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{enumitem}
+\usepackage{booktabs}
+
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 
@@ -71,6 +73,8 @@ In
 We use declassified archival materials on the victims of political repressions in the Soviet Union digitized by Russian NGO Memorial and aggregated by \citet{zhukov_stalins_2018}. This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959.
 
 In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). This gives us us in total of 
+
+\input{tables/total_arrests_tab.tex}
 \section{Methodology}
 We follow the standard difference-in-difference method
 $$ \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i + \beta_1 \: german_{it} + \beta_3 german_{it} \cdot post_{it} + u_{it} $$

@@ -13,6 +13,7 @@ library(tidyverse)
 library(broom)
 library(stargazer)
 library(here)
+library(kableExtra)
 ```
 
 
@@ -42,7 +43,6 @@ min_by_year <- events %>%
   
 write_csv(min_by_year, "min_arrests_by_year.csv")
 
-
 ```
 
 
@@ -60,7 +60,7 @@ min_by_year <- min_by_year %>%
   filter(value == 1) %>% 
   select(-value)
 
-summary(min_by_year$ethnicity)
+paste(levels(min_by_year$ethnicity), collapse = ", ")
 
 ```
 
@@ -68,10 +68,34 @@ summary(min_by_year$ethnicity)
 min_by_year <- min_by_year %>% 
   complete(YEAR, ethnicity, fill = list(n = 0)) %>% 
   filter(YEAR >= 1923) %>% 
-  mutate(ethnicity = as.factor(str_remove(ethnicity, "ETHNIC_")),
+  mutate(ethnicity = str_remove(ethnicity, "ETHNIC_"), 
+         ethnicity = case_when(ethnicity == "BEL" ~ "Belarussian",
+                               ethnicity == "GER" ~ "German",
+                               ethnicity == "POL" ~ "Polish",
+                               ethnicity == "UKR" ~ "Ukrainian",
+                               TRUE ~ ethnicity) %>% 
+                      str_to_title() %>% 
+                      as.factor(),
          log_n = log(n + 1), 
-         GER = ifelse(ethnicity == "GER", 1, 0))
+         GER = ifelse(ethnicity == "German", 1, 0))
 
+
+```
+
+Some summary statstics
+```{r}
+ min_by_year %>% 
+  group_by(ethnicity) %>% 
+  summarize(Arrests = sum(n)) %>% 
+  kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1923-1953", 
+        col.names = c("Ethnicity", "Number of arrests")) %>% 
+  write_file( "total_arrests_tab.tex")
+
+  
+```
+
+
+```{r}
 years <- 1928:1936
 
 post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year$YEAR >= .)) %>% 
@@ -79,6 +103,7 @@ post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year$YEAR >= .)) %>%
 
 min_by_year <-bind_cols(min_by_year, post_year_dummies)
 ```
+
 
 We create the formula 
 ```{r}

@@ -130,12 +130,12 @@ var_labels <- str_c("$",names(diff_model$coefficients)) %>%
 
 cat(var_labels)
 
-stargazer(diff_model, diff_model_restr, keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
+stargazer(diff_model, diff_model_restr, keep = "german:post_+", omit.stat = c("ser", "f", ""), label = "dif_table",
           covariate.labels = var_labels, title = "Difference-in-difference results",
           dep.var.labels = "$\\log(1 + y_{it})$", 
           add.lines = list(c("Year dummies", "Yes", "Yes"),
                            c("Ethnicity dummies", "Yes", "Yes")),
-          column.labels = c("1923-1958", "1923-1958")) %>% 
+          column.labels = c("1923-1958", "1923-1945")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
 ```
 
@@ -147,7 +147,9 @@ diff_model %>%
   mutate(nice_labs = str_replace(term,"german:post_","")) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
-  labs(x = "year", title = "Estimates of interaction of german and (lagged and leaded) post variables")
+  labs(x = "year", caption = "error bars show 95% confidence intervals")
+
+ggsave(here("plots/did_effects.pdf"))
   
 ```
 
@@ -165,6 +167,9 @@ ggsave("did_all.pdf")
 
 ```{r}
 min_by_year %>% 
-  ggplot(aes(x = YEAR, y = log_n)) + geom_line() + facet_wrap(~ethnicity, scales = "free") + theme_bw()
+  ggplot(aes(x = YEAR, y = log_n)) + geom_line() + facet_wrap(~ethnicity) +
+  labs(y = "log(1 + y)", x = "year") + theme_bw()
+
+ggsave(here("plots/arrests_by_ethnicity.pdf"))
 ```
 

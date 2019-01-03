@@ -89,7 +89,7 @@ Some summary statstics
   summarize(Arrests = sum(n)) %>% 
   kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1923-1953", 
         col.names = c("Ethnicity", "Number of arrests")) %>% 
-  write_file( "total_arrests_tab.tex")
+  write_file("tables/total_arrests_tab.tex")
 
   
 ```

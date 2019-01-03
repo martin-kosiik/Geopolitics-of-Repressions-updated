@@ -79,15 +79,17 @@ where $y_{it}$ is number of arrests of people with ethnicity $i$ in time $t$, $\
 
 Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations. Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead are significantly different from zero.  
 \section{Results}
+The results of our main specification are presented in the table \ref{dif_table}, in column (1). The estimated coefficients together with their 95\% confidence  from this model are plotted in the figure \ref{fig_did_effets}. We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
 
-\input{tables/diff_table.tex}
-
-\begin{figure}[h!]
+The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  quite close to significance at 10\% level ($p$-value of 0.13). This seems to suggest that in 1934 NKVD targeted Germans  relatively more that other minorities, the 
+\begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{plots/did_effects.pdf}
 \caption{Estimates of interaction of $german$ and (lagged and leaded) $post$ variables}
-\label{fig:universe}
+\label{fig_did_effets}
 \end{figure}
+
+We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model, we include all observations in years 1923 to 1958. The relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results change only little and does not alter our previous conclusions. Second,    
 \section{Conclusion}
 
 
@@ -96,10 +98,13 @@ Our identifying assumption is that the number of arrest of Germans after 1933 wo
 \bibliography{bibliography.bib}
 \newpage
 \section*{Appendix}
-\begin{figure}[]
+
+\begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{plots/arrests_by_ethnicity.pdf}
-\caption{Arrest by ethnicity}
+\caption{Arrests by ethnicity}
 \label{fig:universe}
 \end{figure}
+\input{tables/diff_table.tex}
+
 \end{document}

@@ -122,13 +122,20 @@ summary(lm(fmla_simple,  data = min_by_year))
 ```
 
 ```{r}
-var_labels <-  names(diff_model$coefficients) %>% 
+var_labels <- str_c("$",names(diff_model$coefficients)) %>% 
   str_subset("german:post_") %>% 
-  str_replace(":", "*")
+  str_replace_all("t", "t\\\\") %>% 
+  str_replace(":", "*") %>% 
+  str_c("$")
+
+cat(var_labels)
 
 stargazer(diff_model, diff_model_restr, keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
           covariate.labels = var_labels, title = "Difference-in-difference results",
-          dep.var.caption = "$Dep. variable: $\\log(1 + y_{it})$") %>% 
+          dep.var.labels = "$\\log(1 + y_{it})$", 
+          add.lines = list(c("Year dummies", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes")),
+          column.labels = c("1923-1958", "1923-1958")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
 ```
 

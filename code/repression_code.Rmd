@@ -146,7 +146,7 @@ diff_model %>%
   filter(str_detect(term, "german:")) %>% 
   mutate(nice_labs = str_replace(term,"german:post_","")) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + 
   labs(x = "year", caption = "error bars show 95% confidence intervals")
 
 ggsave(here("plots/did_effects.pdf"))

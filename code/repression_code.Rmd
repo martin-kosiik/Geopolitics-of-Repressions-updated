@@ -114,10 +114,9 @@ diff_model <- lm(fmla,  data = min_by_year)
 diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
 
 
-fmla_simple <- as.formula(paste("log_n ~ ", 
-                         paste0("post_", years, ":GER", collapse = " + "),  "+ as.factor(YEAR) + GER"))
-
-summary(lm(fmla_simple,  data = min_by_year))
+fmla_no_log <- as.formula(paste("n ~ ", 
+                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) + ethnicity"))
+diff_model_no_log <- lm(fmla_no_log,  data = min_by_year)
 
 ```
 
@@ -130,12 +129,13 @@ var_labels <- str_c("$",names(diff_model$coefficients)) %>%
 
 cat(var_labels)
 
-stargazer(diff_model, diff_model_restr, keep = "german:post_+", omit.stat = c("ser", "f", ""), label = "dif_table",
+stargazer(diff_model, diff_model_restr,diff_model_no_log,
+          keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
           covariate.labels = var_labels, title = "Difference-in-difference results",
-          dep.var.labels = "$\\log(1 + y_{it})$", 
-          add.lines = list(c("Year dummies", "Yes", "Yes"),
-                           c("Ethnicity dummies", "Yes", "Yes")),
-          column.labels = c("1923-1958", "1923-1945")) %>% 
+          dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes", "Yes")),
+          column.labels = c("1923-1958", "1923-1945", "1923-1958")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
 ```
 

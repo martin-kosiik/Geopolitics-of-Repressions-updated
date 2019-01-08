@@ -1,10 +1,11 @@
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 
 \title{The Geopolitics of Repression \\
   \large The Case of German Minority in the Soviet Union}
 \author{Martin Kosík}
 \date{December 2018}
+
 
 \usepackage[round]{natbib}
 \usepackage{graphicx}
@@ -20,9 +21,12 @@
 
 \maketitle
 
+\begin{abstract}
+    We use difference-in-differences strategy on data on political arrests by Soviet secret police to test how rise of Hitler affected the repressions of the Germans within the USSR. This motivated by larger question of understanding how geopolitical relations (considerations) influence the attitude of a state towards minorities within its borders. 
+\end{abstract}
 
 \section{Introduction}
-What determines the attitude of a state toward ethnic minorities within its borders? Why are some minorities accommodated or assimilated and others are politically excluded and repressed? Finally, why the position of a state toward its minorities changes in time? For example Soviet Union largely accomodated its monorities by  for national minorities and promoting their language and culture establishing the autonomus republics. In 1930s however this radically changed when the soviet secret police started to target members
+What determines the attitude of a state toward ethnic minorities within its borders? Why are some minorities accommodated or assimilated and others are politically excluded and repressed? Futhermore,  Why the position of a state toward its minorities changes in time? For example Soviet Union largely accomodated its monorities by  for national minorities and promoting their language and culture establishing the autonomus republics. In 1930s however this radically changed when the soviet secret police started to target members
 
 %Some studies emphasize that certain domestic institution such as democracy can decrease the likelihood of persecutions. However this does not explain why the same states often treat its ethnic minorities so differently.  For example (give example, man)...\\
 %\citet{mylonas_politics_2013} argues that geopolitical concerns play inportant role. Specifically, the state is likely to choose repression and exclusion against a minority group if a external power with ethnic ties to the group is a geopolitical enemy.  
@@ -64,9 +68,9 @@ In the 1920s, the Soviet policy towards its ethnic minorities was largely accomm
 
 This attitude changed drastically in the 1930s. First, the  \emph{korenizatsiya} policy started to be reversed. The Soviet state then gradually  began to target ethnic minorities for repressions  which culminated in the mass national operations of the NKVD of 1937-1938. The largest \citep{snyder_bloodlands:_2011}. Furthermore 
 
-The persecutions further escalated with the World War II. Following the German invasion into the Soviet Union in 1941, Stalin ordered deportation of about 400 000 Volga Germans into Kazakhstan and Siberia. 
+The persecutions  further escalated with the World War II. Following the German invasion into the Soviet Union in 1941, Stalin ordered deportation of about 400 000 Volga Germans into Kazakhstan and Siberia. 
 \section{Data}
-We use declassified archival materials on the victims of political repressions in the Soviet Union digitized by Russian NGO Memorial and aggregated by \citet{zhukov_stalins_2018}. This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959.
+We use declassified archival materials on the victims of political repressions in the Soviet Union digitized by Russian NGO Memorial and aggregated by \citet{zhukov_stalins_2018} \footnote{In particular, we downloaded the data from the replications files of the study available  at \url{https://www.prio.org/JPR/Datasets/}}. This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959.
 
 In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). This gives us us in total of 
 
@@ -95,7 +99,7 @@ The coefficients on all other years are insignificant as well. Only for 1934 (on
 
 We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model, we include all observations in years 1923 to 1958. The relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results change only little and does not alter our previous conclusions. Second, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model fits the data rather poorly with  $R^2$ only of 0.411 (compared to 0.863 in the logarithmic specification). Again, the significance of coefficients does not change. 
 \section{Conclusion}
-We used difference-in-differences to test whether the change in geopolitical relations between Soviet Union and Germany in 1933 caused the NKVD to target Soviet Germans more relative to other minority group. One possible explanation might be that the Germans were well represented in state institutions (including the NKVD) in regions of their heavy settlements (especially in Volga German ASSR) thus would not be prone to target their co-ethnics. \citet[p. 126]{polian_against_2003} for example mentions that even on 31 June 1941, the Supreme Court of the Volga German ASSR sentenced a Russian $kolchoz$ chief for "delivering chauvinistic abuses against Germans residing in the USSR".
+We used difference-in-differences to test whether the change in geopolitical relations between Soviet Union and Germany in 1933 caused the NKVD to target Soviet Germans more relative to other minority group. One possible explanation might be that the Germans were well represented in state institutions (including the NKVD) in regions of their heavy settlements (especially in Volga German ASSR) thus would not be prone to target their co-ethnics. \citet[p. 126]{polian_against_2003} for example mentions that even on 31 June 1941, the Supreme Court of the Volga German ASSR sentenced a Russian $kolchoz$ chief for "delivering chauvinistic abuses against Germans residing in the USSR". The fruitful area for further research might be to compare how the rise in repressions differed for Germans living in areas with local autonomy (e.g. Volga German ASSR) and those living outside to see to what extent autonomy offered protection. 
 
 We have seen that even though there was a rise in arrests in 1934 it was not statistically significant. One explanations might be that many NKVD officers were members of ethnic minorities who understood that their co-ethnics do not pose any real threat.  Polian 126
 

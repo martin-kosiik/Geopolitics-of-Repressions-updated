@@ -15,6 +15,7 @@ library(stargazer)
 library(here)
 library(kableExtra)
 library(estimatr)
+library(multiwayvcov)
 ```
 
 
@@ -109,17 +110,25 @@ min_by_year <-bind_cols(min_by_year, post_year_dummies)
 We create the formula 
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) + ethnicity"))
+                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
 
 diff_model <- lm(fmla,  data = min_by_year)
-lm_robust(fmla, clusters = min_by_year$ethnicity , data = min_by_year, se_type = "stata")
+tibble(res =  lm_robust(fmla, cluster = min_by_year$ethnicity , data = min_by_year, se_type = "stata")$fitted.values - min_by_year$log_n, fitted = lm_robust(fmla, cluster = min_by_year$ethnicity , data = min_by_year, se_type = "stata")$fitted.values) %>% 
+  ggplot(aes(x = fitted, y = res)) + geom_point()
 
 diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
 
 summary(diff_model)
 fmla_no_log <- as.formula(paste("n ~ ", 
-                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) + ethnicity"))
+                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
 diff_model_no_log <- lm(fmla_no_log,  data = min_by_year)
+
+fmla_time_trends <- as.formula(paste("log_n ~ ", 
+                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+summary(lm(fmla_time_trends,  data = min_by_year))
 
 ```
 
@@ -133,8 +142,11 @@ var_labels <- str_c("$",names(diff_model$coefficients)) %>%
 cat(var_labels)
 cov1         <- vcovHC(output, type = "HC1")
 robust_se    <- sqrt(diag(cov1))
-coef_test(diff_model, vcov = "CR2", 
-          cluster = min_by_year$ethnicity, test = "Satterthwaite")
+coef_test(diff_model, vcov = "CR1", 
+          cluster = as.factor(min_by_year$ethnicity), test = "Satterthwaite")
+coef_test(diff_model, vcov = "HC1", cluster = as.factor(min_by_year$ethnicity),
+         test = "Satterthwaite")
+cluster.boot(diff_model, cluster = min_by_year$ethnicity)
 
 
 diff_model_robust <- commarobust(diff_model, clusters = min_by_year$ethnicity, se_type = "stata")
@@ -143,6 +155,17 @@ diff_model_restr_robust <- commarobust(diff_model_restr,
 diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_year$ethnicity, se_type = "stata")
 
 
+stargazer(diff_model, diff_model_restr,diff_model_no_log,
+          keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
+          covariate.labels = var_labels, title = "Difference-in-difference results",
+          dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes", "Yes")),
+          column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
+ cat(sep = '\n', file = here("tables/diff_table.tex"))
+```
+
+```{r}
 stargazer(diff_model, diff_model_restr,diff_model_no_log,
           se = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust),
           p = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust, stat = "p.value"),
@@ -154,7 +177,6 @@ stargazer(diff_model, diff_model_restr,diff_model_no_log,
           column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
 ```
-
 
 ```{r}
 diff_model %>% 

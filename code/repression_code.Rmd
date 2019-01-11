@@ -107,7 +107,7 @@ min_by_year <-bind_cols(min_by_year, post_year_dummies)
 ```
 
 
-We create the formula 
+We create the formulas and fit the models
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
@@ -125,10 +125,11 @@ fmla_no_log <- as.formula(paste("n ~ ",
                          ethnicity + ethnicity: YEAR"))
 diff_model_no_log <- lm(fmla_no_log,  data = min_by_year)
 
-fmla_time_trends <- as.formula(paste("log_n ~ ", 
+fmla_no_trends <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR"))
-summary(lm(fmla_time_trends,  data = min_by_year))
+                         ethnicity"))
+
+diff_model_no_trends <- lm(fmla_no_trends,  data = min_by_year)
 
 ```
 
@@ -170,7 +171,7 @@ stargazer(diff_model, diff_model_restr,diff_model_no_log,
           se = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust),
           p = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust, stat = "p.value"),
           keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
-          covariate.labels = var_labels, title = "Difference-in-difference results",
+          covariate.labels = var_labels, title = "Difference-in-differences results",
           dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
           add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
                            c("Ethnicity dummies", "Yes", "Yes", "Yes")),

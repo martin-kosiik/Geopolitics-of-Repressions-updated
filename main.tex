@@ -22,7 +22,7 @@
 \maketitle
 
 \begin{abstract}
-    We use difference-in-differences strategy on data on political arrests by Soviet secret police to test how rise of Hitler affected the repressions of the Germans within the USSR. This motivated by larger question of understanding how geopolitical relations (considerations) influence the attitude of a state towards minorities within its borders. 
+    We use difference-in-differences strategy on data on political arrests by Soviet secret police to test how rise of Hitler affected the repressions of the Germans within the USSR. This is motivated by larger question of understanding how geopolitical considerations influence the attitude of a state towards minorities within its borders. The results show very weak evidence for the 
 \end{abstract}
 
 \section{Introduction}
@@ -47,9 +47,9 @@ In 1933, Hitlers rise to power changed Germany from a neutral actor to ideologic
 
 
 \section{Literature review}
-The existing literature on the use of repression by a state have mostly focused on the impact of  of domestic factors such as institutions and economic growth \citep{davenport_state_2007, davenport_state_2007-1}.
+The existing literature on the use of repression by a state have mostly focused on the impact of  of domestic factors such as institutions and economic growth \citep{davenport_state_2007-1}.
 
-As was mentioned, \citet{mylonas_politics_2013} propses that a. He also tests his theory with data on nation-building policies (categorized into 3 groups: accommodation, assimilation and exclusion)  toward  90 ethnic groups with information on their support by external powers in the post-World War I Balkans . However, the results of the cross-sectional regression, used in the study, might easily be biased due to omitted variables or reverse causality. 
+As was mentioned, \citet{mylonas_politics_2013} proposes a theory how of geopolitical relations influence the attitude of a state towards its minorities. He also tests his theory with data on nation-building policies (categorized into 3 groups: accommodation, assimilation and exclusion)  toward  90 ethnic groups with information on their support by external powers in the post-World War I Balkans . However, the results of the cross-sectional regression, used in the study, might easily be biased due to omitted variables or reverse causality and we believe that our approach offers cleaner identification.
 
 According to \citet{blaydes_state_2018}, a state will resort to collective punishment (based on ethnicity, religion or community membership) if it faces environment with highly asymmetric information in which it cannot identify the likely transgressors. The logic behind this is that the members of the community will police its members to avoid collective punishment. 
 
@@ -60,7 +60,7 @@ Using difference-indifference strategy, they find that, after the split,  both s
 \subsection{German–Soviet relations in the interwar period}
 The relations between Weimar Germany and Soviet Union can be characterized as neutral or even cooperative. Both countries were somewhat isolated in the international system dominated by western powers (Great Britain, France, USA) and sought to find allies. The good relations were first established by the Treaty of Rappalo in 1922 in which both countries renounced the territorial and financial claims against the other and agreed to secret military cooperation and then reaffirmed by the Treaty of Berlin in 1926. Furthermore, a trade treaty was signed between the two countries in 1925 \citep{morgan_political_1963}.
 
-Hitler was named chancellor on 30 January 1933 and effectively become a dictator on 24 March 1933 by the passing of the Enabling Act. The German Communist Party was first abolished and many of its member were send to concentratoin camps
+Hitler was named chancellor on 30 January 1933 and effectively become a dictator on 24 March 1933 by the passing of the Enabling Act. The German Communist Party was first abolished and many of its member were send to concentratoin camps lm
 The relations with Soviet Union quickly turned hostile. Hitler 
 
 \subsection{Ethnic repressions in the Soviet Union}
@@ -70,29 +70,27 @@ This attitude changed drastically in the 1930s. First, the  \emph{korenizatsiya}
 
 The persecutions  further escalated with the World War II. Following the German invasion into the Soviet Union in 1941, Stalin ordered deportation of about 400 000 Volga Germans into Kazakhstan and Siberia. 
 \section{Data}
-We use declassified archival materials on the victims of political repressions in the Soviet Union used in a study \citet{zhukov_stalins_2018}
+Our data on soviet repressions come from  \citet{zhukov_stalins_2018}\footnote{In particular, we downloaded the data from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} who use  the Victims of Political Terror archive  collected by a Russian NGO Memorial.The main sources of the Memorial lists are declassified Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression.
+ The Memorial archives include 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and some in many cases additional information such as ethnicity, occupation and party membership. 
+ However the data are not complete and include about 70\% of 3.8 million convicted under Article 58
 
-digitized by Russian NGO Memorial and aggregated by .\footnote{In particular, we downloaded the data from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959. 
-The main sources of the data are Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression. However the data are not complete and include about 70\% of 3.8 million convicted under Article 58
-
-In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). With 37 time periods (1921 to 1 this gives us us in total of 
-
-\input{tables/total_arrests_tab.tex}
+We created our main dataset by counting number of arrest for each ethnicity by year.  A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
+With 17  minorities (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian) and 37 time periods (from 1921 to 1958) this gives us 663 observations in total. The 
 \section{Methodology}
-We follow the standard difference-in-difference method
+We follow the standard difference-in-differences strategy
 \begin{multline}
- \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i  + \delta german_{it} \cdot post_{it} + \\ \sum_{k= 1}^3 \gamma_k \, german_{it} \cdot post_{it+ k} + \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}  + u_{it}   
+ \log\left(1 + y_{it}\right) = \lambda_t + a_i  + \delta german_{it} \cdot post_{it} + E_i \cdot t \: + \\ \sum_{k= 1}^3 \gamma_k \, german_{it} \cdot post_{it+ k} + \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}  + u_{it}   
 \end{multline}
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  The $ E_i \cdot t$ term capture the ethnicity specific linear time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (see Angrist. 
 
  We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
 
-Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations. Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead effects ($\gamma_k$) are significantly different from zero.  
+Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead effects ($\gamma_k$) are significantly different from zero.  
 \section{Results}
 The results of our main specification are presented in the table \ref{dif_table}, in column (1). The estimated coefficients together with their 95\% confidence  from this model are plotted in the figure \ref{fig_did_effets}. We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
 
-The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  quite close to significance at 10\% level ($p$-value of 0.13). This seems to suggest that in 1934 NKVD targeted Germans  relatively more that other minorities, the 
+The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.13). This seems to suggest that in 1934 NKVD targeted Germans  relatively more that other minorities, the 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{plots/did_effects.pdf}
@@ -100,7 +98,8 @@ The coefficients on all other years are insignificant as well. Only for 1934 (on
 \label{fig_did_effets}
 \end{figure}
 
-We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model, we include all observations in years 1923 to 1958. The relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results change only little and does not alter our previous conclusions. Second, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model fits the data rather poorly with  $R^2$ only of 0.411 (compared to 0.863 in the logarithmic specification). Again, the significance of coefficients does not change. 
+We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model, we include all observations in years 1923 to 1958. The relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results (in column (2) of table \ref{dif_table}) change only little and does not alter our previous conclusions. Second, when we omit the ethnicity specific linear time trends in column (3) we see again that the coefficients are very similar to the original model. 
+Finally, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model (shown in column (4)) fits the data rather poorly with  $R^2$ only of 0.411 (compared to 0.863 in the logarithmic specification).
 \section{Conclusion}
 We used difference-in-differences to test whether the change in geopolitical relations between Soviet Union and Germany in 1933 caused the NKVD to target Soviet Germans more relative to other minority group. One possible explanation might be that the Germans were well represented in state institutions (including the NKVD) in regions of their heavy settlements (especially in Volga German ASSR) thus would not be prone to target their co-ethnics. \citet[p. 126]{polian_against_2003} for example mentions that even on 31 June 1941, the Supreme Court of the Volga German ASSR sentenced a Russian $kolchoz$ chief for "delivering chauvinistic abuses against Germans residing in the USSR". The fruitful area for further research might be to compare how the rise in repressions differed for Germans living in areas with local autonomy (e.g. Volga German ASSR) and those living outside to see to what extent autonomy offered protection. 
 
@@ -111,15 +110,16 @@ We have seen that even though there was a rise in arrests in 1934 it was not sta
 \bibliography{bibliography.bib}
 \newpage
 \section*{Appendix}
+\input{tables/total_arrests_tab.tex}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/arrests_by_ethnicity.pdf}
-\caption{Arrests by ethnicity}
+\includegraphics[width=1.2\textwidth]{plots/arrests_by_ethnicity.pdf}
+\caption{Arrests by ethnicity and year (in $log(1 + y_{it})$)}
 \label{fig:universe}
 \end{figure}
 \newpage
-\thispagestyle{empty}
 \input{tables/diff_table.tex}
+\thispagestyle{empty}
 
 \end{document}

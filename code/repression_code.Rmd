@@ -156,13 +156,14 @@ diff_model_restr_robust <- commarobust(diff_model_restr,
 diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_year$ethnicity, se_type = "stata")
 
 
-stargazer(diff_model, diff_model_restr,diff_model_no_log,
+stargazer(diff_model, diff_model_restr, diff_model_no_trends, diff_model_no_log,
           keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
-          covariate.labels = var_labels, title = "Difference-in-difference results",
+          covariate.labels = var_labels, title = "Difference-in-differences results",
           dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
-          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
-                           c("Ethnicity dummies", "Yes", "Yes", "Yes")),
-          column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
+          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes", "Yes", "Yes"),
+                           c("Ethnicity time trends", "Yes", "Yes", "No", "Yes")),
+          column.labels = c("1921-1958", "1921-1945", "1921-1958","1921-1958")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
 ```
 
@@ -181,7 +182,7 @@ stargazer(diff_model, diff_model_restr,diff_model_no_log,
 
 ```{r}
 diff_model %>% 
-  tidy(conf.int = TRUE) %>% 
+  broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
   mutate(nice_labs = str_replace(term,"german:post_","")) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 

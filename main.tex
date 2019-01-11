@@ -75,16 +75,15 @@ We use declassified archival materials on the victims of political repressions i
 digitized by Russian NGO Memorial and aggregated by .\footnote{In particular, we downloaded the data from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} This dataset includes 2.6 individual arrest by the Soviet secret police (NKVD) between  the years 1921 and 1959. 
 The main sources of the data are Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression. However the data are not complete and include about 70\% of 3.8 million convicted under Article 58
 
-In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). With 37 time periods (1921 to 1 this gives us us in total of 
+In total, there are 17 national minorities in our dataset (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian). With 37 time periods (from 1921 to 1958) this gives us 663 observations in total. 
 
-\input{tables/total_arrests_tab.tex}
 \section{Methodology}
 We follow the standard difference-in-difference method
 \begin{multline}
  \log\left(1 + y_{it}\right) = \beta_0 +\lambda_t + a_i  + \delta german_{it} \cdot post_{it} + \\ \sum_{k= 1}^3 \gamma_k \, german_{it} \cdot post_{it+ k} + \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}  + u_{it}   
 \end{multline}
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variaables) and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  
 
  We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
 
@@ -111,15 +110,16 @@ We have seen that even though there was a rise in arrests in 1934 it was not sta
 \bibliography{bibliography.bib}
 \newpage
 \section*{Appendix}
+\input{tables/total_arrests_tab.tex}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{plots/arrests_by_ethnicity.pdf}
-\caption{Arrests by ethnicity}
+\caption{Arrests by ethnicity and year (in $log(1 + y_{it})$)}
 \label{fig:universe}
 \end{figure}
 \newpage
-\thispagestyle{empty}
 \input{tables/diff_table.tex}
+\thispagestyle{empty}
 
 \end{document}

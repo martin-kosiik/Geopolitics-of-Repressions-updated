@@ -1,0 +1,63 @@
+---
+title: "ethnicity_names"
+author: "Martin Kosík"
+date: "12 ledna 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stringi)
+library(here)
+```
+
+## R Markdown
+
+```{r}
+table(events$SOURCE)
+str(events)
+Sys.setlocale("LC_CTYPE", "russian") 
+stri_trans_general(head(events$SOURCE), "russian-latin/bgn")
+events$SOURCE_latin <- stri_trans_general(events$SOURCE, "cyrillic-latin")
+events$NAME_latin <- stri_trans_general(events$NAME, "russian-latin/bgn")
+
+events <- head(events) %>% 
+  mutate(surname = extract2(str_split(NAME, pattern = " ", n = 2))) %>% 
+  unnest()
+
+events$surname <-  str_split(events$NAME, pattern = " ", n = 2) %>% 
+  map_chr(1)
+
+events$surname_latin <- stri_trans_general(events$surname, "cyrillic-latin")
+
+events %>% 
+  filter(ETHNIC_GER == 1) %>% 
+  select(NAME, NAME_latin, surname, surname_latin) %>% 
+  count(surname, surname_latin, sort = T) %>% 
+  write_csv(here("data/german_surnames.csv"))
+
+
+table(events$SOURCE_latin)
+
+```
+
+```{r}
+events %>% 
+  count(ETHNIC_GER, SOURCE_latin, sort = T) 
+events$ETH
+```
+
+```{r}
+events %>% 
+  select(ETHNIC_TA, NAME, NAME_latin) %>% 
+  filter(ETHNIC_TATAR == 1) %>% 
+  sample_n(1000)
+```
+
+```{r}
+
+```
+

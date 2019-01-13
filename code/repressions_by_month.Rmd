@@ -96,11 +96,16 @@ min_by_month <- min_by_month %>%
 
 ```{r}
 min_by_q <-  min_by_month %>% 
-  mutate(year_q = quarter(date, with_year = T)) %>% 
+  mutate(year_q = quarter(date, with_year = T),
+         year_q_date = floor_date(date, unit = "quarter"),
+         year_q_decimal = decimal_date(year_q_date)) %>% 
   group_by(year_q, ethnicity, german) %>% 
   summarize(n = sum(n)) %>% 
   ungroup() %>% 
-  mutate(log_n = log(n + 1))
+  mutate(log_n = log(n + 1)) %>% 
+  group_by(ethnicity) %>% 
+  mutate(t = row_number()) %>% 
+  ungroup()
 ```
 
 ```{r}
@@ -118,7 +123,7 @@ min_by_q <-bind_cols(min_by_q, post_yq_dummies)
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", year_quarters, collapse = " + "),  "+ as.factor(year_q) +
-                         ethnicity"))
+                         ethnicity + t:ethnicity"))
 
 diff_model <- lm(fmla,  data = min_by_q)
 

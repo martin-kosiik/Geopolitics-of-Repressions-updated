@@ -1,0 +1,124 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Load the necessary packages
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(lubridate)
+library(stargazer)
+library(here)
+library(kableExtra)
+library(estimatr)
+library(multiwayvcov)
+```
+
+
+```{r}
+load("data/eventsClean_v1.RData")
+```
+
+```{r}
+minorities_var_names <- names(events) %>% 
+  str_subset("ETHNIC_")
+```
+We exclude Russians from vector of minorities
+```{r}
+minorities_var_names <- minorities_var_names[-1] 
+
+```
+
+```{r}
+events <- events %>% 
+  select(-c(NEAREST_RAIL_ID:LEVEL_SV)) %>% 
+  mutate(date_ym = str_c(YEAR,  MONTH, 1, sep = "-"))
+
+```
+
+```{r}
+min_by_month <- events %>%
+  select(date_ym, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
+  group_by_all() %>% 
+  count() %>% 
+  ungroup()
+
+
+write_csv(min_by_month, "min_arrests_by_month.csv")
+
+
+```
+
+```{r}
+min_by_month <- read_csv(here("min_arrests_by_month.csv"))
+
+min_by_month <- min_by_month %>% 
+  mutate(n_of_eth_gr = rowSums(.[2:18])) %>% 
+  filter(n_of_eth_gr == 1) %>% 
+  select(-n_of_eth_gr) %>% 
+  gather(key= "ethnicity", value = "value", -c(date_ym, n)) %>% 
+  filter(value == 1) %>% 
+  select(-value)
+
+```
+
+```{r}
+min_by_month <- min_by_month %>% 
+  complete(date_ym, ethnicity, fill = list(n = 0)) %>% 
+  filter(date_ym >= 1921) %>% 
+  mutate(ethnicity = str_remove(ethnicity, "ETHNIC_"), 
+         ethnicity = case_when(ethnicity == "BEL" ~ "Belarussian",
+                               ethnicity == "GER" ~ "German",
+                               ethnicity == "POL" ~ "Polish",
+                               ethnicity == "UKR" ~ "Ukrainian",
+                               TRUE ~ ethnicity) %>% 
+                      str_to_title() %>% 
+                      as.factor(),
+         log_n = log(n + 1), 
+         german = ifelse(ethnicity == "German", 1, 0))
+
+```
+
+
+```{r}
+min_by_month %>% 
+  filter(n == 0)
+  
+```
+
+```{r}
+min_by_month <- min_by_month %>% 
+  mutate(date = as_date(date_ym)) 
+  
+```
+
+```{r}
+min_by_q <-  min_by_month %>% 
+  mutate(year_q = quarter(date, with_year = T)) %>% 
+  group_by(year_q, ethnicity, german) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(log_n = log(n + 1))
+```
+
+```{r}
+year_quarters <- crossing(year = 1931:1937, quarter = 1:4) %>% 
+  mutate(yq = str_c(year, quarter, sep = ".")) %>% 
+  pull(yq)
+
+post_yq_dummies <- map_dfc(year_quarters, ~  as.numeric(min_by_q$year_q >= .)) %>% 
+  rename_all( funs( c(paste0("post_" ,year_quarters))))
+
+min_by_q <-bind_cols(min_by_q, post_yq_dummies)
+
+```
+
+```{r}
+
+```
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

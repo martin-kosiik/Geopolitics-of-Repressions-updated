@@ -36,7 +36,6 @@ minorities_var_names <- minorities_var_names[-1]
 
 We count the number of arrests for each minority by year.
 ```{r eval=FALSE}
-var_enq <- enquo(minorities_var_names)
 min_by_year <- events %>%
   select(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
   group_by_all() %>% 

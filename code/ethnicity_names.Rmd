@@ -12,14 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 library(stringi)
 library(here)
 library(tidyverse)
+library(data.table)
 ```
 
 ## R Markdown
 
 ```{r}
 load("data/eventsClean_v1.RData")
-
-
+names(events)
+events <- as.data.table(events)
 table(events$SOURCE)
 str(events)
 Sys.setlocale("LC_CTYPE", "russian") 
@@ -49,10 +50,21 @@ events %>%
 ```{r}
 german_surnames <- read_csv(here("data/german_surnames.csv"))
 
+ger_surnames_vec <- german_surnames %>% 
+  filter(n > 3) %>%
+  pull(surname)
+
+
+rm(german_surnames)  
+
 gc()
 
 events <- events %>% 
-  left_join(filter(german_surnames, n > 3), c("surname"))
+  mutate(ger_surname = ifelse(surname %in% ger_surnames_vec, 1, 0))
+
+events <- events %>% 
+  select(-c(GULAG_RAILMED:CENT_DEGREE_R))
+  left_join(filter(german_surnames, n > 4), c("surname"))
 ```
 
 

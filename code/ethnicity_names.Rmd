@@ -5,18 +5,21 @@ date: "12 ledna 2019"
 output: html_document
 editor_options: 
   chunk_output_type: console
-
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(stringi)
 library(here)
+library(tidyverse)
 ```
 
 ## R Markdown
 
 ```{r}
+load("data/eventsClean_v1.RData")
+
+
 table(events$SOURCE)
 str(events)
 Sys.setlocale("LC_CTYPE", "russian") 
@@ -40,14 +43,22 @@ events %>%
   write_csv(here("data/german_surnames.csv"))
 
 
-table(events$SOURCE_latin)
 
 ```
 
 ```{r}
+german_surnames <- read_csv(here("data/german_surnames.csv"))
+
+gc()
+
+events <- events %>% 
+  left_join(filter(german_surnames, n > 3), c("surname"))
+```
+
+
+```{r}
 events %>% 
   count(ETHNIC_GER, SOURCE_latin, sort = T) 
-events$ETH
 ```
 
 ```{r}

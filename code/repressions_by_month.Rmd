@@ -99,7 +99,7 @@ min_by_q <-  min_by_month %>%
   mutate(year_q = quarter(date, with_year = T),
          year_q_date = floor_date(date, unit = "quarter"),
          year_q_decimal = decimal_date(year_q_date)) %>% 
-  group_by(year_q, ethnicity, german) %>% 
+  group_by(year_q, year_q_date, ethnicity, german) %>% 
   summarize(n = sum(n)) %>% 
   ungroup() %>% 
   mutate(log_n = log(n + 1)) %>% 
@@ -142,10 +142,11 @@ diff_model %>%
            as.yearqtr() %>% 
            as.Date()) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_vline(xintercept= ymd(19330101), col = "red", linetype = "dashed") +
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + scale_x_date(date_minor_breaks = "1 year")+
-  labs(x = "year", caption = "error bars show 95% confidence intervals")
-ggsave(here("plots/did_effects_quarter.pdf"))
-  gather(key = stat_type, value, c(estimate, conf.low, conf.high)) %>% 
+  labs(x = "year", caption = "error bars show 95% confidence intervals",
+       title = "Estimates on quarterly interactions of german*post")
+ggsave(here("plots/did_effects_quarter.pdf"), width = 9, height = 6)
 
 ```
 
@@ -167,8 +168,16 @@ did_effects_quart_line <- diff_model %>%
   labs(x = "year", caption = "the shaded ares shows 95% confidence intervals",
        title = "Estimates on quarterly interactions of german*post")
 
-ggsave(here("plots/did_effects_quart_line.pdf"), plot = did_effects_quart_line)
+ggsave(here("plots/did_effects_quart_line.pdf"), plot = did_effects_quart_line, width = 9, height = 6)
 
+```
+
+```{r}
+min_by_q %>% 
+  ggplot(aes(x = year_q_date, y = log_n)) + geom_line() + facet_wrap(~ethnicity) +
+  labs(y = "log(1 + y)", x = "year") + theme_bw()
+
+ggsave(here("plots/arrests_by_ethnicity_quart.pdf"), width = 9, height = 6)
 ```
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).

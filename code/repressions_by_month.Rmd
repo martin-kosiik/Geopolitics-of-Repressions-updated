@@ -18,7 +18,7 @@ library(multiwayvcov)
 
 
 ```{r}
-load("data/eventsClean_v1.RData")
+load(here("data/eventsClean_v1.RData"))
 ```
 
 ```{r}
@@ -46,13 +46,13 @@ min_by_month <- events %>%
   ungroup()
 
 
-write_csv(min_by_month, "min_arrests_by_month.csv")
+write_csv(min_by_month, here("data/min_arrests_by_month.csv"))
 
 
 ```
 
 ```{r}
-min_by_month <- read_csv(here("min_arrests_by_month.csv"))
+min_by_month <- read_csv(here("data/min_arrests_by_month.csv"))
 
 min_by_month <- min_by_month %>% 
   mutate(n_of_eth_gr = rowSums(.[2:18])) %>% 
@@ -129,6 +129,46 @@ diff_model <- lm(fmla,  data = min_by_q)
 
 summary(diff_model)
 diff_model_restr <- lm(fmla,  data = filter(min_by_q, year_q <= 1946))
+tidy(diff_model_restr)
+```
+
+```{r}
+library(zoo)
+diff_model %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:post_","") %>% 
+           str_replace("\\.", " Q") %>% 
+           as.yearqtr() %>% 
+           as.Date()) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + scale_x_date(date_minor_breaks = "1 year")+
+  labs(x = "year", caption = "error bars show 95% confidence intervals")
+ggsave(here("plots/did_effects_quarter.pdf"))
+  gather(key = stat_type, value, c(estimate, conf.low, conf.high)) %>% 
+
+```
+
+
+```{r}
+did_effects_quart_line <- diff_model %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:post_","") %>% 
+           str_replace("\\.", " Q") %>% 
+           as.yearqtr() %>% 
+           as.Date()) %>% 
+  ggplot(mapping = aes(x = nice_labs))+ 
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), fill = "grey70")+
+  geom_line(aes(y = estimate), col = "black") +
+  theme_bw() +  geom_hline(yintercept= 0, col = "black", linetype = "dashed") +
+  scale_x_date(date_minor_breaks = "1 year") + 
+  geom_vline(xintercept = ymd(19330101), color = "red") +
+  labs(x = "year", caption = "the shaded ares shows 95% confidence intervals",
+       title = "Estimates on quarterly interactions of german*post")
+
+ggsave(here("plots/did_effects_quart_line.pdf"), plot = did_effects_quart_line)
+
 ```
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).

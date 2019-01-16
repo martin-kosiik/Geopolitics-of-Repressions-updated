@@ -26,7 +26,6 @@ load("data/eventsClean_v1.RData")
 
 We checkout the names out all variables
 ```{r eval=FALSE}
-names(events)
 
 minorities_var_names <- names(events) %>% 
   str_subset("ETHNIC_")
@@ -42,7 +41,7 @@ min_by_year <- events %>%
   count() %>% 
   ungroup()
   
-write_csv(min_by_year, "min_arrests_by_year.csv")
+write_csv(min_by_year, here("data/min_arrests_by_year.csv"))
 
 ```
 
@@ -50,7 +49,7 @@ write_csv(min_by_year, "min_arrests_by_year.csv")
 ```{r}
 
   
-min_by_year <- read_csv(here("min_arrests_by_year.csv"))
+min_by_year <- read_csv(here("data/min_arrests_by_year.csv"))
 
 min_by_year <- min_by_year %>% 
   ungroup() %>% 

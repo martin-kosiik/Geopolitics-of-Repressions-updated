@@ -91,6 +91,80 @@ events %>%
 ```
 
 ```{r}
+min_by_year_sur <- events %>%
+  select(YEAR, ETHNIC_BEL:ETHNIC_CHECHEN, ger_surname) %>% 
+  group_by_all() %>% 
+  count() %>% 
+  ungroup()
+  
+write_csv(min_by_year_sur, here("data/min_arrests_by_year_ger_surname.csv"))
 
+```
+
+```{r}
+min_by_year_sur <- read_csv(here("data/min_arrests_by_year_ger_surname.csv"))
+
+min_by_year_sur <- min_by_year_sur %>% 
+  ungroup() %>% 
+  mutate(both_eth_sur_ger = ifelse(ETHNIC_GER == 1 & ger_surname == 1, 1, 0)) %>% 
+  mutate(n_of_eth_gr = rowSums(.[c(2:19, 21)])) %>%  
+  filter(n_of_eth_gr == 1 | (both_eth_sur_ger == 1 & n_of_eth_gr == 3)) %>% 
+  select(-n_of_eth_gr) %>% 
+  mutate(ETHNIC_GER = ifelse(both_eth_sur_ger == 1, 0, ETHNIC_GER),
+         ger_surname = ifelse(both_eth_sur_ger == 1, 0, ger_surname)) %>% 
+  gather(key= "ethnicity", value = "value", -c(YEAR, n)) %>% 
+  filter(value == 1) %>% 
+  select(-value)  
+
+names(min_by_year_sur)
+min_by_year_sur %>% 
+  filter(ethnicity == "Ger_surname") %>% 
+  View()
+
+min_by_year_sur <- min_by_year_sur %>% 
+  complete(YEAR, ethnicity, fill = list(n = 0)) %>% 
+  filter(YEAR >= 1921) %>% 
+  mutate(ethnicity = str_remove(ethnicity, "ETHNIC_"), 
+         ethnicity = case_when(ethnicity == "BEL" ~ "Belarussian",
+                               ethnicity == "GER" ~ "German",
+                               ethnicity == "POL" ~ "Polish",
+                               ethnicity == "UKR" ~ "Ukrainian",
+                               TRUE ~ ethnicity) %>% 
+                      str_to_title() %>% 
+                      as.factor(),
+         log_n = log(n + 1))
+
+```
+
+```{r}
+min_by_year_sur %>% 
+  count(ethnicity)
+
+min_by_year_sur %>% 
+  filter(ethnicity %in% c("German", "Both_eth_sur_ger")) %>% 
+  summarize(total = sum(n))
+
+min_by_year_sur %>% 
+  filter(ethnicity %in% c("Ger_surname", "German", "Both_eth_sur_ger")) %>% 
+  ggplot(aes(YEAR, log_n, color = ethnicity)) + geom_line() + theme_light() + 
+  labs(title = "Arrests of Germans by source of identification")
+```
+
+```{r}
+min_by_year_sur %>% 
+  filter(ethnicity %in% c("Ger_surname", "German", "Both_eth_sur_ger")) %>% 
+  select(-log_n) %>% 
+  spread(key = "ethnicity", value = "n") %>% 
+  mutate(surname = Both_eth_sur_ger + Ger_surname, 
+         label = Both_eth_sur_ger + German) %>% 
+  gather(key = "source", value = "n", -YEAR) %>% 
+  filter(!source %in% c("Ger_surname", "German", "Both_eth_sur_ger")) %>% 
+  mutate(log_n = log(1 + n)) %>% 
+  ggplot(aes(YEAR, log_n, color = source)) + geom_line() + theme_light() + 
+  labs(title = "Arrests of Germans (in log) by source of identification of their ethnicity", x = "Year") + 
+  guides(color=guide_legend(title="Source")) + 
+  scale_color_manual(labels = c("Label in the data", "Surname"), values = c("red","blue"))
+
+ggsave(here("plots/ger_arrests_surname_vs_label.pdf"))
 ```
 

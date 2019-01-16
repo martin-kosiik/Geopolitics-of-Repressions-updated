@@ -64,14 +64,24 @@ events <- events %>%
 
 events <- events %>% 
   select(-c(GULAG_RAILMED:CENT_DEGREE_R))
+
+events <- events %>% 
   left_join(filter(german_surnames, n > 4), c("surname"))
+
+events$ger_surname <- ifelse(is.na(events$n), 0, 1)
+```
+
+```{r}
+save(events, file = here("data/eventsClean_v2.RData"))
 ```
 
 
 ```{r}
 events %>% 
-  count(ETHNIC_GER, SOURCE_latin, sort = T) 
+  filter(!is.na(n)) %>% 
+  count(ETHNIC_GER)
 ```
+
 
 ```{r}
 events %>% 

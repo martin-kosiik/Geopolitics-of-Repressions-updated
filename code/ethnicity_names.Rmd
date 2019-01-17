@@ -13,6 +13,7 @@ library(stringi)
 library(here)
 library(tidyverse)
 library(data.table)
+library(broom)
 ```
 
 ## R Markdown
@@ -116,10 +117,6 @@ min_by_year_sur <- min_by_year_sur %>%
   filter(value == 1) %>% 
   select(-value)  
 
-names(min_by_year_sur)
-min_by_year_sur %>% 
-  filter(ethnicity == "Ger_surname") %>% 
-  View()
 
 min_by_year_sur <- min_by_year_sur %>% 
   complete(YEAR, ethnicity, fill = list(n = 0)) %>% 
@@ -131,8 +128,7 @@ min_by_year_sur <- min_by_year_sur %>%
                                ethnicity == "UKR" ~ "Ukrainian",
                                TRUE ~ ethnicity) %>% 
                       str_to_title() %>% 
-                      as.factor(),
-         log_n = log(n + 1))
+                      as.factor())
 
 ```
 
@@ -153,7 +149,6 @@ min_by_year_sur %>%
 ```{r}
 min_by_year_sur %>% 
   filter(ethnicity %in% c("Ger_surname", "German", "Both_eth_sur_ger")) %>% 
-  select(-log_n) %>% 
   spread(key = "ethnicity", value = "n") %>% 
   mutate(surname = Both_eth_sur_ger + Ger_surname, 
          label = Both_eth_sur_ger + German) %>% 
@@ -166,5 +161,42 @@ min_by_year_sur %>%
   scale_color_manual(labels = c("Label in the data", "Surname"), values = c("red","blue"))
 
 ggsave(here("plots/ger_arrests_surname_vs_label.pdf"))
+```
+
+```{r}
+min_by_year_sur <- min_by_year_sur %>% 
+  spread(key = "ethnicity", value = "n") %>% 
+  mutate(ger_surname = Both_eth_sur_ger + Ger_surname) %>% 
+  gather(key = "ethnicity", value = "n", -YEAR) %>% 
+  filter(!ethnicity %in% c("Ger_surname", "German", "Both_eth_sur_ger")) %>% 
+  mutate(log_n = log(1 + n), 
+         ethnicity = str_replace(ethnicity, "ger_surname", "German") %>% 
+           as.factor(), 
+         german = ifelse(ethnicity == "German", 1, 0)) 
+
+```
+
+```{r}
+years <- 1930:1938
+
+post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year_sur$YEAR >= .)) %>% 
+  rename_all( funs( c(paste0("post_" ,years))))
+
+min_by_year_sur <-bind_cols(min_by_year_sur, post_year_dummies)
+```
+
+```{r}
+fmla <- as.formula(paste("log_n ~ ", 
+                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+
+diff_model <- lm(fmla,  data = min_by_year_sur)
+
+diff_model_restr <- lm(fmla,  data = filter(min_by_year_sur, YEAR <= 1945))
+
+tidy(diff_model, conf.int = T) %>% 
+  View()
+
+
 ```
 

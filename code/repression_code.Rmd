@@ -220,7 +220,9 @@ diff_model_window %>%
   filter(str_detect(term, "german:")) %>% 
   mutate(nice_labs = str_replace(term,"german:","")) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() +
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()) + 
   labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
        title = "Interactions of German ethnicity with specified time window dummy", 
        subtitle = "Annual obseravations") + 

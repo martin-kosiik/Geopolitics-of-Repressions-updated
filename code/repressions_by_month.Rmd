@@ -185,7 +185,9 @@ ggsave(here("plots/arrests_by_ethnicity_quart.pdf"), width = 9, height = 6)
 ```{r}
 min_by_q %>% 
   ggplot() + geom_line(aes(x = year_q_date, y = log_n, col = ethnicity)) + gghighlight(ethnicity == "German") +
-  labs(y = "log(1 + y)", x = "year") + theme_bw()
+  labs(y = "log(1 + y)", x = "year") +  theme_minimal() + 
+  scale_y_continuous(limits = c(0, NA), expand = c(0,0)) +
+  theme(axis.line = element_line(size = 0.75))
 
 ggsave(here::here("plots/arrests_by_ethnicity_quart_highlight.pdf"))
 

@@ -16,6 +16,7 @@ library(here)
 library(kableExtra)
 library(estimatr)
 library(multiwayvcov)
+library(gghighlight)
 ```
 
 
@@ -60,7 +61,6 @@ min_by_year <- min_by_year %>%
   filter(value == 1) %>% 
   select(-value)
 
-paste(levels(min_by_year$ethnicity), collapse = ", ")
 
 ```
 
@@ -77,7 +77,11 @@ min_by_year <- min_by_year %>%
                       str_to_title() %>% 
                       as.factor(),
          log_n = log(n + 1), 
-         german = ifelse(ethnicity == "German", 1, 0))
+         german = ifelse(ethnicity == "German", 1, 0), 
+         hostility = ifelse(YEAR >= 1933 & YEAR <= 1938, 1, 0), 
+         pact = ifelse(YEAR >= 1939 & YEAR < 1941, 1, 0), 
+         war = ifelse(YEAR >= 1941 & YEAR <= 1945, 1, 0),
+         post_war = ifelse(YEAR > 1945, 1, 0))
 
 
 ```
@@ -111,13 +115,21 @@ fmla <- as.formula(paste("log_n ~ ",
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR"))
 
+fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war + as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+
 diff_model <- lm(fmla,  data = min_by_year)
+
 tibble(res =  lm_robust(fmla, cluster = min_by_year$ethnicity , data = min_by_year, se_type = "stata")$fitted.values - min_by_year$log_n, fitted = lm_robust(fmla, cluster = min_by_year$ethnicity , data = min_by_year, se_type = "stata")$fitted.values) %>% 
   ggplot(aes(x = fitted, y = res)) + geom_point()
 
+diff_model_window <- lm(fmla_window,  data = min_by_year)
+
+
 diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
 
-summary(diff_model)
+summary(diff_model_window)
+
 fmla_no_log <- as.formula(paste("n ~ ", 
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR"))
@@ -209,5 +221,14 @@ min_by_year %>%
   labs(y = "log(1 + y)", x = "year") + theme_bw()
 
 ggsave(here("plots/arrests_by_ethnicity.pdf"))
+```
+
+```{r}
+min_by_year %>% 
+  ggplot() + geom_line(aes(x = YEAR, y = log_n, col = ethnicity)) + gghighlight(ethnicity == "German") +
+  labs(y = "log(1 + y)", x = "year") + theme_bw()
+
+ggsave(here::here("plots/arrests_by_ethnicity_highlight.pdf"))
+
 ```
 

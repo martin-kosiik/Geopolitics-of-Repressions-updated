@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
 
 Load the necessary packages
@@ -180,6 +182,12 @@ min_by_q %>%
 ggsave(here("plots/arrests_by_ethnicity_quart.pdf"), width = 9, height = 6)
 ```
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+```{r}
+min_by_q %>% 
+  ggplot() + geom_line(aes(x = year_q_date, y = log_n, col = ethnicity)) + gghighlight(ethnicity == "German") +
+  labs(y = "log(1 + y)", x = "year") + theme_bw()
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+ggsave(here::here("plots/arrests_by_ethnicity_quart_highlight.pdf"))
+
+```
+

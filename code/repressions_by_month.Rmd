@@ -54,7 +54,7 @@ write_csv(min_by_month, here("data/min_arrests_by_month.csv"))
 ```
 
 ```{r}
-min_by_month <- read_csv(here("data/min_arrests_by_month.csv"))
+min_by_month <- read_csv(here::here("data/min_arrests_by_month.csv"))
 
 min_by_month <- min_by_month %>% 
   mutate(n_of_eth_gr = rowSums(.[2:18])) %>% 
@@ -85,17 +85,15 @@ min_by_month <- min_by_month %>%
 
 
 ```{r}
-min_by_month %>% 
-  filter(n == 0)
-  
-```
-
-```{r}
 min_by_month <- min_by_month %>% 
   mutate(date = as_date(date_ym)) 
   
 ```
-
+The key dates are:
+1. Hitler becomes a dictator 1933-03-23
+2. Molotov-Ribentropp pact is signed 1939-08-23
+3. Operation Barbarossa is launched 1941-06-22 (we )
+4. End of WWII in Europe 1945-05-08
 ```{r}
 min_by_q <-  min_by_month %>% 
   mutate(year_q = quarter(date, with_year = T),
@@ -106,7 +104,11 @@ min_by_q <-  min_by_month %>%
   ungroup() %>% 
   mutate(log_n = log(n + 1)) %>% 
   group_by(ethnicity) %>% 
-  mutate(t = row_number()) %>% 
+  mutate(t = row_number(), 
+         hostility = ifelse(year_q_date >= "1933-03-23" & year_q_date <= "1939-08-23", 1, 0), 
+         pact = ifelse(year_q_date > "1939-08-23" & year_q_date < "1941-06-22", 1, 0), 
+         war = ifelse(year_q_date >= "1941-06-22" & year_q_date < "1945-05-08", 1, 0),
+         post_war = ifelse(year_q_date >= "1945-05-08", 1, 0)) %>% 
   ungroup()
 ```
 
@@ -125,13 +127,16 @@ min_by_q <-bind_cols(min_by_q, post_yq_dummies)
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", year_quarters, collapse = " + "),  "+ as.factor(year_q) +
-                         ethnicity + t:ethnicity"))
+                                                 ethnicity + t:ethnicity"))
+
+fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war + as.factor(year_q) +
+                         ethnicity + ethnicity:t"))
+
 
 diff_model <- lm(fmla,  data = min_by_q)
+diff_model_window <- lm(fmla_window,  data = min_by_q)
 
-summary(diff_model)
-diff_model_restr <- lm(fmla,  data = filter(min_by_q, year_q <= 1946))
-tidy(diff_model_restr)
+summary(diff_model_window)
 ```
 
 ```{r}
@@ -173,6 +178,26 @@ did_effects_quart_line <- diff_model %>%
 ggsave(here("plots/did_effects_quart_line.pdf"), plot = did_effects_quart_line, width = 9, height = 6)
 
 ```
+
+```{r time window effects plot}
+diff_model_window %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:","")) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()) + 
+  labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
+       title = "Interactions of German ethnicity with specified time window dummy", 
+       subtitle = "Quarterly obseravations") + 
+  scale_x_discrete(labels = c('Hostility without war \n (1933 Q2 to 1939 Q3)',
+                              'Pact \n (1939 Q4 to 1941 Q2)', 'War \n (1941 Q3 to 1945 Q2)'))
+
+
+ggsave(here::here("plots/did_effects_quart_window.pdf"))
+```
+
 
 ```{r}
 min_by_q %>% 

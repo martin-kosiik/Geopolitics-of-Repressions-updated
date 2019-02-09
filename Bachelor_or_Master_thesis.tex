@@ -1,0 +1,45 @@
+%This is the main document, translate only this one!
+%All other .tex files are just subfiles of this shell and do not contain "\begin{document} ... \end{document}"
+%If Czech characters do not translate in pdf correctly, go back to http://latex.feec.vutbr.cz/cz/latex/lokalni-instalace/instalace-miktex/ for proper activation of Czech support in MikTeX 
+
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[round]{natbib}
+\usepackage[]{hyperref}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english,czech]{babel}
+\usepackage{graphics}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{color}
+\bibliographystyle{agsm}
+
+
+%\usepackage[a-2u]{pdfx}
+
+\renewcommand{\baselinestretch}{1.5}
+\hoffset -1.54cm \voffset -0.04pt \evensidemargin 1.5cm
+\oddsidemargin 2.5cm \topmargin -1.6cm
+%% Vyska textu 232 mm
+%% Sirka textu 136 mm
+\textheight 232mm \textwidth 136mm
+
+%this should generate norm page of approx 1800 characters per page
+%with 30 lines times 60 characters per line (excluding space)
+
+\begin{document}
+\include{Title/titlepage} %this just pastes here the content of "titlepage.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{Title/abstrakt} %this just pastes here the content of "abstract.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{Title/declaration} %this just pastes here the content of "declaration.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{Title/project} %this just pastes here the content of "project.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+% Note: "project.tex" no longer corresponds to the SIS output
+\pagestyle{plain} \setcounter{page}{1} % "\setcounter{page}{xx}" changes the current page counter to a new value "xx"
+\selectlanguage{english}
+
+ \tableofcontents
+\newpage
+\newpage
+\include{maintext} %this just pastes here the content of "maintext.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{chapters/references} %this just pastes here the content of "references.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{chapters/appendix} %this just pastes here the content of "appendix.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\end{document}

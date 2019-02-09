@@ -5,12 +5,16 @@
 \documentclass{article}
 \usepackage[T1]{fontenc}
 \usepackage[round]{natbib}
-\usepackage[]{hyperref}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{breqn}
+
 
 \usepackage[utf8]{inputenc}
 \usepackage[english,czech]{babel}
-\usepackage{graphics}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath}
 \usepackage{color}
 \bibliographystyle{agsm}
 
@@ -28,18 +32,12 @@
 %with 30 lines times 60 characters per line (excluding space)
 
 \begin{document}
-\include{Title/titlepage} %this just pastes here the content of "titlepage.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-\include{Title/abstrakt} %this just pastes here the content of "abstract.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-\include{Title/declaration} %this just pastes here the content of "declaration.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-\include{Title/project} %this just pastes here the content of "project.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-% Note: "project.tex" no longer corresponds to the SIS output
-\pagestyle{plain} \setcounter{page}{1} % "\setcounter{page}{xx}" changes the current page counter to a new value "xx"
+%\input{LaTex/Title/title_compiler.tex}
 \selectlanguage{english}
 
  \tableofcontents
 \newpage
-\newpage
-\include{maintext} %this just pastes here the content of "maintext.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-\include{chapters/references} %this just pastes here the content of "references.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
-\include{chapters/appendix} %this just pastes here the content of "appendix.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{LaTex/maintext_bachelor_template} %this just pastes here the content of "maintext.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\include{LaTex/chapters/08_references} %this just pastes here the content of "references.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
+\input{LaTex/chapters/09_appendix.tex} %this just pastes here the content of "appendix.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
 \end{document}

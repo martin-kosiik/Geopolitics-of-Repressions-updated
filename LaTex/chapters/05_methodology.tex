@@ -1,0 +1,10 @@
+We follow the standard difference-in-differences strategy
+\begin{multline}
+ \log\left(1 + y_{it}\right) = \lambda_t + a_i  + \delta german_{it} \cdot post_{it} + E_i \cdot t \: + \\ \sum_{k= 1}^3 \gamma_k \, german_{it} \cdot post_{it+ k} + \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}  + u_{it}   
+\end{multline}
+
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  The $ E_i \cdot t$ term capture the ethnicity specific linear time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (see \citealt{angrist_mostly_2009}). 
+
+ We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
+
+Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead effects ($\gamma_k$) are significantly different from zero.  

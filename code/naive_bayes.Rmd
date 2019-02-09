@@ -19,6 +19,8 @@ library(kableExtra)
 library(estimatr)
 library(multiwayvcov)
 library(caret)
+library(naivebayes)
+library(klaR)
 library(rsample)
 ```
 
@@ -80,12 +82,10 @@ gc()
 events <- events %>% 
   select(AID, NAME, ethnicity)
 
-events %>% 
-  separate(NAME, into = c("surname", "middle_name", "first_name"), sep = " ")
 events <- events %>% 
   mutate(names_split = str_split(NAME, pattern = " "),
-         first_name = map_chr(names_split, last),
-         surname = map_chr(names_split, 1),
+         first_name = as.factor(map_chr(names_split, last)),
+         surname = as.factor(map_chr(names_split, 1)),
          number_of_names = map_int(names_split, length),
          ethnicity = as.factor(ethnicity))
 
@@ -95,6 +95,10 @@ head(events)
 events %>% 
   count(number_of_names, sort = T)
 
+str(events)
+
+length(levels(events$surname))
+length(levels(test$surname))
 
 ```
 
@@ -118,6 +122,7 @@ train_control <- trainControl(
   number = 5
   )
 
+table(y)
 # train model
 nb.m1 <- train(
   x = x,
@@ -129,6 +134,27 @@ nb.m1 <- train(
 # results
 confusionMatrix(nb.m1)
 
+confusionMatrix(predict(nb.m1, test), test$ethnicity)
+
+flat_prior <- rep(1/18, 18)
+
+nb_flat_prior <- naive_bayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
+                             laplace = 1, usekernel = FALSE)
+
+nb_flat_prior <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
+                             fL = 1, usekernel = FALSE)
+
+
+confusionMatrix(predict(nb_flat_prior)$class, train$ethnicity)
+
+head(predict(nb_flat_prior))
+
+confusionMatrix(predict(nb_flat_prior, test, type = "class"), test$ethnicity)
+
+head(predict(nb_flat_prior, newdata = test, type = "class"))
+head(predict(nb_flat_prior, type = "class"))
+
+                
 save(nb.m1, file = "nb_model")
 ```
 

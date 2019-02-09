@@ -1,0 +1,134 @@
+---
+title: "Naive bayes"
+author: "Martin Kosík"
+date: "8 února 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(data.table)
+library(lubridate)
+library(stargazer)
+library(here)
+library(kableExtra)
+library(estimatr)
+library(multiwayvcov)
+library(caret)
+library(rsample)
+```
+
+
+```{r }
+Sys.setlocale("LC_CTYPE", "russian") 
+
+
+load("data/eventsClean_v1.RData")
+
+names(events)[37:54]
+
+```
+
+We filter out those wtih multiple ethnicities
+```{r}
+events <- events %>% 
+  mutate(n_of_eth_gr = rowSums(.[37:54]))
+
+events %>% 
+  count(n_of_eth_gr, sort = T)
+
+events <- events %>% 
+  filter(n_of_eth_gr == 1)
+
+```
+
+```{r}
+str(events)
+  
+events %>% 
+  count(AID, sort = T)
+
+minorities_var_names <- names(events) %>% 
+  str_subset("ETHNIC_")
+
+events <- as.data.table(events)
+
+events_long <- melt(events, id.vars = "AID",
+                measure.vars = minorities_var_names, 
+                variable.name = "ethnicity")[
+                  value == 1][,ethnicity := str_remove(ethnicity, "ETHNIC_")][,
+                    ethnicity :=  case_when(ethnicity == "BEL" ~ "Belarussian",
+                                            ethnicity == "RUS" ~ "Russian",
+                               ethnicity == "GER" ~ "German",
+                               ethnicity == "POL" ~ "Polish",
+                               ethnicity == "UKR" ~ "Ukrainian",
+                               TRUE ~ ethnicity) %>% 
+                      str_to_title()][, value := NULL]
+
+events <- events[events_long, on = "AID"]
+
+rm(events_long)
+gc()
+
+```
+
+```{r}
+events <- events %>% 
+  select(AID, NAME, ethnicity)
+
+events %>% 
+  separate(NAME, into = c("surname", "middle_name", "first_name"), sep = " ")
+events <- events %>% 
+  mutate(names_split = str_split(NAME, pattern = " "),
+         first_name = map_chr(names_split, last),
+         surname = map_chr(names_split, 1),
+         number_of_names = map_int(names_split, length),
+         ethnicity = as.factor(ethnicity))
+
+class(events$ethnicity)
+head(events)
+
+events %>% 
+  count(number_of_names, sort = T)
+
+
+```
+
+```{r}
+
+split <- initial_split(events, prop = .85, strata = "ethnicity")
+train <- training(split)
+test  <- testing(split)
+
+```
+
+
+```{r}
+# create response and feature data
+x <- train[, c("surname", "first_name")]
+y <- train$ethnicity
+
+# set up 10-fold cross validation procedure
+train_control <- trainControl(
+  method = "cv", 
+  number = 5
+  )
+
+# train model
+nb.m1 <- train(
+  x = x,
+  y = y,
+  method = "nb",
+  trControl = train_control
+  )
+
+# results
+confusionMatrix(nb.m1)
+
+save(nb.m1, file = "nb_model")
+```
+

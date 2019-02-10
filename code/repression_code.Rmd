@@ -50,7 +50,7 @@ write_csv(min_by_year, here("data/min_arrests_by_year.csv"))
 ```{r}
 
   
-min_by_year <- read_csv(here("data/min_arrests_by_year.csv"))
+min_by_year <- read_csv(here::here("data/min_arrests_by_year.csv"))
 
 min_by_year <- min_by_year %>% 
   ungroup() %>% 
@@ -115,8 +115,8 @@ fmla <- as.formula(paste("log_n ~ ",
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR"))
 
-fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war + as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR"))
+fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
+                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)"))
 
 diff_model <- lm(fmla,  data = min_by_year)
 
@@ -222,15 +222,17 @@ diff_model_window %>%
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
-        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()) + 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        text = element_text(size=15)) + 
   labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
        title = "Interactions of German ethnicity with specified time window dummy", 
        subtitle = "Annual obseravations") + 
   scale_x_discrete(labels = c('Hostility without war \n (1933 to 1938)',
-                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)'))
+                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)',
+                              "Post-war \n (from 1946)"))
 
 
-ggsave(here::here("plots/did_effects_window.pdf"))
+ggsave(here::here("plots/did_effects_window_postwar.pdf"))
 ```
 
 

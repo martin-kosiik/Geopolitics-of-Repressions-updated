@@ -20,6 +20,8 @@ library(estimatr)
 library(multiwayvcov)
 library(caret)
 library(naivebayes)
+library(bnclassify)
+library(h2o)
 library(klaR)
 library(rsample)
 ```
@@ -30,8 +32,6 @@ Sys.setlocale("LC_CTYPE", "russian")
 
 
 load("data/eventsClean_v1.RData")
-
-names(events)[37:54]
 
 ```
 
@@ -49,10 +49,6 @@ events <- events %>%
 ```
 
 ```{r}
-str(events)
-  
-events %>% 
-  count(AID, sort = T)
 
 minorities_var_names <- names(events) %>% 
   str_subset("ETHNIC_")
@@ -80,13 +76,13 @@ gc()
 
 ```{r}
 events <- events %>% 
-  select(AID, NAME, ethnicity)
+  dplyr::select(AID, NAME, ethnicity)
 
 events <- events %>% 
   mutate(names_split = str_split(NAME, pattern = " "),
          first_name = as.factor(map_chr(names_split, last)),
          surname = as.factor(map_chr(names_split, 1)),
-         number_of_names = map_int(names_split, length),
+         number_of_names = as.factor(map_int(names_split, length)),
          ethnicity = as.factor(ethnicity))
 
 class(events$ethnicity)
@@ -94,11 +90,6 @@ head(events)
 
 events %>% 
   count(number_of_names, sort = T)
-
-str(events)
-
-length(levels(events$surname))
-length(levels(test$surname))
 
 ```
 
@@ -141,18 +132,43 @@ flat_prior <- rep(1/18, 18)
 nb_flat_prior <- naive_bayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
                              laplace = 1, usekernel = FALSE)
 
-nb_flat_prior <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
+nb_klaR <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
                              fL = 1, usekernel = FALSE)
 
+nb_e <- naiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
+                             fL = 1, usekernel = FALSE)
+h2o.init()
 
-confusionMatrix(predict(nb_flat_prior)$class, train$ethnicity)
+train_h2o <- as.h2o(train[, -4])
+
+nb_h2o <- h2o.naiveBayes(y = 3, x = 4:6, training_frame = train_h2o, laplace = 1)
+
+?h2o.naiveBayes
+str(train)
+
+confusionMatrix(predict(nb_flat_prior), train$ethnicity)
+confusionMatrix(predict(nb_e, train), train$ethnicity)
+
 
 head(predict(nb_flat_prior))
 
-confusionMatrix(predict(nb_flat_prior, test, type = "class"), test$ethnicity)
+confusionMatrix(predict(nb_klaR, test)$class, test$ethnicity)
 
-head(predict(nb_flat_prior, newdata = test, type = "class"))
+length(nb_flat_prior$levels)
+nb_flat_prior$prior
+
+predict(nb_flat_prior, newdata = test)
 head(predict(nb_flat_prior, type = "class"))
+str(train)
+
+browseVignettes("bnclassify")
+nb <- nb('ethnicity', dataset = dplyr::select(train,ethnicity,  surname, first_name, number_of_names) , features = c("surname", "first_name", "number_of_names")) # Learn a naive Bayes structure
+nb <- lp(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names), smooth = 1) # Learn parameters 
+cv(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names), k = 4) # 10-fold Cross-validation estimate of accuracy 
+head(predict(nb, dplyr::select(test,ethnicity,  surname, first_name, number_of_names)))
+
+confusionMatrix(predict(nb, dplyr::select(test,ethnicity,  surname, first_name, number_of_names)), test$ethnicity)
+confusionMatrix(predict(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names)), train$ethnicity)
 
                 
 save(nb.m1, file = "nb_model")

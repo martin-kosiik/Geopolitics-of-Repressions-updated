@@ -129,8 +129,8 @@ fmla <- as.formula(paste("log_n ~ ",
                          paste0("german:","post_", year_quarters, collapse = " + "),  "+ as.factor(year_q) +
                                                  ethnicity + t:ethnicity"))
 
-fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war + as.factor(year_q) +
-                         ethnicity + ethnicity:t"))
+fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
+                                as.factor(year_q) + ethnicity + ethnicity:t + ethnicity:I(t^2)"))
 
 
 diff_model <- lm(fmla,  data = min_by_q)
@@ -187,15 +187,17 @@ diff_model_window %>%
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
-        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank()) + 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=15)) + 
   labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
        title = "Interactions of German ethnicity with specified time window dummy", 
        subtitle = "Quarterly obseravations") + 
   scale_x_discrete(labels = c('Hostility without war \n (1933 Q2 to 1939 Q3)',
-                              'Pact \n (1939 Q4 to 1941 Q2)', 'War \n (1941 Q3 to 1945 Q2)'))
+                              'Pact \n (1939 Q4 to 1941 Q2)', 'War \n (1941 Q3 to 1945 Q2)',
+                              "Post-war \n (from 1945 Q3)"))
 
 
-ggsave(here::here("plots/did_effects_quart_window.pdf"))
+ggsave(here::here("plots/did_effects_quart_window_postwar.pdf"))
 ```
 
 

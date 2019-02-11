@@ -15,15 +15,17 @@ library(data.table)
 library(lubridate)
 library(stargazer)
 library(here)
-library(kableExtra)
 library(estimatr)
-library(multiwayvcov)
 library(caret)
 library(naivebayes)
 library(bnclassify)
 library(h2o)
 library(klaR)
 library(rsample)
+library(devtools)
+devtools::install_github("majkamichal/naivebayes")
+library(naivebayes)
+
 ```
 
 
@@ -44,7 +46,7 @@ events %>%
   count(n_of_eth_gr, sort = T)
 
 events <- events %>% 
-  filter(n_of_eth_gr == 1)
+  filter(n_of_eth_gr <= 1)
 
 ```
 
@@ -67,7 +69,8 @@ events_long <- melt(events, id.vars = "AID",
                                TRUE ~ ethnicity) %>% 
                       str_to_title()][, value := NULL]
 
-events <- events[events_long, on = "AID"]
+events <- events %>% 
+  left_join(events_long, "AID")
 
 rm(events_long)
 gc()
@@ -76,7 +79,7 @@ gc()
 
 ```{r}
 events <- events %>% 
-  dplyr::select(AID, NAME, ethnicity)
+  dplyr::select(AID, NAME, ethnicity, n_of_eth_gr)
 
 events <- events %>% 
   mutate(names_split = str_split(NAME, pattern = " "),
@@ -107,6 +110,16 @@ test  <- testing(split)
 x <- train[, c("surname", "first_name")]
 y <- train$ethnicity
 
+train <- droplevels(train)
+test <- droplevels(test)
+
+test$surname <- factor(as.character(test$surname), levels = levels(train$surname))
+test$first_name <- factor(as.character(test$first_name), levels = levels(train$first_name))
+test$number_of_names <- factor(as.character(test$number_of_names), levels = levels(train$number_of_names))
+
+sum(is.na(test$surname))
+length(levels(test$surname))
+
 # set up 10-fold cross validation procedure
 train_control <- trainControl(
   method = "cv", 
@@ -129,7 +142,7 @@ confusionMatrix(predict(nb.m1, test), test$ethnicity)
 
 flat_prior <- rep(1/18, 18)
 
-nb_flat_prior <- naive_bayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
+nb_flat_prior <- naive_bayes(ethnicity ~  number_of_names, data = train, 
                              laplace = 1, usekernel = FALSE)
 
 nb_klaR <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
@@ -137,11 +150,15 @@ nb_klaR <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data =
 
 nb_e <- naiveBayes(ethnicity ~ surname + first_name + number_of_names, data = train, 
                              fL = 1, usekernel = FALSE)
-h2o.init()
+h2o.init(max_mem_size = "3g")
 
-train_h2o <- as.h2o(train[, -4])
+train_h2o <- train %>% 
+  dplyr::select(-names_split) %>% 
+  mutate_if(is.factor, factor, ordered = FALSE) %>%
+  as.h2o()
 
 nb_h2o <- h2o.naiveBayes(y = 3, x = 4:6, training_frame = train_h2o, laplace = 1)
+h2o.shutdown(prompt = FALSE)
 
 ?h2o.naiveBayes
 str(train)
@@ -149,6 +166,8 @@ str(train)
 confusionMatrix(predict(nb_flat_prior), train$ethnicity)
 confusionMatrix(predict(nb_e, train), train$ethnicity)
 
+confusionMatrix(predict(nb_e, newdata = test[, c("surname", "first_name", "number_of_names")]), test$ethnicity)
+confusionMatrix(predict(nb_e, newdata = train[, c("surname", "first_name", "number_of_names")]), train$ethnicity)
 
 head(predict(nb_flat_prior))
 
@@ -157,20 +176,59 @@ confusionMatrix(predict(nb_klaR, test)$class, test$ethnicity)
 length(nb_flat_prior$levels)
 nb_flat_prior$prior
 
-predict(nb_flat_prior, newdata = test)
+predict.naive_bayes(nb_flat_prior, newdata = test)
 head(predict(nb_flat_prior, type = "class"))
 str(train)
 
 browseVignettes("bnclassify")
-nb <- nb('ethnicity', dataset = dplyr::select(train,ethnicity,  surname, first_name, number_of_names) , features = c("surname", "first_name", "number_of_names")) # Learn a naive Bayes structure
-nb <- lp(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names), smooth = 1) # Learn parameters 
-cv(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names), k = 4) # 10-fold Cross-validation estimate of accuracy 
+nb <- nb('ethnicity', dataset = dplyr::select(train,ethnicity,  surname, first_name, number_of_names) ,
+         features = c("surname", "first_name", "number_of_names")) # Learn parameters 
+cv(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names), k = 4) # 10-fold Cross-validation 
+
+ll <- tan_cl('ethnicity', dataset =  dplyr::select(train,ethnicity,  surname, first_name, number_of_names),
+              score = 'aic')
+
 head(predict(nb, dplyr::select(test,ethnicity,  surname, first_name, number_of_names)))
+
 
 confusionMatrix(predict(nb, dplyr::select(test,ethnicity,  surname, first_name, number_of_names)), test$ethnicity)
 confusionMatrix(predict(nb, dplyr::select(train,ethnicity,  surname, first_name, number_of_names)), train$ethnicity)
 
-                
 save(nb.m1, file = "nb_model")
 ```
+Splitting the data based on whether we have information on ethnicity
+```{r}
+events_labeled <- events[!is.na(events$ethnicity), ]
+events_missing <- events[is.na(events$ethnicity), ]
+
+
+rm(events)
+gc()
+```
+
+```{r}
+nb_klaR <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = events_labeled, 
+                             fL = 1, usekernel = FALSE)
+
+#confusionMatrix(predict(nb_klaR)$class, events_labeled$ethnicity)
+fwrite(events_labeled, here::here("data/events_labeled.csv"))
+rm(events_labeled)
+
+
+events_missing$ethnicity <- predict(nb_klaR, events_missing)$class
+events_missing$probability <- predict(nb_klaR, events_missing)$posterior
+
+
+```
+
+```{r}
+events_labeled <- fread(here::here("data/events_labeled.csv"), encoding = "UTF-8")
+events_preds <- bind_rows(events_labeled, events_missing) %>% 
+  mutate(prediction = ifelse(n_of_eth_gr == 0, 1, 0)) %>% 
+  dplyr::select(-c(n_of_eth_gr, names_split, NAME))
+  
+fwrite(events_preds, here::here("data/events_predictions.csv"))
+
+```
+
 

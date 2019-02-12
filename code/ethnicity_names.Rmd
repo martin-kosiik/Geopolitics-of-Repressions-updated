@@ -200,3 +200,33 @@ tidy(diff_model, conf.int = T) %>%
 
 ```
 
+```{r}
+load("data/eventsClean_v1.RData")
+
+events <- events[, c("AID", "YEAR", "MONTH", "DAY")] 
+
+
+events_pred <- read_csv(here::here("data/events_predictions.csv"))
+
+events <- events %>% 
+  left_join(events_pred, by = "AID") 
+
+rm(events_pred)
+gc()
+
+pred_by_year <- events %>% 
+  filter(!is.na(ethnicity)) %>% 
+  count(prediction, YEAR, ethnicity) %>% 
+  complete(YEAR, ethnicity, prediction, fill = list(n = 0)) %>% 
+  mutate(log_n = log(1 + n),
+         source = ifelse(prediction == 1, "prediction", "label")) %>% 
+  filter(YEAR >= 1921)
+
+pred_by_year %>% 
+  ggplot(aes(x = YEAR, y = log_n, col = source)) + geom_line() + facet_wrap(~ethnicity) +
+  labs(y = "log(1 + y)", x = "year", col ="source", caption = "annual observations") + theme_bw() 
+ 
+ggsave(here::here("plots/arrests/annual_pred_vs_label.pdf"))
+
+```
+

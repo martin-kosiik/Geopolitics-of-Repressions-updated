@@ -13,18 +13,13 @@ library(tidyverse)
 library(broom)
 library(data.table)
 library(lubridate)
-library(stargazer)
 library(here)
-library(estimatr)
 library(caret)
 library(naivebayes)
 library(bnclassify)
-library(h2o)
+#library(h2o)
 library(klaR)
 library(rsample)
-library(devtools)
-devtools::install_github("majkamichal/naivebayes")
-library(naivebayes)
 
 ```
 
@@ -46,7 +41,9 @@ events %>%
   count(n_of_eth_gr, sort = T)
 
 events <- events %>% 
-  filter(n_of_eth_gr <= 1)
+  filter(n_of_eth_gr <= 1) %>% 
+  dplyr::select(AID, NAME, starts_with("ETHNIC_"))
+
 
 ```
 
@@ -79,17 +76,13 @@ gc()
 
 ```{r}
 events <- events %>% 
-  dplyr::select(AID, NAME, ethnicity, n_of_eth_gr)
-
-events <- events %>% 
   mutate(names_split = str_split(NAME, pattern = " "),
          first_name = as.factor(map_chr(names_split, last)),
          surname = as.factor(map_chr(names_split, 1)),
          number_of_names = as.factor(map_int(names_split, length)),
-         ethnicity = as.factor(ethnicity))
+         ethnicity = as.factor(ethnicity)) %>% 
+  dplyr::select(-c(names_split, NAME))
 
-class(events$ethnicity)
-head(events)
 
 events %>% 
   count(number_of_names, sort = T)
@@ -210,23 +203,50 @@ gc()
 nb_klaR <- NaiveBayes(ethnicity ~ surname + first_name + number_of_names, data = events_labeled, 
                              fL = 1, usekernel = FALSE)
 
-#confusionMatrix(predict(nb_klaR)$class, events_labeled$ethnicity)
+nb <- nb('ethnicity', dataset = dplyr::select(events_labeled, ethnicity,  surname, first_name, number_of_names) ,
+         features = c("surname", "first_name", "number_of_names")) # Learn parameters 
+nb <- lp(nb, dplyr::select(events_labeled, ethnicity,  surname, first_name, number_of_names), smooth = 1)
+
+confusionMatrix(predict(nb_klaR)$class, events_labeled$ethnicity)
 fwrite(events_labeled, here::here("data/events_labeled.csv"))
 rm(events_labeled)
-
+gc()
+check <- fread(here::here("data/events_labeled.csv"), encoding = "UTF-8",
+               colClasses = list(factor = c(2, 4:5)))
 
 events_missing$ethnicity <- predict(nb_klaR, events_missing)$class
 events_missing$probability <- predict(nb_klaR, events_missing)$posterior
 
+confusionMatrix(predict(nb, dplyr::select(events_labeled, ethnicity,  surname, first_name, number_of_names)), events_labeled$ethnicity)
+
+
+events_missing$ethnicity <- predict(nb, 
+                                    dplyr::select(events_missing, ethnicity,  surname, first_name, number_of_names))
+events_missing$probability <-predict(nb, 
+                                    dplyr::select(events_missing, ethnicity,  surname, first_name, number_of_names),
+                                    prob = TRUE)
+
+
+sum(is.na(events_missing$ethnicity))
 
 ```
 
 ```{r}
 events_labeled <- fread(here::here("data/events_labeled.csv"), encoding = "UTF-8")
-events_preds <- bind_rows(events_labeled, events_missing) %>% 
+events_labeled <- events_labeled %>% 
+  mutate(probability = as.numeric(NA))
+
+events_preds <- 
+  bind_rows(events_labeled, events_missing) %>% 
   mutate(prediction = ifelse(n_of_eth_gr == 0, 1, 0)) %>% 
-  dplyr::select(-c(n_of_eth_gr, names_split, NAME))
+  dplyr::select(-c(n_of_eth_gr))
   
+events_preds <- 
+  rbind(events_labeled, events_missing) %>% 
+  mutate(prediction = ifelse(n_of_eth_gr == 0, 1, 0)) %>% 
+  dplyr::select(-c(n_of_eth_gr))
+  
+
 fwrite(events_preds, here::here("data/events_predictions.csv"))
 
 ```

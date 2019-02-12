@@ -105,6 +105,7 @@ min_by_q <-  min_by_month %>%
   mutate(log_n = log(n + 1)) %>% 
   group_by(ethnicity) %>% 
   mutate(t = row_number(), 
+         pre_treatment = ifelse(year_q_date >= "1930-01-01" & year_q_date <= "1933-01-01", 1, 0),
          hostility = ifelse(year_q_date >= "1933-03-23" & year_q_date <= "1939-08-23", 1, 0), 
          pact = ifelse(year_q_date > "1939-08-23" & year_q_date < "1941-06-22", 1, 0), 
          war = ifelse(year_q_date >= "1941-06-22" & year_q_date < "1945-05-08", 1, 0),
@@ -132,9 +133,14 @@ fmla <- as.formula(paste("log_n ~ ",
 fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
                                 as.factor(year_q) + ethnicity + ethnicity:t + ethnicity:I(t^2)"))
 
+fmla_window_pre_treat <- as.formula("log_n ~ german:pre_treatment + german:hostility + german:pact +
+                                    german:war +  german:post_war +  as.factor(year_q) + 
+                                    ethnicity + ethnicity:t + ethnicity:I(t^2)")
+
 
 diff_model <- lm(fmla,  data = min_by_q)
 diff_model_window <- lm(fmla_window,  data = min_by_q)
+diff_model_window_pre_treat <- lm(fmla_window_pre_treat,  data = min_by_q)
 
 summary(diff_model_window)
 ```
@@ -198,6 +204,30 @@ diff_model_window %>%
 
 
 ggsave(here::here("plots/did_effects_quart_window_postwar.pdf"))
+```
+
+```{r}
+diff_model_window_pre_treat %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:","") %>% 
+           fct_relevel("pre_treatment", "hostility", "pact", "war", "post_war")) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=15)) + 
+  labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
+       title = "Interactions of German ethnicity with specified time window dummy", 
+       subtitle = "Quarterly obseravations") + 
+  scale_x_discrete(labels = c("Pre-tretment \n (1930 Q1 to 1933 Q1)",
+                              'Hostility without war \n (1933 Q2 to 1939 Q3)',
+                              'Pact \n (1939 Q4 to 1941 Q2)', 'War \n (1941 Q3 to 1945 Q2)',
+                              "Post-war \n (from 1945 Q3)"))
+
+ggsave(here::here("plots/effects/quarterly/pre_treatment.pdf"))
+
+
 ```
 
 

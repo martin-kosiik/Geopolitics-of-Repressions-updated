@@ -78,6 +78,9 @@ min_by_year <- min_by_year %>%
                       as.factor(),
          log_n = log(n + 1), 
          german = ifelse(ethnicity == "German", 1, 0), 
+         tatar = ifelse(ethnicity == "Tatar", 1, 0),
+         chinese = ifelse(ethnicity == "Chinese", 1, 0),
+         pre_treatment = ifelse(YEAR >= 1929 & YEAR <= 1932, 1, 0),
          hostility = ifelse(YEAR >= 1933 & YEAR <= 1938, 1, 0), 
          pact = ifelse(YEAR >= 1939 & YEAR < 1941, 1, 0), 
          war = ifelse(YEAR >= 1941 & YEAR <= 1945, 1, 0),
@@ -115,8 +118,15 @@ fmla <- as.formula(paste("log_n ~ ",
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR"))
 
-fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
-                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)"))
+fmla_window <- as.formula("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
+                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)")
+
+fmla_window_tatar_placebo <- as.formula("log_n ~ chinese:hostility + chinese:pact + chinese:war + chinese:post_war +
+                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)")
+fmla_window_pre_treat <- as.formula("log_n ~ german:pre_treatment + german:hostility + german:pact +
+                                      german:war +  german:post_war +
+                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)")
+
 
 diff_model <- lm(fmla,  data = min_by_year)
 
@@ -124,6 +134,9 @@ tibble(res =  lm_robust(fmla, cluster = min_by_year$ethnicity , data = min_by_ye
   ggplot(aes(x = fitted, y = res)) + geom_point()
 
 diff_model_window <- lm(fmla_window,  data = min_by_year)
+
+diff_model_tatar_placebo <- lm(fmla_window_tatar_placebo,  data = min_by_year)
+diff_model_pre_treat <- lm(fmla_window_pre_treat,  data = min_by_year)
 
 
 diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
@@ -218,7 +231,8 @@ ggsave("did_all.pdf")
 diff_model_window %>% 
   broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
-  mutate(nice_labs = str_replace(term,"german:","")) %>% 
+  mutate(nice_labs = str_replace(term,"german:","") %>% 
+           fct_relevel("hostility", "pact", "war", "post_war")) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
@@ -233,6 +247,49 @@ diff_model_window %>%
 
 
 ggsave(here::here("plots/did_effects_window_postwar.pdf"))
+```
+
+
+```{r}
+diff_model_tatar_placebo %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "chinese:")) %>% 
+  mutate(nice_labs = str_replace(term,"chinese:","")) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        text = element_text(size=15)) + 
+  labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
+       title = "Interactions of Tatar ethnicity with specified time window dummy", 
+       subtitle = "Annual obseravations") + 
+  scale_x_discrete(labels = c('Hostility without war \n (1933 to 1938)',
+                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)',
+                              "Post-war \n (from 1946)"))
+
+```
+
+```{r}
+diff_model_pre_treat %>% 
+  broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:","")%>% 
+           fct_relevel("pre_treatment", "hostility", "pact", "war", "post_war")) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        text = element_text(size=15)) + 
+  labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
+       title = "Interactions of German ethnicity with specified time window dummy", 
+       subtitle = "Annual obseravations") + 
+  scale_x_discrete(labels = c("Pre-tretment \n (1930 to 1932)",
+                              'Hostility without war \n (1933 to 1938)',
+                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)',
+                              "Post-war \n (from 1946)"))
+
+ggsave(here::here("plots/effects/annual/pre_treatment.pdf"))
+
 ```
 
 

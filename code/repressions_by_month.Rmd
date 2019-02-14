@@ -148,6 +148,12 @@ diff_model <- lm(fmla,  data = min_by_q)
 diff_model_window <- lm(fmla_window,  data = min_by_q)
 diff_model_window_pre_treat <- lm(fmla_window_pre_treat,  data = min_by_q)
 
+diff_model_robust <- commarobust(diff_model, clusters = min_by_q$ethnicity, se_type = "stata")
+diff_model_window_robust <- commarobust(diff_model, clusters = min_by_q$ethnicity, se_type = "stata")
+diff_model_window_pre_treat_robust <- commarobust(diff_model_window_pre_treat, clusters = min_by_q$ethnicity, se_type = "stata")
+
+estimatr::tidy(diff_model_robust)
+
 summary(diff_model_window)
 ```
 
@@ -156,15 +162,20 @@ library(zoo)
 diff_model %>% 
   broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
+  left_join(estimatr::tidy(diff_model_robust), by = "term", suffix = c("", "_robust")) %>% 
   mutate(nice_labs = str_replace(term,"german:post_","") %>% 
            str_replace("\\.", " Q") %>% 
            as.yearqtr() %>% 
-           as.Date()) %>% 
-  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+           as.Date(), 
+         conf.low_min = map2_dbl(conf.low, conf.low_robust, min), 
+         conf.high_max = map2_dbl(conf.high, conf.high_robust, max)) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low_min, ymax = conf.high_max, group = 1))+ 
   geom_vline(xintercept= ymd(c(19330323, 19390823, 19410622)), col = "red", linetype = "dashed") +
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + 
   scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y")+
-  labs(x = "year", caption = "error bars show 95% confidence intervals",
+  labs(x = "year", 
+       caption = "error bars show 95% confidence intervals \n 
+                    SE are maximum of their cluster robust and standard versions",
        title = "Estimates on quarterly interactions of german*post")
 ggsave(here::here("plots/effects/quarterly/pointrange.pdf"))
 
@@ -175,17 +186,22 @@ ggsave(here::here("plots/effects/quarterly/pointrange.pdf"))
 diff_model %>% 
   broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
+  left_join(estimatr::tidy(diff_model_robust), by = "term", suffix = c("", "_robust")) %>% 
   mutate(nice_labs = str_replace(term,"german:post_","") %>% 
            str_replace("\\.", " Q") %>% 
            as.yearqtr() %>% 
-           as.Date()) %>% 
+           as.Date(), 
+         conf.low_min = map2_dbl(conf.low, conf.low_robust, min), 
+         conf.high_max = map2_dbl(conf.high, conf.high_robust, max)) %>% 
   ggplot(mapping = aes(x = nice_labs))+ 
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), fill = "grey70")+
+  geom_ribbon(aes(ymin = conf.low_min, ymax = conf.high_max), fill = "grey70")+
   geom_line(aes(y = estimate), col = "black") + geom_point(aes(y = estimate)) +
   theme_bw() +  geom_hline(yintercept= 0, col = "black", linetype = "dashed") +
   scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y") + 
   geom_vline(xintercept = ymd(c(19330323, 19390823, 19410622)), color = "red") +
-  labs(x = "year", caption = "the shaded ares shows 95% confidence intervals",
+  labs(x = "year",
+       caption = "the shaded ares shows 95% confidence intervals \n 
+                    SE are maximum of their cluster robust and standard versions",
        title = "Estimates on quarterly interactions of german*year/quarter")
 
 ggsave(here::here("plots/effects/quarterly/line.pdf"))
@@ -217,14 +233,20 @@ ggsave(here::here("plots/did_effects_quart_window_postwar.pdf"))
 diff_model_window_pre_treat %>% 
   broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
+  left_join(estimatr::tidy(diff_model_window_pre_treat, conf.int = TRUE),
+            by = "term", suffix = c("", "_robust")) %>% 
   mutate(nice_labs = str_replace(term,"german:","") %>% 
-           fct_relevel("pre_treatment", "hostility", "pact", "war", "post_war")) %>% 
-  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+           fct_relevel("pre_treatment", "hostility", "pact", "war", "post_war"),
+         conf.low_min = map2_dbl(conf.low, conf.low_robust, min), 
+         conf.high_max = map2_dbl(conf.high, conf.high_robust, max)) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low_min, ymax = conf.high_max, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=15)) + 
-  labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
+  labs(x = element_blank(),
+       caption = "error bars show 95% confidence intervals \n 
+                    SE are maximum of their cluster robust and standard versions",
        title = "Interactions of German ethnicity with specified time window dummy", 
        subtitle = "Quarterly obseravations") + 
   scale_x_discrete(labels = c("Pre-tretment \n (1928 Q1 to 1933 Q1)",

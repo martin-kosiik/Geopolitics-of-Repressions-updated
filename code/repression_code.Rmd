@@ -103,9 +103,9 @@ Some summary statstics
 
 
 ```{r}
-years <- 1930:1938
+years <- 1930:1958
 
-post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year$YEAR >= .)) %>% 
+post_year_dummies <- map_dfc(years, ~  as.numeric(min_by_year$YEAR == .)) %>% 
   rename_all( funs( c(paste0("post_" ,years))))
 
 min_by_year <-bind_cols(min_by_year, post_year_dummies)
@@ -116,7 +116,7 @@ We create the formulas and fit the models
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR"))
+                         ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
 
 fmla_window <- as.formula("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
                                 as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)")
@@ -126,6 +126,11 @@ fmla_window_tatar_placebo <- as.formula("log_n ~ chinese:hostility + chinese:pac
 fmla_window_pre_treat <- as.formula("log_n ~ german:pre_treatment + german:hostility + german:pact +
                                       german:war +  german:post_war +
                                 as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)")
+
+fmla_window_pre_treat <- as.formula(paste("log_n ~", paste0("german:","post_", years, collapse = " + "),
+                                      "+ german:hostility + german:pact +
+                                      german:war +  german:post_war +
+                                as.factor(YEAR) +  ethnicity + ethnicity: YEAR + ethnicity: I(YEAR^2)"))
 
 
 diff_model <- lm(fmla,  data = min_by_year)
@@ -141,7 +146,7 @@ diff_model_pre_treat <- lm(fmla_window_pre_treat,  data = min_by_year)
 
 diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
 
-summary(diff_model_window)
+summary(diff_model_pre_treat)
 
 fmla_no_log <- as.formula(paste("n ~ ", 
                          paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +

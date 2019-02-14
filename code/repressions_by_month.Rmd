@@ -19,28 +19,28 @@ library(multiwayvcov)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 load(here("data/eventsClean_v1.RData"))
 ```
 
-```{r}
+```{r, eval = FALSE}
 minorities_var_names <- names(events) %>% 
   str_subset("ETHNIC_")
 ```
 We exclude Russians from vector of minorities
-```{r}
+```{r, eval = FALSE}
 minorities_var_names <- minorities_var_names[-1] 
 
 ```
 
-```{r}
+```{r, eval = FALSE}
 events <- events %>% 
   select(-c(NEAREST_RAIL_ID:LEVEL_SV)) %>% 
   mutate(date_ym = str_c(YEAR,  MONTH, 1, sep = "-"))
 
 ```
 
-```{r}
+```{r, eval = FALSE}
 min_by_month <- events %>%
   select(date_ym, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
   group_by_all() %>% 
@@ -105,7 +105,7 @@ min_by_q <-  min_by_month %>%
   mutate(log_n = log(n + 1)) %>% 
   group_by(ethnicity) %>% 
   mutate(t = row_number(), 
-         pre_treatment = ifelse(year_q_date >= "1930-01-01" & year_q_date <= "1933-01-01", 1, 0),
+         pre_treatment = ifelse(year_q_date >= "1928-01-01" & year_q_date <= "1933-01-01", 1, 0),
          hostility = ifelse(year_q_date >= "1933-03-23" & year_q_date <= "1939-08-23", 1, 0), 
          pact = ifelse(year_q_date > "1939-08-23" & year_q_date < "1941-06-22", 1, 0), 
          war = ifelse(year_q_date >= "1941-06-22" & year_q_date < "1945-05-08", 1, 0),
@@ -114,11 +114,17 @@ min_by_q <-  min_by_month %>%
 ```
 
 ```{r}
-year_quarters <- crossing(year = 1931:1937, quarter = 1:4) %>% 
+year_quarters <- crossing(year = 1928:1955, quarter = 1:4) %>% 
   mutate(yq = str_c(year, quarter, sep = ".")) %>% 
   pull(yq)
 
-post_yq_dummies <- map_dfc(year_quarters, ~  as.numeric(min_by_q$year_q >= .)) %>% 
+max(min_by_q$year_q)
+
+tail(post_yq_dummies$post_1955.4)
+
+post_yq_dummies <- map_dfc(year_quarters, ~  if (dplyr::last(year_quarters) == .){
+                                                    as.numeric(min_by_q$year_q >= .)} else {
+                                                    as.numeric(min_by_q$year_q == .)}) %>% 
   rename_all( funs( c(paste0("post_" ,year_quarters))))
 
 min_by_q <-bind_cols(min_by_q, post_yq_dummies)
@@ -128,7 +134,7 @@ min_by_q <-bind_cols(min_by_q, post_yq_dummies)
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","post_", year_quarters, collapse = " + "),  "+ as.factor(year_q) +
-                                                 ethnicity + t:ethnicity"))
+                                                 ethnicity + t:ethnicity+ ethnicity:I(t^2)"))
 
 fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
                                 as.factor(year_q) + ethnicity + ethnicity:t + ethnicity:I(t^2)"))
@@ -155,17 +161,18 @@ diff_model %>%
            as.yearqtr() %>% 
            as.Date()) %>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-  geom_vline(xintercept= ymd(19330101), col = "red", linetype = "dashed") +
-  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + scale_x_date(date_minor_breaks = "1 year")+
+  geom_vline(xintercept= ymd(c(19330323, 19390823, 19410622)), col = "red", linetype = "dashed") +
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + 
+  scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y")+
   labs(x = "year", caption = "error bars show 95% confidence intervals",
        title = "Estimates on quarterly interactions of german*post")
-ggsave(here("plots/did_effects_quarter.pdf"), width = 9, height = 6)
+ggsave(here::here("plots/effects/quarterly/pointrange.pdf"))
 
 ```
 
 
 ```{r}
-did_effects_quart_line <- diff_model %>% 
+diff_model %>% 
   broom::tidy(conf.int = TRUE) %>% 
   filter(str_detect(term, "german:")) %>% 
   mutate(nice_labs = str_replace(term,"german:post_","") %>% 
@@ -174,14 +181,14 @@ did_effects_quart_line <- diff_model %>%
            as.Date()) %>% 
   ggplot(mapping = aes(x = nice_labs))+ 
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), fill = "grey70")+
-  geom_line(aes(y = estimate), col = "black") +
+  geom_line(aes(y = estimate), col = "black") + geom_point(aes(y = estimate)) +
   theme_bw() +  geom_hline(yintercept= 0, col = "black", linetype = "dashed") +
-  scale_x_date(date_minor_breaks = "1 year") + 
-  geom_vline(xintercept = ymd(19330101), color = "red") +
+  scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y") + 
+  geom_vline(xintercept = ymd(c(19330323, 19390823, 19410622)), color = "red") +
   labs(x = "year", caption = "the shaded ares shows 95% confidence intervals",
-       title = "Estimates on quarterly interactions of german*post")
+       title = "Estimates on quarterly interactions of german*year/quarter")
 
-ggsave(here("plots/did_effects_quart_line.pdf"), plot = did_effects_quart_line, width = 9, height = 6)
+ggsave(here::here("plots/effects/quarterly/line.pdf"))
 
 ```
 
@@ -220,7 +227,7 @@ diff_model_window_pre_treat %>%
   labs(x = element_blank(), caption = "error bars show 95% confidence intervals",
        title = "Interactions of German ethnicity with specified time window dummy", 
        subtitle = "Quarterly obseravations") + 
-  scale_x_discrete(labels = c("Pre-tretment \n (1930 Q1 to 1933 Q1)",
+  scale_x_discrete(labels = c("Pre-tretment \n (1928 Q1 to 1933 Q1)",
                               'Hostility without war \n (1933 Q2 to 1939 Q3)',
                               'Pact \n (1939 Q4 to 1941 Q2)', 'War \n (1941 Q3 to 1945 Q2)',
                               "Post-war \n (from 1945 Q3)"))

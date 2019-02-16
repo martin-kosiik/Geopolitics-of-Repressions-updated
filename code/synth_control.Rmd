@@ -1,0 +1,129 @@
+---
+title: "Synthetic control"
+author: "Martin Kosík"
+date: "14 února 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(lubridate)
+library(stargazer)
+library(here)
+library(readxl)
+library(gsynth)
+library(Synth)
+library(microsynth)
+library(MSCMT)
+```
+
+```{r}
+ethnicity_controls <- read_excel(here("data/ethnicity_info.xlsx"))
+
+min_by_q <- min_by_q  %>% 
+  left_join(ethnicity_controls %>% mutate(ethnicity_id = as.numeric(1:n())), by = "ethnicity") %>% 
+  mutate(post_german = german * ifelse(year_q_date >= "1933-03-01", 1, 0))
+
+library(zoo)
+min_by_q <- min_by_q %>% 
+  mutate(year_q_form = as.yearqtr(year_q_date), 
+         year_str_rep = str_replace(year_q, "\\.", "Q") ) 
+```
+
+MSCMT package implementation
+```{r}
+data_prep_mscmt <- listFromLong(as.data.frame(min_by_q), unit.variable = "ethnicity_id", 
+                                time.variable="year_str_rep", unit.names.variable="ethnicity")
+
+data_prep_mscmt$urb_rate
+```
+
+```{r}
+treatment.identifier <- "German"
+controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
+                                 treatment.identifier)
+times.dep  <- cbind("log_n"                 = c("1921Q1","1933Q1"))
+times.pred <- cbind("pop_total"             = c("1921Q2","1932Q1"),
+                    "clad_sim"              = c("1921Q2","1932Q1"),
+                    "urb_rate"              = c("1921Q2","1932Q1"))
+
+agg.fns <- rep("mean", ncol(times.pred))                       
+agg.fns <- rep("id", ncol(times.pred))
+```
+
+```{r}
+sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
+improveSynth(data_prep, synth.out)
+```
+
+```{r}
+ggplot(sc_results, type="comparison")
+ggplot(sc_results, type="gap")
+
+ggplot(sc_results, exclude.ratio=5, ratio.type="mspe")
+```
+
+
+```{r}
+panelView(log_n ~ post_german, data = min_by_q,  index = c("ethnicity","t")) 
+
+
+out <- gsynth(log_n ~ post_german, data = min_by_q, parallel = FALSE, 
+              index = c("ethnicity","t"), force = "two-way", se = TRUE) 
+
+data_prep <- dataprep(foo = as.data.frame(min_by_q), predictors =  c("pop_total", "clad_sim", "urb_rate"),
+                      time.variable = c("t"), dependent = c("log_n"),
+                      unit.variable = c("ethnicity_id"), 
+                      treatment.identifier = 4, 
+                      controls.identifier = c(1:3,5:17),
+                      time.predictors.prior = c(1:49),
+                      time.optimize.ssr =  c(1:49), 
+                      time.plot = 1:156)
+
+synth.out <- synth(data_prep)
+
+synth.out$solution.w
+
+
+path.plot(synth.out, data_prep)
+abline(v=50, col="red")
+
+gaps.plot(synth.out, data_prep)
+abline(v=50, col="red")
+
+synth.tab(synth.out, data_prep)
+
+
+plot(out, theme.bw = TRUE)
+str(min_by_q)
+data("basque")
+basque %>% 
+  count(regionno, regionname)
+
+min_by_q %>% 
+  count(ethnicity, ethnicity_id)
+```
+
+```{r}
+cov.var <- c("pop_total", "clad_sim", "urb_rate")
+match.out <- c("log_n")
+
+
+
+micro_synth <- microsynth(min_by_q, 
+                   idvar="ethnicity", timevar="t", intvar="post_german",
+                   match.out = FALSE, match.covar = cov.var,
+                   result.var=match.out, cut.mse = 20 * 0.004585003,
+                   test="lower",  confidence = 0.95, 
+                   perm=40, jack=F, use.survey = TRUE, 
+                   check.feas=TRUE, use.backup=TRUE)
+
+summary(micro_synth)
+micro_synth$w
+
+```
+

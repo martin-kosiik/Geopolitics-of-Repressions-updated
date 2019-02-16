@@ -62,10 +62,26 @@ improveSynth(data_prep, synth.out)
 
 ```{r}
 ggplot(sc_results, type="comparison")
+ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
 ggplot(sc_results, type="gap")
+ggsave(here("plots/synthetic_control/gap.pdf"))
 
-ggplot(sc_results, exclude.ratio=5, ratio.type="mspe")
 ```
+placebo
+```{r}
+sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE, placebo = TRUE)
+
+ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe")
+ggsave(here("plots/synthetic_control/placebo_gaps.pdf"))
+ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
+       alternative= "two.sided")
+ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
+
+did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative="two.sided")
+
+
+```
+
 
 
 ```{r}

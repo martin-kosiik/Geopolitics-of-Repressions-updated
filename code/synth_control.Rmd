@@ -22,10 +22,11 @@ library(MSCMT)
 ```
 
 ```{r}
-ethnicity_controls <- read_excel(here("data/ethnicity_info.xlsx"))
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()))
 
 min_by_q <- min_by_q  %>% 
-  left_join(ethnicity_controls %>% mutate(ethnicity_id = as.numeric(1:n())), by = "ethnicity") %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(post_german = german * ifelse(year_q_date >= "1933-03-01", 1, 0))
 
 library(zoo)
@@ -34,12 +35,24 @@ min_by_q <- min_by_q %>%
          year_str_rep = str_replace(year_q, "\\.", "Q") ) 
 ```
 
-MSCMT package implementation
+```{r}
+min_by_month <- read_csv(here::here("data/cleaned_min_arrests_by_month.csv")) 
+
+min_by_month <- min_by_month  %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(post_german = german * ifelse(date >= "1933-03-23", 1, 0)) %>% 
+  dplyr::select()
+
+
+```
+
+
+## MSCMT implementation
+### Quarterly observations 
 ```{r}
 data_prep_mscmt <- listFromLong(as.data.frame(min_by_q), unit.variable = "ethnicity_id", 
                                 time.variable="year_str_rep", unit.names.variable="ethnicity")
 
-data_prep_mscmt$urb_rate
 ```
 
 ```{r}
@@ -51,7 +64,7 @@ times.pred <- cbind("pop_total"             = c("1921Q2","1932Q1"),
                     "clad_sim"              = c("1921Q2","1932Q1"),
                     "urb_rate"              = c("1921Q2","1932Q1"))
 
-agg.fns <- rep("mean", ncol(times.pred))                       
+#agg.fns <- rep("mean", ncol(times.pred))                       
 agg.fns <- rep("id", ncol(times.pred))
 ```
 
@@ -81,6 +94,61 @@ did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative=
 
 
 ```
+
+
+### Quarterly observations 
+
+```{r}
+data_prep_mscmt_monthly <- listFromLong(as.data.frame(min_by_month), unit.variable = "ethnicity_id", 
+                                time.variable="ym_chr", unit.names.variable="ethnicity")
+
+```
+
+```{r}
+treatment.identifier <- "German"
+controls.identifier  <- setdiff(colnames(data_prep_mscmt_monthly[[1]]),
+                                 treatment.identifier)
+times.dep  <- cbind("log_n"                 = c("1926-05","1933-03"))
+times.pred <- cbind("pop_total"             = c("1921-05","1932-01"))
+
+agg.fns <- rep("mean", ncol(times.pred))                       
+agg.fns <- rep("id", ncol(times.pred))
+```
+
+```{r}
+sc_results_monthly <- mscmt(data_prep_mscmt_monthly,
+                            treatment.identifier = treatment.identifier, 
+                            controls.identifier = controls.identifier, 
+                            times.dep = times.dep,
+                            times.pred = times.pred, 
+                             agg.fns = agg.fns, seed=201,
+                            debug = TRUE)
+improveSynth(data_prep, synth.out)
+```
+
+```{r}
+ggplot(sc_results, type="comparison")
+ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
+ggplot(sc_results, type="gap")
+ggsave(here("plots/synthetic_control/gap.pdf"))
+
+```
+placebo
+```{r}
+sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE, placebo = TRUE)
+
+ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe")
+ggsave(here("plots/synthetic_control/placebo_gaps.pdf"))
+ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
+       alternative= "two.sided")
+ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
+
+did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative="two.sided")
+
+
+```
+
+
 
 
 

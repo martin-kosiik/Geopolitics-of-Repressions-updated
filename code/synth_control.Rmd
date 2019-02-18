@@ -41,7 +41,7 @@ min_by_month <- read_csv(here::here("data/cleaned_min_arrests_by_month.csv"))
 min_by_month <- min_by_month  %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(post_german = german * ifelse(date >= "1933-03-23", 1, 0)) %>% 
-  dplyr::select()
+  dplyr::select(ym_chr, ethnicity, ethnicity_id, log_n, pop_total, clad_sim, urb_rate)
 
 
 ```
@@ -108,8 +108,10 @@ data_prep_mscmt_monthly <- listFromLong(as.data.frame(min_by_month), unit.variab
 treatment.identifier <- "German"
 controls.identifier  <- setdiff(colnames(data_prep_mscmt_monthly[[1]]),
                                  treatment.identifier)
-times.dep  <- cbind("log_n"                 = c("1926-05","1933-03"))
-times.pred <- cbind("pop_total"             = c("1921-05","1932-01"))
+times.dep  <- cbind("log_n"                 = c("1921-05","1933-03"))
+times.pred <- cbind("pop_total"             = c("1921-05","1932-01"),
+                    "clad_sim"              = c("1921-05","1921-05"),
+                    "urb_rate"              = c("1921-05","1921-05"))
 
 agg.fns <- rep("mean", ncol(times.pred))                       
 agg.fns <- rep("id", ncol(times.pred))
@@ -123,11 +125,11 @@ sc_results_monthly <- mscmt(data_prep_mscmt_monthly,
                             times.pred = times.pred, 
                              agg.fns = agg.fns, seed=201,
                             debug = TRUE)
-improveSynth(data_prep, synth.out)
+improveSynth(sc_results_monthly, synth.out)
 ```
 
 ```{r}
-ggplot(sc_results, type="comparison")
+ggplot(sc_results_monthly, type="comparison")
 ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
 ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))

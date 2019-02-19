@@ -1,3 +1,5 @@
+\subsection{Difference-in-differences}
+
 We follow the standard difference-in-differences strategy
 \begin{multline}
  \log\left(1 + y_{it}\right) = \lambda_t + a_i  + \delta german_{it} \cdot post_{it} + E_i \cdot t \: + \\ \sum_{k= 1}^3 \gamma_k \, german_{it} \cdot post_{it+ k} + \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}  + u_{it}   
@@ -8,3 +10,17 @@ where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\
  We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
 
 Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead effects ($\gamma_k$) are significantly different from zero.  
+
+As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most DiD regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable. \citet[chapter 8]{angrist_mostly_2009} suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. More rigorous solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}. 
+
+Since we have small number of groups we use bell correction ...  
+
+
+
+\subsection{Synthetic Control Method}
+However, the parrarel trends assumption can sometiemes be violated. These issues can be adressed by sythetic control method
+\citep{abadie_synthetic_2010, abadie_economic_2003}
+
+Implemented in R software using the MSCM package \citep{becker_fast_2018}.
+\subsection{Generalized Synthetic Control Method}
+\citet{xu_generalized_2017}

@@ -103,7 +103,7 @@ mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
 tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>% 
   mutate(German = as.factor(ifelse(ethnicity == "German", 1, 0))) %>% 
   ggplot(aes(x = mspe_ratios, fill = German)) + geom_histogram() + theme_bw() +
-  labs(x = "MSPE ratio", title = "Ratios of pre to post-treatment period mean squared prediction error")
+  labs(x = "MSPE ratio", title = "Ratios of post to pre-treatment period mean squared prediction error")
 
 ggsave(here::here("plots/synthetic_control/mspe_histogram.pdf"))
 

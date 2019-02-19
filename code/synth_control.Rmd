@@ -82,17 +82,41 @@ ggsave(here("plots/synthetic_control/gap.pdf"))
 ```
 placebo
 ```{r}
-sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE, placebo = TRUE)
+sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE)
 
-ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe")
+ggplot(sc_placebo, exclude.ratio=5, ratio.type="rmspe")
 ggsave(here("plots/synthetic_control/placebo_gaps.pdf"))
-ggplot(sc_placebo, exclude.ratio=5, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
+ggplot(sc_placebo, exclude.ratio=100, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
        alternative= "two.sided")
 ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
 
-did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative="two.sided")
+did(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
+    range.post = c("1933Q2","1939Q3"), exclude.ratio= 100, alternative="two.sided")
+
+rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
+  map("rmspe") %>% 
+  map_dbl(1)
+
+mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
+                        range.post = c("1933Q2","1939Q3"), type = "mspe")
+
+tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>% 
+  mutate(German = as.factor(ifelse(ethnicity == "German", 1, 0))) %>% 
+  ggplot(aes(x = mspe_ratios, fill = German)) + geom_histogram() + theme_bw() +
+  labs(x = "MSPE ratio", title = "Ratios of pre to post-treatment period mean squared prediction error")
+
+ggsave(here::here("plots/synthetic_control/mspe_histogram.pdf"))
 
 
+tibble(ethnicity = names(rmspe_placebo), rmspe_placebo) %>% 
+  mutate(rmspe_german = rmspe_placebo[ethnicity == "German"],
+         rmspe_5times = 5 * rmspe_german,
+         rmspe_20times = 20 * rmspe_german)
+  
+
+str(last(sc_placebo))
+
+str(sc_placebo)
 ```
 
 
@@ -155,11 +179,24 @@ did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative=
 
 
 ```{r}
-panelView(log_n ~ post_german, data = min_by_q,  index = c("ethnicity","t")) 
+panelView(log_n ~ post_german  , data = min_by_q,  index = c("ethnicity","t")) 
 
 
-out <- gsynth(log_n ~ post_german, data = min_by_q, parallel = FALSE, 
-              index = c("ethnicity","t"), force = "two-way", se = TRUE) 
+out <- gsynth(log_n ~ post_german + pop_total + clad_sim +urb_rate , data = min_by_q, parallel = FALSE, 
+              index = c("ethnicity","t"), force = "two-way", se = TRUE, 
+              inference = "parametric", nboots = 1000) 
+
+
+print(out)
+out$est.att
+out$est.avg
+out$est.beta
+
+plot(out, theme.bw = TRUE)
+plot(out, type = "raw", theme.bw = TRUE)
+plot(out, type = "ct", raw = "none", shade.post = FALSE, theme.bw = TRUE)
+plot(out, type = "counterfactual", raw = "all", shade.post = FALSE, theme.bw = TRUE)
+
 
 data_prep <- dataprep(foo = as.data.frame(min_by_q), predictors =  c("pop_total", "clad_sim", "urb_rate"),
                       time.variable = c("t"), dependent = c("log_n"),
@@ -184,7 +221,6 @@ abline(v=50, col="red")
 synth.tab(synth.out, data_prep)
 
 
-plot(out, theme.bw = TRUE)
 str(min_by_q)
 data("basque")
 basque %>% 

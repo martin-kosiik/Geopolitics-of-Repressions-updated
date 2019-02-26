@@ -81,7 +81,7 @@ events <- events %>%
          surname = as.factor(map_chr(names_split, 1)),
          number_of_names = as.factor(map_int(names_split, length)),
          ethnicity = as.factor(ethnicity)) %>% 
-  dplyr::select(-c(names_split, NAME))
+  dplyr::select(-c(names_split, NAME), -starts_with("ETHNIC_"))
 
 
 events %>% 
@@ -219,6 +219,7 @@ events_missing$probability <- predict(nb_klaR, events_missing)$posterior
 
 confusionMatrix(predict(nb, dplyr::select(events_labeled, ethnicity,  surname, first_name, number_of_names)), events_labeled$ethnicity)
 
+sum(is.na(events_missing$ethnicity))
 
 events_missing$ethnicity <- predict(nb, 
                                     dplyr::select(events_missing, ethnicity,  surname, first_name, number_of_names))
@@ -237,9 +238,8 @@ events_labeled <- events_labeled %>%
   mutate(probability = as.numeric(NA))
 
 events_preds <- 
-  bind_rows(events_labeled, events_missing) %>% 
-  mutate(prediction = ifelse(n_of_eth_gr == 0, 1, 0)) %>% 
-  dplyr::select(-c(n_of_eth_gr))
+  bind_rows(events_labeled, events_missing, .id = "id") %>% 
+  mutate(prediction = ifelse(id == 1, 0, 1)) 
   
 events_preds <- 
   rbind(events_labeled, events_missing) %>% 

@@ -19,11 +19,18 @@ library(gsynth)
 library(Synth)
 library(microsynth)
 library(MSCMT)
+install.packages("devtools")
+remotes::install_github("rstudio/gt")
+library(gt)
+library(kableExtra)
 ```
 
 ```{r}
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
-  mutate(ethnicity_id = as.numeric(1:n()))
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+
+
 
 min_by_q <- min_by_q  %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
@@ -34,6 +41,21 @@ min_by_q <- min_by_q %>%
   mutate(year_q_form = as.yearqtr(year_q_date), 
          year_str_rep = str_replace(year_q, "\\.", "Q") ) 
 ```
+
+```{r}
+ethnicity_controls %>% 
+  dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct) %>% 
+  kable("latex", align = "c", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Ethnic group", "Total population", "Linguistic similarity to Russian", "Urbanization rate"),
+        caption = "Pre-treatment characterisitcs of ethnic groups in the USSR") %>%
+  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. 
+           The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).",
+           threeparttable = T) %>% 
+    write_file(here::here("tables/sc_predictors.tex"))
+
+
+```
+
 
 ```{r}
 min_by_month <- read_csv(here::here("data/cleaned_min_arrests_by_month.csv")) 
@@ -182,15 +204,20 @@ did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative=
 panelView(log_n ~ post_german  , data = min_by_q,  index = c("ethnicity","t")) 
 
 
-out <- gsynth(log_n ~ post_german + pop_total + clad_sim +urb_rate , data = min_by_q, parallel = FALSE, 
-              index = c("ethnicity","t"), force = "two-way", se = TRUE, 
-              inference = "parametric", nboots = 1000) 
+out <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE, 
+              index = c("ethnicity","t"), force = "two-way", se = TRUE, CV = TRUE, r=c(0,5),
+              inference = "parametric", nboots = 5000) 
 
+out_mc <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE, estimator = "mc",
+              index = c("ethnicity","t"), force = "two-way", se = TRUE, CV = TRUE, r=c(0,5),
+              inference = "parametric", nboots = 5000) 
 
 print(out)
 out$est.att
 out$est.avg
 out$est.beta
+plot(out_mc, theme.bw = TRUE)
+
 
 plot(out, theme.bw = TRUE)
 plot(out, type = "raw", theme.bw = TRUE)

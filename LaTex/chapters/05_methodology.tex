@@ -31,20 +31,30 @@ The coefficients on all other years are insignificant as well. Only for 1934 (on
 
 \section{Synthetic Control Method}
 However, the parrarel trends assumption can sometiemes be violated. These issues can be adressed by sythetic control method
-\citep{abadie_synthetic_2010, abadie_economic_2003}
+\citep{abadie_synthetic_2010, abadie_economic_2003}. We closely follow \citet{abadie_synthetic_2010}.
 
-Let $Y_{it}$ be log of number of arrests of individuals belonging to an ethnic group $i$ at time $t$. Let $D_{1t}$ denote the intervention of interest and $Y_{1t}^N$ be a counterfactual outcome in the absence of treatment. SCM assumes a model
+Let $Y_{it}$ be log of number of arrests of individuals belonging to an ethnic group $i$ at time $t$ with $i = 1$ being German ethnicity.  We
+denote $D_{1t}$ as the treatment dummy, i.e. variable that equals 1 if $i = 1$ and $T > \text{1933Q1}$ (Hitler's rise to power) and 0 otherwise. 
+Let be $Y_{1t}^N$ be a counterfactual log of number of arrests of Germans in the absence of treatment. SCM assumes a model
 \begin{equation}
     Y_{1t} = Y_{1t}^N + \alpha_{1t} \, D_{1t}
 \end{equation}
-
 Furthermore, we assume that $Y_{1t}^N$ is given by the following factor model:
 \begin{equation}
    Y_{1t}^N = \delta_t + \boldsymbol{\theta}_t \boldsymbol{Z}_i +
    \boldsymbol{\lambda}_t \boldsymbol{\mu}_i + \epsilon_{it}
 \end{equation}
+where is $\delta_t$ an unknown common factor with constant factor
+loadings across units, $\boldsymbol{Z}_i$ is a
+$(1 \times r)$ vector of observed time-invariant covariates (unaffected by the treatment),  $\boldsymbol{\theta}_t$ is a $(1 \times r)$ vector of
+unknown parameters, $\boldsymbol{\lambda}_t$ is a $(1 \times F)$ vector of unobserved time-varying factors, $\boldsymbol{\mu}_i$ is an $(F \times 1)$ vector of unknown factor loadings
+and $\epsilon_{it}$ is the error term with zero mean. 
 
+Notice that for constant  $\boldsymbol{\lambda}_t$ for all $t$ we get the traditional  difference-in-differences model. Unlike difference-in-differences,  the synthetic control method  allows for unit-specific time trends as long as they can be captured by the factor model. 
 
+The synthetic control works by contracting a control group for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$.
+
+For pre-treatment
 
 Implemented in R software using the MSCM package \citep{becker_fast_2018}.
 \subsection{Generalized Synthetic Control Method}

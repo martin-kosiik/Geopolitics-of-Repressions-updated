@@ -1,0 +1,29 @@
+---
+title: "missing_data_analysis"
+author: "Martin Kosík"
+date: "27 února 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+```
+
+```{r}
+events <- readRDS(here::here("data/eventsClean_v2.RData"))
+
+events %>% 
+  count(YEAR, prediction)
+
+events %>% 
+  count(YEAR, prediction, ethnicity) %>% 
+  filter(is.na(YEAR), !is.na(prediction)) %>% 
+  mutate(ethnicity = fct_reorder(ethnicity, n)) %>% 
+  ggplot(aes(ethnicity, n)) + geom_col() + facet_wrap(~ prediction, scales = "free_x", ncol = 1) + coord_flip()
+
+```
+

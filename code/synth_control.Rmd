@@ -17,12 +17,9 @@ library(here)
 library(readxl)
 library(gsynth)
 library(Synth)
-library(microsynth)
 library(MSCMT)
-install.packages("devtools")
-remotes::install_github("rstudio/gt")
-library(gt)
 library(kableExtra)
+library(gghighlight)
 ```
 
 ```{r}
@@ -45,11 +42,10 @@ min_by_q <- min_by_q %>%
 ```{r}
 ethnicity_controls %>% 
   dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct) %>% 
-  kable("latex", align = "c", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Ethnic group", "Total population", "Linguistic similarity to Russian", "Urbanization rate"),
-        caption = "Pre-treatment characterisitcs of ethnic groups in the USSR") %>%
-  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. 
-           The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).",
+        caption = "Pre-treatment characteristics of ethnic groups in the USSR for SC") %>%
+  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).",
            threeparttable = T) %>% 
     write_file(here::here("tables/sc_predictors.tex"))
 
@@ -100,17 +96,55 @@ ggplot(sc_results, type="comparison")
 ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
 ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))
+library(timetk)
+install.packages("timetk")
+timetk::tk_tbl(sc_results$combined$log_n) %>% 
+  mutate(date = as_date(index)) %>% 
+  gather("type", "log_n", treated, synth, -date) %>% 
+  mutate(type = fct_recode(type, "Synthetic" = "synth", "Actual" = "treated") %>% 
+           fct_relevel("Actual")) %>% 
+  ggplot(aes(x = date, y = log_n, col = type)) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  annotate("rect", fill = "grey", alpha = 0.4, 
+        xmin = as_date("1921-01-01"), xmax = as_date("1933-01-01"),
+        ymin = -Inf, ymax = Inf) + 
+   geom_line(size = 1) +
+  scale_x_date(date_minor_breaks = "1 year", date_breaks = "5 year", date_labels = "%Y", 
+               limits = c(as_date("1921-01-01"), NA)) +
+  labs(x = element_blank(), y = "log(1 + arrests)", col = "German arrests") 
 
+ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
+
+  
 ```
 placebo
 ```{r}
-sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE)
+sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
 ggplot(sc_placebo, exclude.ratio=5, ratio.type="rmspe")
 ggsave(here("plots/synthetic_control/placebo_gaps.pdf"))
 ggplot(sc_placebo, exclude.ratio=100, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
        alternative= "two.sided")
 ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
+
+str(sc_placebo$placebo)
+
+tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
+  mutate(date = as_date(index)) %>% 
+  gather("ethnicity", "log_n", -c(date, index)) %>% 
+  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
+  theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
+  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
+
+ggsave(here("plots/synthetic_control/placebo_highlight_all.pdf"))
+
 
 did(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
     range.post = c("1933Q2","1939Q3"), exclude.ratio= 100, alternative="two.sided")
@@ -123,9 +157,11 @@ mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
                         range.post = c("1933Q2","1939Q3"), type = "mspe")
 
 tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>% 
-  mutate(German = as.factor(ifelse(ethnicity == "German", 1, 0))) %>% 
+  mutate(German = as.factor(ifelse(ethnicity == "German", "German", "Other"))) %>% 
   ggplot(aes(x = mspe_ratios, fill = German)) + geom_histogram() + theme_bw() +
-  labs(x = "MSPE ratio", title = "Ratios of post to pre-treatment period mean squared prediction error")
+  labs(x = "MSPE ratio",
+      # title = "Ratios of post to pre-treatment period mean squared prediction error",
+       fill = "Ethnic group")
 
 ggsave(here::here("plots/synthetic_control/mspe_histogram.pdf"))
 
@@ -142,7 +178,7 @@ str(sc_placebo)
 ```
 
 
-### Quarterly observations 
+### Monthly observations 
 
 ```{r}
 data_prep_mscmt_monthly <- listFromLong(as.data.frame(min_by_month), unit.variable = "ethnicity_id", 

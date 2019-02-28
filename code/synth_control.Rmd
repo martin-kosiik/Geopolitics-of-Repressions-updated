@@ -12,11 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
 library(lubridate)
-library(stargazer)
 library(here)
 library(readxl)
 library(gsynth)
-library(Synth)
 library(MSCMT)
 library(kableExtra)
 library(knitr)
@@ -162,7 +160,38 @@ did(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
 
 rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
   map("rmspe") %>% 
-  map_dbl(1)
+  map_dbl(1) 
+
+rmspe_placebo_tibble <- tibble(ethnicity = names(rmspe_placebo), rmspe = rmspe_placebo) %>% 
+  mutate(mspe = rmspe^2) %>% 
+  mutate( mspe_german = mspe[ethnicity == "German"],
+         mspe_5times_higher = ifelse(5 * mspe_german < mspe, 1, 0), 
+         mspe_20times = ifelse(20 * mspe_german < mspe, 1, 0))
+
+tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
+  mutate(date = as_date(index)) %>% 
+  gather("ethnicity", "log_n", -c(date, index)) %>% 
+  left_join(rmspe_placebo_tibble, by = "ethnicity") %>% 
+  filter(!mspe_5times_higher) %>% 
+  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
+  theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
+  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
+
+
+ggsave(here("plots/synthetic_control/placebo_highlight_mspe_5_lower.pdf"))
+
+
+tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
+  filter(index <= "1933Q1") %>% 
+  gather("ethnicity", "log_n", -index) %>% 
+  #select(-index) %>% 
+  group_by(ethnicity) %>% 
+  summarise(mspe = sqrt(mean(log_n^2)))
 
 mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
                         range.post = c("1933Q2","1939Q3"), type = "mspe")
@@ -176,12 +205,12 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
 
 ggsave(here::here("plots/synthetic_control/mspe_histogram.pdf"))
 
+tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios)) %>% 
+  ggplot(aes(x = ethnicity, y = mspe_ratios))+ geom_col() + coord_flip() + theme_minimal() +
+  labs(x = element_blank(), y = "MSPE ratio")
 
-tibble(ethnicity = names(rmspe_placebo), rmspe_placebo) %>% 
-  mutate(rmspe_german = rmspe_placebo[ethnicity == "German"],
-         rmspe_5times = 5 * rmspe_german,
-         rmspe_20times = 20 * rmspe_german)
-  
+ggsave(here::here("plots/synthetic_control/mspe_ratios.pdf"))
 
 str(last(sc_placebo))
 
@@ -246,7 +275,6 @@ did(sc_placebo, range.post = c("1933Q3","1939Q3"), exclude.ratio=5, alternative=
 
 
 
-
 ```{r}
 panelView(log_n ~ post_german  , data = min_by_q,  index = c("ethnicity","t")) 
 
@@ -270,56 +298,6 @@ plot(out, theme.bw = TRUE)
 plot(out, type = "raw", theme.bw = TRUE)
 plot(out, type = "ct", raw = "none", shade.post = FALSE, theme.bw = TRUE)
 plot(out, type = "counterfactual", raw = "all", shade.post = FALSE, theme.bw = TRUE)
-
-
-data_prep <- dataprep(foo = as.data.frame(min_by_q), predictors =  c("pop_total", "clad_sim", "urb_rate"),
-                      time.variable = c("t"), dependent = c("log_n"),
-                      unit.variable = c("ethnicity_id"), 
-                      treatment.identifier = 4, 
-                      controls.identifier = c(1:3,5:17),
-                      time.predictors.prior = c(1:49),
-                      time.optimize.ssr =  c(1:49), 
-                      time.plot = 1:156)
-
-synth.out <- synth(data_prep)
-
-synth.out$solution.w
-
-
-path.plot(synth.out, data_prep)
-abline(v=50, col="red")
-
-gaps.plot(synth.out, data_prep)
-abline(v=50, col="red")
-
-synth.tab(synth.out, data_prep)
-
-
-str(min_by_q)
-data("basque")
-basque %>% 
-  count(regionno, regionname)
-
-min_by_q %>% 
-  count(ethnicity, ethnicity_id)
-```
-
-```{r}
-cov.var <- c("pop_total", "clad_sim", "urb_rate")
-match.out <- c("log_n")
-
-
-
-micro_synth <- microsynth(min_by_q, 
-                   idvar="ethnicity", timevar="t", intvar="post_german",
-                   match.out = FALSE, match.covar = cov.var,
-                   result.var=match.out, cut.mse = 20 * 0.004585003,
-                   test="lower",  confidence = 0.95, 
-                   perm=40, jack=F, use.survey = TRUE, 
-                   check.feas=TRUE, use.backup=TRUE)
-
-summary(micro_synth)
-micro_synth$w
 
 ```
 

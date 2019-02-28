@@ -62,7 +62,7 @@ For pre-treatment
 Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and actual.  
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/synthetic_control/comparison_plot.pdf}
+\includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/comparison_plot.pdf}
 \caption{Comparison plot}
 \label{fig_sc_comp_plot}
 \end{figure}
@@ -70,10 +70,27 @@ Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and
 Figure \ref{fig_sc_placebo_gaps} depicts the gaps in logarithm of quarterly arrests between the actual and synthetic groups for Germans together with gaps for all 17 other ethnic groups. 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/synthetic_control/placebo_highlight_all.pdf}
+\includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/placebo_highlight_all.pdf}
 \caption{Placebo gaps}
 \label{fig_sc_placebo_gaps}
 \end{figure}
+
+\begin{figure}[hbtp] 
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_all.pdf}
+\caption{Nulová variabilita mezi skupinami}
+\label{fig:novar}
+\end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower.pdf}
+\caption{Maximální variabilita mezi skupinami}
+\label{fig:maxvar}
+\end{subfigure}
+\caption{Víceúrovňový výběr}
+\label{fig_sc_placebo_gaps}
+\end{figure}
+
+
 
 This is shown in  the figure \ref{fig_sc_mspe_hist}
 \begin{figure}[h]

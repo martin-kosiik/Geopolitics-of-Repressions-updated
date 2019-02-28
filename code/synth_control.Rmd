@@ -97,7 +97,6 @@ ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
 ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))
 library(timetk)
-install.packages("timetk")
 timetk::tk_tbl(sc_results$combined$log_n) %>% 
   mutate(date = as_date(index)) %>% 
   gather("type", "log_n", treated, synth, -date) %>% 
@@ -117,6 +116,16 @@ timetk::tk_tbl(sc_results$combined$log_n) %>%
 
 ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
 
+
+tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>% 
+  filter(Weights != 0) %>% 
+  arrange(desc(Weights)) %>% 
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Ethnic group", "Weights"),
+        caption = "Synthetic German minority - Weights of donor ethnic groups") %>%
+  #footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).", threeparttable = T) %>% 
+    write_file(here::here("tables/sc_weights.tex"))
+  
   
 ```
 placebo

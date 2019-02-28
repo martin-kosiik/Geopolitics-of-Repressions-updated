@@ -19,6 +19,7 @@ library(gsynth)
 library(Synth)
 library(MSCMT)
 library(kableExtra)
+library(knitr)
 library(gghighlight)
 ```
 
@@ -117,12 +118,13 @@ timetk::tk_tbl(sc_results$combined$log_n) %>%
 ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
 
 
+opts_current$set(label = "sc_weights")
 tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>% 
   filter(Weights != 0) %>% 
   arrange(desc(Weights)) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
-        col.names = c("Ethnic group", "Weights"),
-        caption = "Synthetic German minority - Weights of donor ethnic groups") %>%
+        col.names = c("Ethnic group", "Weight"),
+        caption = "Synthetic German minority weights") %>%
   #footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))
   

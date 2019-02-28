@@ -56,6 +56,31 @@ The synthetic control works by contracting a control group for which the average
 
 For pre-treatment
 
+\subsection{Results}
+Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and actual.  
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{plots/synthetic_control/comparison_plot.pdf}
+\caption{Comparison plot}
+\label{fig_sc_comp_plot}
+\end{figure}
+
+Figure \ref{fig_sc_placebo_gaps} depicts the gaps in logarithm of quarterly arrests between the actual and synthetic groups for Germans together with gaps for all 17 other ethnic groups. 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{plots/synthetic_control/placebo_highlight_all.pdf}
+\caption{Placebo gaps}
+\label{fig_sc_placebo_gaps}
+\end{figure}
+
+This is shown in  the figure \ref{fig_sc_mspe_hist}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{plots/synthetic_control/mspe_histogram.pdf}
+\caption{Histogram of mean squared prediction error for all ethnicities}
+\label{fig_sc_mspe_hist}
+\end{figure}
+
 Implemented in R software using the MSCM package \citep{becker_fast_2018}.
 \subsection{Generalized Synthetic Control Method}
 \citet{xu_generalized_2017}

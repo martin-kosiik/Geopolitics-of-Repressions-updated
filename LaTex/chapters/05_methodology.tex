@@ -57,9 +57,9 @@ The synthetic control works by contracting a control group for which the average
 For pre-treatment
 
 \subsection{Results}
-
+The resulting trend in synthetic
 \input{tables/sc_weights.tex}
-Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and actual.  
+Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and actual. The figure shows increase between 1937 and 1939 (the period of the Great Terror).  
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/comparison_plot.pdf}
@@ -67,27 +67,28 @@ Figure \ref{fig_sc_comp_plot} shows the outcome variable for synthetic group and
 \label{fig_sc_comp_plot}
 \end{figure}
 
-Figure \ref{fig_sc_placebo_gaps} depicts the gaps in logarithm of quarterly arrests between the actual and synthetic groups for Germans together with gaps for all 17 other ethnic groups. 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/placebo_highlight_all.pdf}
-\caption{Placebo gaps}
-\label{fig_sc_placebo_gaps}
-\end{figure}
+\subsubsection{Inference}
+The synthetic control method, however, by itself does not provide us with any estimate of uncertainty of significance. This has been addressed by calculating p-values from placebo tests. 
+
+\citet{abadie_synthetic_2010} proposed obtaining p-values by performing permutation tests. In particular, synthetic control is obtained for every ethnic group in the donor pool. 
+
+The estimated gaps between the synthetic control and the actual data for every ethnic group is shown in figure \ref{fig:sc_placebo_gaps}. 
+
+Figure \ref{fig:sc_placebo_gaps} depicts the gaps in logarithm of quarterly arrests between the actual and synthetic groups for Germans together with gaps for all 17 other ethnic groups. There is quite variability but arrests of Germans appear to be. 
 
 \begin{figure}[hbtp] 
-\begin{subfigure}{0.5\textwidth}
+\begin{subfigure}{\textwidth}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_all.pdf}
-\caption{Nulová variabilita mezi skupinami}
-\label{fig:novar}
+\caption{All ethnic groups}
+\label{fig:sc_placebo_gaps_all}
 \end{subfigure}
-\begin{subfigure}{0.5\textwidth}
+\begin{subfigure}{\textwidth}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower.pdf}
-\caption{Maximální variabilita mezi skupinami}
+\caption{Ethnic groups with pre-tratment MSPE higher than 5 times the MSPE of Germany excluded}
 \label{fig:maxvar}
 \end{subfigure}
-\caption{Víceúrovňový výběr}
-\label{fig_sc_placebo_gaps}
+\caption{Gaps}
+\label{fig:sc_placebo_gaps}
 \end{figure}
 
 

@@ -31,15 +31,15 @@ The coefficients on all other years are insignificant as well. Only for 1934 (on
 
 \section{Synthetic Control Method}
 However, the parrarel trends assumption can sometiemes be violated. These issues can be adressed by sythetic control method
-\citep{abadie_synthetic_2010, abadie_economic_2003}. We closely follow \citet{abadie_synthetic_2010}.
+\citep{abadie_economic_2003, abadie_synthetic_2010}
 
-Let $Y_{it}$ be log of number of arrests of individuals belonging to an ethnic group $i$ at time $t$ with $i = 1$ being German ethnicity.  We
-denote $D_{1t}$ as the treatment dummy, i.e. variable that equals 1 if $i = 1$ and $T > \text{1933Q1}$ (Hitler's rise to power) and 0 otherwise. 
-Let be $Y_{1t}^N$ be a counterfactual log of number of arrests of Germans in the absence of treatment. SCM assumes a model
+Let $Y_{it}$ be the outcome of a unit $i$ at time $t$ with $i = 1$ being the treated group.  We
+denote $D_{1t}$ as the treatment dummy, i.e. variable that equals 1 if $i = 1$ and $T > T_0$ and 0 otherwise (with $T_0$ being the start of the treatment). 
+Let be $Y_{1t}^N$ be a counterfactual outcome for the treated unit in the absence of treatment. The effect of treatment a time $t$, $\alpha_{1t}$ is assumed to be given as 
 \begin{equation}
     Y_{1t} = Y_{1t}^N + \alpha_{1t} \, D_{1t}
 \end{equation}
-Furthermore, we assume that $Y_{1t}^N$ is given by the following factor model:
+Furthermore, the synthetic control method assumes that $Y_{1t}^N$  can be expressed by the following factor model:
 \begin{equation}
    Y_{1t}^N = \delta_t + \boldsymbol{\theta}_t \boldsymbol{Z}_i +
    \boldsymbol{\lambda}_t \boldsymbol{\mu}_i + \epsilon_{it}
@@ -48,16 +48,20 @@ where is $\delta_t$ an unknown common factor with constant factor
 loadings across units, $\boldsymbol{Z}_i$ is a
 $(1 \times r)$ vector of observed time-invariant covariates (unaffected by the treatment),  $\boldsymbol{\theta}_t$ is a $(1 \times r)$ vector of
 unknown parameters, $\boldsymbol{\lambda}_t$ is a $(1 \times F)$ vector of unobserved time-varying factors, $\boldsymbol{\mu}_i$ is an $(F \times 1)$ vector of unknown factor loadings
-and $\epsilon_{it}$ is the error term with zero mean. 
+and $\epsilon_{it}$ is the error term with zero mean.
 
 Notice that for constant  $\boldsymbol{\lambda}_t$ for all $t$ we get the traditional  difference-in-differences model. Unlike difference-in-differences,  the synthetic control method  allows for unit-specific time trends as long as they can be captured by the factor model. 
 
-The synthetic control works by contracting a control group for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$.
-
-For pre-treatment
+The synthetic control is  constructed as a convex combination of available comparison units (in our case other minorities in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
+ (or more precisely, for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$). 
+ More formally we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert$ where $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit for which $k = r + L$ and $Y^{K_l}$ are combinations of
+pre-treatment outcomes (analogously for $X_0$). The effect of the treatment at time $t$, $\alpha_{1t}$, is then estimated as a difference between the outcome for synthetic control and the treated unit, i.e.:
+\begin{equation*}
+  \hat\alpha_{1t}  = Y_{1t} - \sum_{k = 2}^{J + 1} w_j^* Y_{kt}
+\end{equation*}
 
 \subsection{Results}
-We implemented the synthetic control method in R software using the MSCMT package \citep{becker_fast_2018}. The calculated optimal weights of ethnic groups in the synthetic German minority are provided in the table \ref{tab:sc_weights} (ethnic groups with zero weight are not shown). The highest contribution in the synthetic German minority have the Ossetians, Tatars and Pols with weights 0.39, 0.23 and 0.14 respectively. The Greek, Kabaradin, Chechen, Lithuanian and Ukrainian minorities are also partially reflected in the synthetic control although only with very small weights. 
+We implemented the synthetic control method in R software using the MSCMT package \citep{becker_fast_2018}. The calculated optimal weights $W$ of ethnic groups in the synthetic German minority are provided in the table \ref{tab:sc_weights} (ethnic groups with zero weight are not shown). The highest contribution in the synthetic German minority have the Ossetians, Tatars and Pols with weights 0.39, 0.23 and 0.14 respectively. The Greek, Kabaradin, Chechen, Lithuanian and Ukrainian minorities are also represented in the synthetic control although only with very small weights. 
 \input{tables/sc_weights.tex}
 
 
@@ -109,7 +113,7 @@ Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whos
 \end{figure}
 
 Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE %for exclusion of 
-is somewhat arbitrary. Alternative way to asses significance of results may be to compare the ratios of  post/pre-treatment MSPE.  The values of these ratios for all ethnic groups are displayed in the figure \ref{fig:sc_mspe_ratios}. Post/pre-treatment MSPE ratio for the German minority is by far the highest. The probability of obtaining such a result if the is 0. 
+is somewhat arbitrary. Alternative way to asses significance of results may be to compare the ratios of  post/pre-treatment MSPE.  The values of these ratios for all ethnic groups are displayed in the figure \ref{fig:sc_mspe_ratios}. Post/pre-treatment MSPE ratio for the German minority is by far the highest. The probability of German minority having the highest ratio of all under the null hypothesis of zero treatment effect is 1/17 ($\approx 0.06$). 
 
 %This is shown in  the figure \ref{fig_sc_mspe_hist}
 \begin{figure}[h]

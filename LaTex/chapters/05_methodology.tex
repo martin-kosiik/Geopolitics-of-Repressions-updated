@@ -1,31 +1,40 @@
 \section{Difference-in-differences}
+Our main specification is the dynamic difference-in-differences model:
+\begin{equation}
+ \log\left(1 + y_{it}\right) = \sum_{k= \text{1928Q1}}^{\text{1939Q4}} \beta_k \, \text{German}_{i} \cdot \text{YearQuart}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
+ \label{eq:dynamic_did}
+\end{equation}
 
-We follow the standard difference-in-differences strategy
-\begin{multline}
- \log\left(1 + y_{it}\right) = \sum_{k= \text{1928Q1}}^{\text{1958Q4}} \beta_k \, \text{German}_{i} \cdot \text{YearQuart}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
-\end{multline}
  %+ \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}    
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and $post$ is a dummy that equals 0 before the year 1933 (exclusive) and 1 after it. The coefficient of interest here is $\delta$. The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends.  The $ E_i \cdot t$ term capture the ethnicity specific linear time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (see \citealt{angrist_mostly_2009}). 
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year-quarter $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{YearQuart}_{t}^k$ are dummy variables that equals 1 if its year-quarter $k$ equals to $t$ and 0 otherwise (except for 1939Q4 which is equal to 1 after the fourth quarter of 1939 and zero otherwise) . The coefficients of interest are $\beta_k$. 
+Prior to second quarter of 1933 they capture the pre-treatment trends the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After second quarter of 1933 they the dynamic lagged effects.
+%The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
+The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific quadratic time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (\citealt{angrist_mostly_2009}). 
 
  We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
 
-Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients on lead effects ($\gamma_k$) are significantly different from zero.  
+Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
 
-As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most DiD regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable. \citet[chapter 8]{angrist_mostly_2009} suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. More rigorous solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}. 
-
-Since we have small number of groups we use bell correction ...  
+As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most DiD regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable. \citet[chapter 8]{angrist_mostly_2009} suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. More rigorous solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}.
+Since we have small number of groups we use the generalization of \citet{mccaffrey_bias_2002} correction to models with arbitrary sets of fixed effects by \citet{pustejovsky_small-sample_2018}.
 
 \subsection{Results}
+The estimated coefficients  $\beta_k$ from the specification \ref{eq:dynamic_did} are plotted in the figure \ref{fig:did_effets}. The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
 
-The results of our main specification are presented in the table \ref{dif_table}, in column (1). The estimated coefficients together with their 95\% confidence  from this model are plotted in the figure \ref{fig_did_effets}. We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
+However, the pre-1933 coefficients give us some reason to doubt the
+validity of our model. Three of them are significantly different from 0 at 5\% level and others are very close to being significant. 
+This provide some evidence that the pre-treatment trends for German minority were not parallel with trends for other minorities. We can thus suspect that the post-treatment trends were not parallel either which
+would violate the basic identifying assumption of
+difference-in-differences. To address this concern, we apply the synthetic control method which can be valid even in the absence of  parallel trends. 
+%We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
 
-The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
+%The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/effects/quarterly/pointrange.pdf}
-\caption{Estimates of coefficients on $german \cdot post\_year$}
-\label{fig_did_effets}
+\includegraphics[width=\textwidth]{plots/effects/quarterly/until_pact/pointrange_robust.pdf}
+\caption{Estimates of coefficients $\beta_k$ on the interactions of $\text{German}_{i} \cdot \text{YearQuart}_{t}^k$}
+\label{fig:did_effets}
 \end{figure}
 %We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model (column (1) of table \ref{dif_table}), we included all observations in years 1923 to 1958. But the relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results (in column (2)) change only little and does not alter our previous conclusions. Second, when we omit the ethnicity specific linear time trends in column (3), we see again that the coefficients are very similar to the original model. Finally, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model (shown in column (4)) fits the data rather poorly with  $R^2$ only of 0.428 (compared to 0.890 in the logarithmic specification). 
 

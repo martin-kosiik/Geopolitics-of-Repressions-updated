@@ -29,13 +29,16 @@ ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
 
 
 min_by_q <- min_by_q  %>% 
+  filter(ethnicity != "Russian") %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(post_german = german * ifelse(year_q_date >= "1933-03-01", 1, 0))
 
 library(zoo)
 min_by_q <- min_by_q %>% 
   mutate(year_q_form = as.yearqtr(year_q_date), 
-         year_str_rep = str_replace(year_q, "\\.", "Q") ) 
+         year_str_rep = str_replace(year_q, "\\.", "Q") ) %>% 
+  dplyr::select(year_q_date, year_str_rep, ethnicity, ethnicity_id, log_n, pop_total, clad_sim, urb_rate)
+
 ```
 
 ```{r}
@@ -138,7 +141,6 @@ ggplot(sc_placebo, exclude.ratio=100, ratio.type="mspe", type = "p.value", limit
        alternative= "two.sided")
 ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
 
-str(sc_placebo$placebo)
 
 tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
   mutate(date = as_date(index)) %>% 

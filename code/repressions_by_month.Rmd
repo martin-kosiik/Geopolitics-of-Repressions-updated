@@ -77,7 +77,6 @@ min_by_month <- min_by_month %>%
                                TRUE ~ ethnicity) %>% 
                       str_to_title() %>% 
                       as.factor(),
-         log_n = log(n + 1), 
          german = ifelse(ethnicity == "German", 1, 0))
 
 ```
@@ -99,8 +98,6 @@ min_by_month <- min_by_month %>%
 
 
 
-str(min_by_month)
-
 write_csv(min_by_month, here::here("data/cleaned_min_arrests_by_month.csv"))  
 
 ```
@@ -115,8 +112,7 @@ min_by_month <- read_csv(here::here("data/cleaned_min_arrests_by_month.csv"))
 
 min_by_q <-  min_by_month %>% 
   mutate(year_q = quarter(date, with_year = T),
-         year_q_date = floor_date(date, unit = "quarter"),
-         year_q_decimal = decimal_date(year_q_date)) %>% 
+         year_q_date = floor_date(date, unit = "quarter")) %>% 
   group_by(year_q, year_q_date, ethnicity, german) %>% 
   summarize(n = sum(n)) %>% 
   ungroup() %>% 
@@ -213,7 +209,7 @@ diff_model_robust %>%
   scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y")+
   labs(x = "year", 
        caption = "error bars show 95% confidence intervals \n 
-                    SE are based on estimator by Pustejovsky and Tipton (2018)",
+                    SE are based on the small-sample cluster-robust estimator by Pustejovsky and Tipton (2018)",
        title = "Estimates on interactions of german*year-quarter")
 
 ggsave(here::here("plots/effects/quarterly/pointrange_robust.pdf"))

@@ -111,3 +111,57 @@ ggsave(here("plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower.p
 
 ```
 
+# Difference-in-differences
+```{r}
+min_by_month <- read_csv(here::here("data/cleaned_min_arrests_by_month.csv"))
+
+
+min_by_q <-  min_by_month %>% 
+  mutate(year_q = quarter(date, with_year = T),
+         year_q_date = floor_date(date, unit = "quarter")) %>% 
+  group_by(year_q, year_q_date, ethnicity, german) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(log_n = log(n + 1)) %>% 
+  group_by(ethnicity) %>% 
+  mutate(t = row_number()) %>% 
+  ungroup() %>% 
+  mutate(pre_treatment = ifelse(year_q_date >= "1928-01-01" & year_q_date <= "1933-01-01", 1, 0),
+         hostility = ifelse(year_q_date >= "1933-03-23" & year_q_date <= "1939-08-23", 1, 0), 
+         pact = ifelse(year_q_date > "1939-08-23" & year_q_date < "1941-06-22", 1, 0), 
+         war = ifelse(year_q_date >= "1941-06-22" & year_q_date < "1945-05-08", 1, 0),
+         post_war = ifelse(year_q_date >= "1945-05-08", 1, 0), 
+         ethnicity = as.factor(ethnicity)) 
+```
+
+```{r}
+year_quarters <- crossing(year = 1930:1939, quarter = 1:4) %>% 
+  mutate(yq = str_c(year, quarter, sep = ".")) %>% 
+  pull(yq)
+
+```
+
+```{r}
+diff_model_robust %>% 
+  estimatr::tidy(conf.int = TRUE) %>% 
+ # broom::tidy(conf.int = TRUE) %>% 
+  filter(str_detect(term, "german:")) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_","") %>% 
+           str_replace("\\.", " Q") %>% 
+           as.yearqtr() %>% 
+           as.Date()) %>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+  geom_vline(xintercept= ymd(c(19330323, 19390823, 19410622)), col = "red", linetype = "dashed") +
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_bw() + 
+  scale_x_date(date_minor_breaks = "1 year", date_breaks = "2 year", date_labels = "%Y")+
+  labs(x = "Year", y = "Coefficient",
+       caption = "error bars show 95% confidence intervals \n 
+                    SE are based on the small-sample cluster-robust estimator by Pustejovsky and Tipton (2018)"
+       #title = "Estimates on interactions of german*year-quarter"
+       )
+
+ggsave(here::here("plots/effects/quarterly/until_pact/pointrange_robust.pdf"))
+
+
+```
+

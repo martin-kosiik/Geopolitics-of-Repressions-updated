@@ -85,13 +85,13 @@ events <- events %>%
 
 
 events %>% 
-  count(number_of_names, sort = T)
+  count(ethnicity, sort = T)
 
 ```
 
 ```{r}
 
-split <- initial_split(events, prop = .85, strata = "ethnicity")
+split <- initial_split(filter(events, !is.na(ethnicity)), prop = .85, strata = "ethnicity")
 train <- training(split)
 test  <- testing(split)
 

@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(data.table)
+library(stringi)
 ```
 
 ```{r}
@@ -21,7 +22,7 @@ load(here("data/eventsClean_v1.RData"))
 ```{r}
 names(events)
 events %>% 
-  count()
+  count(SENTENCE_AMNESTY)
 ```
 
 ```{r}
@@ -33,7 +34,7 @@ events %>%
   count(n_of_charges, sort = T)
 
 events <- events %>% 
-  filter(n_of_eth_gr <= 1, n_of_charges <= 1)
+  filter(n_of_eth_gr <= 1)
 
 
 ```
@@ -69,15 +70,33 @@ events_charge_long <- melt(events, id.vars = "AID",
                                                             , value := NULL]
 
 events <- events %>% 
-  dplyr::select(AID, YEAR, MONTH, DAY, n_of_eth_gr, n_of_charges)
+  dplyr::select(AID, YEAR, MONTH, DAY, n_of_eth_gr, SOURCE)
 
 events <- events %>% 
-  left_join(events_charge_long, "AID") %>% 
+  #left_join(events_charge_long, "AID") %>% 
   left_join(events_eth_long, "AID")
 
 events %>% 
-  count(charge)
+  filter(ethnicity == "German") %>% 
+  count(SOURCE_latin, sort = T) %>% 
+  View()
 
+events %>% 
+  filter(is.na(ethnicity)) %>% 
+  count(SOURCE_latin, sort = T) %>% 
+  View()
+
+events %>% 
+  group_by(SOURCE_latin) %>% 
+  summarise(n_missing = sum(is.na(ethnicity)), n_total = n(), 
+            n_russian = sum(ethnicity == "Russian", na.rm = T)) %>% 
+  mutate(prop_missing = n_missing/n_total) %>%
+  arrange(desc(n_total)) %>% 
+  View()
+  
+
+
+events$SOURCE_latin <- stri_trans_general(events$SOURCE, "cyrillic-latin")
 
 
 rm(list = c("events_eth_long", "events_charge_long"))

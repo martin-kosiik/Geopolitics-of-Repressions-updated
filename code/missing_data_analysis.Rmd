@@ -79,9 +79,9 @@ by_year %>%
 min_by_month_all %>%
   mutate(year = year(date)) %>% 
   group_by(year, ethnicity) %>% 
-  summarize_at(vars(label, prediction, n), sum) %>% 
+  summarize_at(vars(label, pred_adj_scaled, n), sum) %>% 
   ungroup() %>% 
-  mutate(diffrence = prediction - label, 
+  mutate(diffrence = pred_adj_scaled - label, 
          log_diff = log(1 + abs(diffrence)),
          sgn_log_diff = sign(diffrence) * log_diff) %>% 
   ggplot(aes(x = year, y = sgn_log_diff)) + geom_line() + facet_wrap(~ethnicity) +
@@ -98,16 +98,35 @@ min_by_month_preds <- events %>%
   complete(date, ethnicity, prediction, fill = list(n = 0)) %>% 
   dplyr::select(-c(YEAR, MONTH))
 
-min_by_month_all <- min_by_month_preds %>% 
-  group_by(date, ethnicity) %>% 
-  summarize(n = sum(n), n_pred = sum(n[prediction == 1]))
+
+conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
+conf_matrix <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
+  mutate(ethnicity = str_replace(ethnicity, "Class: ", "")) %>% 
+  dplyr::select(ethnicity:Specificity)
 
 min_by_month_all <- min_by_month_preds %>% 
   mutate(prediction = ifelse(prediction == 1, "prediction", "label")) %>% 
   spread(key = prediction, value = n) %>% 
-  mutate(n = label + prediction, 
-         log_n = log(1 + n), 
-         german = ifelse(ethnicity == "German", 1, 0))
+  left_join(conf_matrix, by = "ethnicity") %>% 
+  group_by(date) %>% 
+  add_tally(wt = prediction) %>% 
+  ungroup() %>% 
+  rename(total_pred_by_date = n) %>% 
+  mutate(pred_adj = (prediction - total_pred_by_date * (1 - Specificity))/(Sensitivity + Specificity -1),
+         pred_adj = round(ifelse(pred_adj < 0, 0, pred_adj)),
+         german = ifelse(ethnicity == "German", 1, 0)) %>% 
+  add_tally(wt = prediction) %>% 
+  rename(total_pred = n) %>% 
+  add_tally(wt = pred_adj) %>% 
+  rename(total_pred_adj = n) %>% 
+  mutate(pred_adj_scaled = round(pred_adj * (total_pred/total_pred_adj)),
+         n = label + pred_adj_scaled, 
+         log_n = log(1 + n))
+
+
+min_by_month_all %>% 
+  summarise(pred_adj = sum(pred_adj), prediction = sum(prediction), label = sum(label),
+            pred_adj_scaled = sum(pred_adj_scaled))
 
 ```
 

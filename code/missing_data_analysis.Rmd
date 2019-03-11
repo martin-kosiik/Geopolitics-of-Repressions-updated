@@ -100,33 +100,56 @@ min_by_month_preds <- events %>%
 
 
 conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
-conf_matrix <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
+
+spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
   mutate(ethnicity = str_replace(ethnicity, "Class: ", "")) %>% 
   dplyr::select(ethnicity:Specificity)
 
+conf_matrix <- conf_matrix$table
+conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
+
+
 min_by_month_all <- min_by_month_preds %>% 
-  mutate(prediction = ifelse(prediction == 1, "prediction", "label")) %>% 
+  mutate(prediction = ifelse(prediction == 1, "prediction", "label")) 
+
+
+pred_adj_full_by_month <- min_by_month_all %>% 
+  filter(prediction == "prediction") %>% 
+  dplyr::select(-prediction) %>% 
+  nest(-date) %>% 
+  mutate(pred_adj_full = map(data, ~ solve(conf_matrix, .$n))) %>% 
+  unnest(pred_adj_full, data) %>% 
+  mutate(pred_adj_full = ifelse(pred_adj_full < 0, 0, pred_adj_full)) %>% 
+  dplyr::select(-n)
+  
+  
+
+min_by_month_all <- min_by_month_all %>% 
   spread(key = prediction, value = n) %>% 
-  left_join(conf_matrix, by = "ethnicity") %>% 
+  left_join(spec_sens_data, by = "ethnicity") %>% 
+  left_join(pred_adj_full_by_month, by = c("date", "ethnicity")) %>% 
   group_by(date) %>% 
   add_tally(wt = prediction) %>% 
   ungroup() %>% 
   rename(total_pred_by_date = n) %>% 
   mutate(pred_adj = (prediction - total_pred_by_date * (1 - Specificity))/(Sensitivity + Specificity -1),
-         pred_adj = round(ifelse(pred_adj < 0, 0, pred_adj)),
+         pred_adj = ifelse(pred_adj < 0, 0, pred_adj),
          german = ifelse(ethnicity == "German", 1, 0)) %>% 
   add_tally(wt = prediction) %>% 
   rename(total_pred = n) %>% 
   add_tally(wt = pred_adj) %>% 
   rename(total_pred_adj = n) %>% 
+  add_tally(wt = pred_adj_full) %>% 
+  rename(total_pred_adj_full = n) %>% 
   mutate(pred_adj_scaled = round(pred_adj * (total_pred/total_pred_adj)),
-         n = label + pred_adj_scaled, 
+         pred_adj_full_scaled = round(pred_adj_full * (total_pred/total_pred_adj_full)),
+         n = label + pred_adj_full_scaled, 
          log_n = log(1 + n))
 
 
 min_by_month_all %>% 
   summarise(pred_adj = sum(pred_adj), prediction = sum(prediction), label = sum(label),
-            pred_adj_scaled = sum(pred_adj_scaled))
+            pred_adj_scaled = sum(pred_adj_scaled), pred_adj_full_scaled = sum(pred_adj_full_scaled))
 
 ```
 

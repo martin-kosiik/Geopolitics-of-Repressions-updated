@@ -124,7 +124,67 @@ agg.fns <- rep("id", ncol(times.pred))
 
 ```{r}
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
+
+sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 ```
+
+
+```{r annual sc}
+tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("ethnicity", "log_n", -c(date, index)) %>% 
+  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
+  theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
+  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
+
+
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
+
+rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
+  map("rmspe") %>% 
+  map_dbl(1) 
+
+rmspe_placebo_tibble <- tibble(ethnicity = names(rmspe_placebo), rmspe = rmspe_placebo) %>% 
+  mutate(mspe = rmspe^2) %>% 
+  mutate( mspe_german = mspe[ethnicity == "German"],
+         mspe_5times_higher = ifelse(5 * mspe_german < mspe, 1, 0), 
+         mspe_20times = ifelse(20 * mspe_german < mspe, 1, 0))
+
+tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("ethnicity", "log_n", -c(date, index)) %>% 
+  left_join(rmspe_placebo_tibble, by = "ethnicity") %>% 
+  filter(!mspe_5times_higher) %>% 
+  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
+  theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
+  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
+
+ggsave(here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
+
+mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
+                        range.post = c("1933Q2","1939Q3"), type = "mspe")
+
+
+tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios)) %>% 
+  ggplot(aes(x = ethnicity, y = mspe_ratios))+ geom_col() + coord_flip() + theme_minimal() +
+  labs(x = element_blank(), y = "MSPE ratio")
+
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf"))
+
+```
+
+
 
 ```{r}
 ggplot(sc_results, type="comparison")
@@ -154,6 +214,7 @@ timetk::tk_tbl(sc_results$combined$log_n) %>%
   labs(x = element_blank(), y = "log(1 + arrests)", col = "German arrests") 
 
 ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/quarterly/comparison_plot.pdf"))
 
 
 opts_current$set(label = "sc_weights")
@@ -191,7 +252,9 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
   geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 
+
 ggsave(here("plots/synthetic_control/placebo_highlight_all.pdf"))
+ggsave(here("plots/synthetic_control/ethnicity_imputation/quarterly/placebo_highlight_all.pdf"))
 
 
 did(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
@@ -223,6 +286,7 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
 
 
 ggsave(here("plots/synthetic_control/placebo_highlight_mspe_5_lower.pdf"))
+ggsave(here("plots/synthetic_control/ethnicity_imputation/quarterly/placebo_highlight_mspe_5_lower.pdf"))
 
 
 tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
@@ -250,6 +314,7 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
   labs(x = element_blank(), y = "MSPE ratio")
 
 ggsave(here::here("plots/synthetic_control/mspe_ratios.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/quarterly/mspe_ratios.pdf"))
 
 str(last(sc_placebo))
 

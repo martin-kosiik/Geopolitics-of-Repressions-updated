@@ -134,20 +134,28 @@ spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>%
   dplyr::select(ethnicity:Specificity)
 
 conf_matrix <- conf_matrix$table
-conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
 
-
-opts_current$set(label = "conf_matrix")
+opts_current$set(label = "conf_matrix_count")
 as_tibble(conf_matrix) %>% 
   spread(key = Reference, value = n) %>% 
   kable("latex", booktabs = T, linesep = "",
-        #col.names =c("Ethnic group", "Total population", "Linguistic similarity to Russian", "Urbanization rate"),
-        caption = "Confusion Matrix (based on 10-fold cross-validation)") %>% 
-  kable_styling(font_size = 7) %>% 
+        caption = "Confusion Matrix (based on 10-fold cross-validation) - Counts") %>% 
+  kable_styling(font_size = 5) %>% 
   add_header_above(c(" " = 1, "Reference" = 18)) %>% 
   landscape() %>% 
-    write_file(here::here("tables/conf_matrix.tex"))
+    write_file(here::here("tables/conf_matrix_count.tex"))
 
+
+conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
+
+opts_current$set(label = "conf_matrix_prop")
+as_tibble(conf_matrix, rownames = "Prediction") %>% 
+  kable("latex", booktabs = T, linesep = "", digits = 3,
+        caption = "Confusion Matrix (based on 10-fold cross-validation) - Proportions") %>% 
+  kable_styling(font_size = 5) %>% 
+  add_header_above(c(" " = 1, "Reference" = 18)) %>% 
+  landscape() %>% 
+    write_file(here::here("tables/conf_matrix_prop.tex"))
 ```
 
 ## By month

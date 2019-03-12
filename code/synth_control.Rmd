@@ -66,6 +66,19 @@ min_by_month <- min_by_month  %>%
 
 ```
 
+```{r}
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
+  filter(ethnicity != "Russian") %>% 
+  dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
+                   total_pred, Sensitivity, Specificity)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(post_german = german * ifelse(YEAR >= 1933, 1, 0)) 
+
+min_by_year <- min_by_year %>% 
+  filter(YEAR < 1940)
+```
+
+
 
 ## MSCMT implementation
 ### Quarterly observations 
@@ -88,16 +101,40 @@ times.pred <- cbind("pop_total"             = c("1921Q2","1932Q1"),
 agg.fns <- rep("id", ncol(times.pred))
 ```
 
+### Annual observations 
+```{r}
+data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "ethnicity_id", 
+                                time.variable="YEAR", unit.names.variable="ethnicity")
+
+```
+
+```{r}
+treatment.identifier <- "German"
+controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
+                                 treatment.identifier)
+times.dep  <- cbind("log_n"                 = c("1921","1933"))
+times.pred <- cbind("pop_total"             = c("1921","19321"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+
+#agg.fns <- rep("mean", ncol(times.pred))                       
+agg.fns <- rep("id", ncol(times.pred))
+```
+
+
 ```{r}
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
-improveSynth(data_prep, synth.out)
 ```
 
 ```{r}
 ggplot(sc_results, type="comparison")
 ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot.pdf"))
+
 ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/gap.pdf"))
+
 library(timetk)
 timetk::tk_tbl(sc_results$combined$log_n) %>% 
   mutate(date = as_date(index)) %>% 
@@ -288,13 +325,6 @@ out <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE,
 out_mc <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE, estimator = "mc",
               index = c("ethnicity","t"), force = "two-way", se = TRUE, CV = TRUE, r=c(0,5),
               inference = "parametric", nboots = 5000) 
-
-print(out)
-out$est.att
-out$est.avg
-out$est.beta
-plot(out_mc, theme.bw = TRUE)
-
 
 plot(out, theme.bw = TRUE)
 plot(out, type = "raw", theme.bw = TRUE)

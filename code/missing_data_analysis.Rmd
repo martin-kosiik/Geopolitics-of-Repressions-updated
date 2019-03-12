@@ -16,7 +16,20 @@ library(scales)
 ```
 
 ```{r}
-events <- readRDS(here::here("data/eventsClean_v2.RData"))
+load("data/eventsClean_v1.RData")
+
+events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF-8") %>% 
+  dplyr::select(AID, ethnicity, prediction)
+
+events <- events %>% 
+  dplyr::select(AID, NAME, YEAR, MONTH, SENTENCE_RESETTLE)
+
+events <- events %>% 
+  left_join(events_preds, "AID")
+
+saveRDS(events, file = here::here("data/eventsClean_v3.RData"))
+
+events <- readRDS(here::here("data/eventsClean_v3.RData"))
 
 by_year <- events %>% 
   count(YEAR, MONTH, prediction, ethnicity) 
@@ -87,18 +100,31 @@ min_by_month_all %>%
   ggplot(aes(x = year, y = sgn_log_diff)) + geom_line() + facet_wrap(~ethnicity) +
   labs(y = "log(1 + y)", x = "year") + theme_bw()
 
+ events %>% 
+  mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing")) %>% 
+  count(YEAR, month_missing, ethnicity) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  mutate(YEAR = as_date(YEAR)) %>% 
+  ggplot(aes(x = YEAR, y = n, fill = month_missing)) + geom_col(position = "fill")  + theme_minimal() +
+  labs(y = element_blank(), x = "Year", fill = "Month of arrest") + 
+  theme(#panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+     scale_x_date(date_minor_breaks = "1 year", date_breaks = "3 year", date_labels = "%Y")
+
+ggsave(here::here("plots/missing_data_analysis/proportion_month_mis_by_year.pdf"))
+
+
+ events %>% 
+  mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing"), 
+         year_missing = ifelse(is.na(YEAR), "missing", "not misssing")) %>% 
+  count(year_missing, month_missing) 
   
+
 ```
 
+
 ```{r}
-min_by_month_preds <- events %>% 
-  count(YEAR, MONTH, prediction, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), !is.na(MONTH)) %>% 
-  mutate(date = as_date(str_c(YEAR,  MONTH, "01", sep = "-"))) %>% 
-  complete(date, ethnicity, prediction, fill = list(n = 0)) %>% 
-  dplyr::select(-c(YEAR, MONTH))
-
-
 conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
 
 spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
@@ -107,6 +133,16 @@ spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>%
 
 conf_matrix <- conf_matrix$table
 conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
+```
+
+## By month
+```{r}
+min_by_month_preds <- events %>% 
+  count(YEAR, MONTH, prediction, ethnicity) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), !is.na(MONTH)) %>% 
+  mutate(date = as_date(str_c(YEAR,  MONTH, "01", sep = "-"))) %>% 
+  complete(date, ethnicity, prediction, fill = list(n = 0)) %>% 
+  dplyr::select(-c(YEAR, MONTH))
 
 
 min_by_month_all <- min_by_month_preds %>% 
@@ -153,7 +189,7 @@ min_by_month_all %>%
 
 ```
 
-
+## By quarter
 ```{r}
 min_by_q <-  min_by_month_all %>% 
   mutate(year_q = quarter(date, with_year = T),
@@ -172,5 +208,53 @@ min_by_q <-  min_by_month_all %>%
          post_war = ifelse(year_q_date >= "1945-05-08", 1, 0), 
          ethnicity = as.factor(ethnicity)) 
 
+```
+
+## By year
+```{r}
+min_by_year_preds <- events %>% 
+  count(YEAR, prediction, ethnicity) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  complete(YEAR, ethnicity, prediction, fill = list(n = 0))
+
+
+min_by_year_all <- min_by_year_preds %>% 
+  mutate(prediction = ifelse(prediction == 1, "prediction", "label")) 
+
+
+pred_adj_full_by_year <- min_by_year_all %>% 
+  filter(prediction == "prediction") %>% 
+  dplyr::select(-prediction) %>% 
+  nest(-YEAR) %>% 
+  mutate(pred_adj_full = map(data, ~ solve(conf_matrix, .$n))) %>% 
+  unnest(pred_adj_full, data) %>% 
+  mutate(pred_adj_full = ifelse(pred_adj_full < 0, 0, pred_adj_full)) %>% 
+  dplyr::select(-n)
+  
+  
+
+min_by_year_all <- min_by_year_all %>% 
+  spread(key = prediction, value = n) %>% 
+  left_join(spec_sens_data, by = "ethnicity") %>% 
+  left_join(pred_adj_full_by_year, by = c("YEAR", "ethnicity")) %>% 
+  group_by(YEAR) %>% 
+  add_tally(wt = prediction) %>% 
+  ungroup() %>% 
+  rename(total_pred_by_date = n) %>% 
+  mutate(pred_adj = (prediction - total_pred_by_date * (1 - Specificity))/(Sensitivity + Specificity -1),
+         pred_adj = ifelse(pred_adj < 0, 0, pred_adj),
+         german = ifelse(ethnicity == "German", 1, 0)) %>% 
+  add_tally(wt = prediction) %>% 
+  rename(total_pred = n) %>% 
+  add_tally(wt = pred_adj) %>% 
+  rename(total_pred_adj = n) %>% 
+  add_tally(wt = pred_adj_full) %>% 
+  rename(total_pred_adj_full = n) %>% 
+  mutate(pred_adj_scaled = round(pred_adj * (total_pred/total_pred_adj)),
+         pred_adj_full_scaled = round(pred_adj_full * (total_pred/total_pred_adj_full)),
+         n = label + pred_adj_full_scaled, 
+         log_n = log(1 + n))
+
+write_csv(min_by_year_all, here::here("data/min_by_year_preds.csv")) 
 ```
 

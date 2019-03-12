@@ -13,6 +13,8 @@ library(tidyverse)
 library(here)
 library(lubridate)
 library(scales)
+library(knitr)
+library(kableExtra)
 ```
 
 ```{r}
@@ -133,6 +135,19 @@ spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>%
 
 conf_matrix <- conf_matrix$table
 conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
+
+
+opts_current$set(label = "conf_matrix")
+as_tibble(conf_matrix) %>% 
+  spread(key = Reference, value = n) %>% 
+  kable("latex", booktabs = T, linesep = "",
+        #col.names =c("Ethnic group", "Total population", "Linguistic similarity to Russian", "Urbanization rate"),
+        caption = "Confusion Matrix (based on 10-fold cross-validation)") %>% 
+  kable_styling(font_size = 7) %>% 
+  add_header_above(c(" " = 1, "Reference" = 18)) %>% 
+  landscape() %>% 
+    write_file(here::here("tables/conf_matrix.tex"))
+
 ```
 
 ## By month

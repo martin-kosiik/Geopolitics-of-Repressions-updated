@@ -290,6 +290,10 @@ min_by_year %>%
   gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
   mutate(log_n = log(1 + prediction)) %>% 
   ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
+  labs(y = "log(1 + arrests)", x = "Year", col = "Prediction type") +
+  scale_color_discrete(labels = c('Full matrix adjustment',
+                              'Parsimonious adjustment', 
+                              "No adjustment")) + 
   theme_bw()
   
 
@@ -299,7 +303,14 @@ min_by_year %>%
   dplyr::select(YEAR, ethnicity, prediction_unadj = prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
   gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
   mutate(log_n = log(1 + prediction)) %>% 
-  ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
+  ggplot(aes(YEAR, prediction, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity, scales = "free_y") +
+  labs(y = "Number of arrests", x = "Year", col = "Prediction type") +
+  scale_color_discrete(labels = c('Full matrix adj.',
+                              'Parsimonious adj.', 
+                              "No adj.")) + 
   theme_bw()
+
+ggsave(here::here("plots/missing_data_analysis/prediction_adj_compared_count.pdf"))
+
 ```
 

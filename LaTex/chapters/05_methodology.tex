@@ -63,7 +63,7 @@ Notice that for constant  $\boldsymbol{\lambda}_t$ for all $t$ we get the tradit
 
 The synthetic control is  constructed as a convex combination of available comparison units (in our case other minorities in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
  (or more precisely, for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$). 
- More formally we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert$ where $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit for which $k = r + L$ and $Y^{K_l}$ are combinations of
+ More formally we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert$ where $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit and $k = r + L$ and $Y^{K_l}$ are combinations of
 pre-treatment outcomes (analogously for $X_0$). The effect of the treatment at time $t$, $\alpha_{1t}$, is then estimated as a difference between the outcome for synthetic control and the treated unit, i.e.:
 \begin{equation*}
   \hat\alpha_{1t}  = Y_{1t} - \sum_{k = 2}^{J + 1} w_j^* Y_{kt}

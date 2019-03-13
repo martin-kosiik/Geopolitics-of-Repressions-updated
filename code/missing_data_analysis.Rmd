@@ -123,6 +123,8 @@ ggsave(here::here("plots/missing_data_analysis/proportion_month_mis_by_year.pdf"
   count(year_missing, month_missing) 
   
 
+ 
+ 
 ```
 
 
@@ -279,5 +281,25 @@ min_by_year_all <- min_by_year_all %>%
          log_n = log(1 + n))
 
 write_csv(min_by_year_all, here::here("data/min_by_year_preds.csv")) 
+```
+
+```{r}
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) 
+min_by_year %>% 
+  dplyr::select(YEAR, ethnicity, prediction_unadj = prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
+  gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
+  mutate(log_n = log(1 + prediction)) %>% 
+  ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
+  theme_bw()
+  
+
+ggsave(here::here("plots/missing_data_analysis/prediction_adj_compared_log.pdf"))
+
+min_by_year %>% 
+  dplyr::select(YEAR, ethnicity, prediction_unadj = prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
+  gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
+  mutate(log_n = log(1 + prediction)) %>% 
+  ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
+  theme_bw()
 ```
 

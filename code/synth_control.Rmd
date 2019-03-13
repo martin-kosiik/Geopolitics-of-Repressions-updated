@@ -19,6 +19,8 @@ library(MSCMT)
 library(kableExtra)
 library(knitr)
 library(gghighlight)
+library(timetk)
+
 ```
 
 ```{r}
@@ -69,6 +71,7 @@ min_by_month <- min_by_month  %>%
 ```{r}
 min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
   filter(ethnicity != "Russian") %>% 
+  #mutate(log_n = log(1 + label + prediction)) %>% 
   dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
                    total_pred, Sensitivity, Specificity)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
@@ -113,7 +116,7 @@ treatment.identifier <- "German"
 controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
                                  treatment.identifier)
 times.dep  <- cbind("log_n"                 = c("1921","1933"))
-times.pred <- cbind("pop_total"             = c("1921","19321"),
+times.pred <- cbind("pop_total"             = c("1921","1932"),
                     "clad_sim"              = c("1921","1932"),
                     "urb_rate"              = c("1921","1932"))
 
@@ -169,10 +172,10 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
   geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 
-ggsave(here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
 
-mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
-                        range.post = c("1933Q2","1939Q3"), type = "mspe")
+mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921","1932"),
+                        range.post = c("1933","1939"), type = "mspe")
 
 
 tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
@@ -195,7 +198,6 @@ ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/gap.pdf"))
 
-library(timetk)
 timetk::tk_tbl(sc_results$combined$log_n) %>% 
   mutate(date = as_date(index)) %>% 
   gather("type", "log_n", treated, synth, -date) %>% 

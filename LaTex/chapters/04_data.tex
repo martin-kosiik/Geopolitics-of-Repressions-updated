@@ -2,6 +2,7 @@ Our data on soviet repressions come from  \citet{zhukov_stalins_2018}\footnote{I
  The Memorial archives include 2.3 million individual arrests by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and  in many cases additional information such as ethnicity, occupation and party membership. 
  However the data are not complete and include about 70\% of estimated 3.8 million convicted for political reasons.
 
+
 We created our main dataset by counting number of arrest for each ethnicity by year-quater.  A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
 With 17  minorities (Armenian, Belarussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian) and 148 time periods (from 1921 to 1958) this gives us 2652 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:universe}, both in the appendix. 
 
@@ -10,3 +11,22 @@ Specifically, we acquired total population of the ethnic groups and their urbani
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree and it has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 
 The full data are provided in the table \ref{tab:} in the appendix. 
+\subsection{Predicting Ethnicity from Names}
+Let  $\boldsymbol{x} = \left(x_1, x_2, x_3\right)$ be features used for predicting ethnicity, that is a person's first name, last name and number of names. Using Bayes theorem, we can express the probability that particular observation  belongs to ethnic group $E_k$ given its features as
+\begin{equation}
+p(E_k \mid \mathbf{x}) = \frac{p(E_k) \ p(\mathbf{x} \mid E_k)}{p(\mathbf{x})}
+\end{equation}
+in other words, the posterior probability is proportional to the product of prior probability and likelihood. 
+Assuming conditional independence of features allows us to substitute $p(\mathbf{x} \mid E_k)$ such that we get
+
+\begin{equation}
+p(E_k \mid \mathbf{x}) = \frac{p(E_k) \  \prod_{i=1}^3 p(x_i \mid E_k)\,}{p(\mathbf{x})}
+\end{equation}
+All the terms in this equation can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
+The Naive Bayes classifier then chooses the ethnicity with the highest posterior probability as its prediction
+\begin{equation}
+    \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^n p(x_i \mid E_k)
+\end{equation}
+It is important to note that the conditional independence assumption often does not hold in the data and pr. The estimated posterior probabilities have to be taken with a grain of salt. %have are thus not always reliable. 
+However, our main goal is the best out-of-sample accuracy of the model's predictions. In this respect , Naive Bayes classifier have been shown to perform  well in many applications, despite its often violated assumptions \citep{domingos_optimality_1997}.
+

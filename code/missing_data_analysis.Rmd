@@ -158,6 +158,15 @@ as_tibble(conf_matrix, rownames = "Prediction") %>%
   add_header_above(c(" " = 1, "Reference" = 18)) %>% 
   landscape() %>% 
     write_file(here::here("tables/conf_matrix_prop.tex"))
+
+opts_current$set(label = "sens_spec")
+spec_sens_data %>% 
+  rename(Ethnicity = ethnicity) %>% 
+  kable("latex", booktabs = T, linesep = "", digits = 3,
+        caption = "Naive Bayes Performance Measures by Ethnicity") %>% 
+  kable_styling(font_size = 9) %>% 
+    write_file(here::here("tables/sens_spec.tex"))
+
 ```
 
 ## By month

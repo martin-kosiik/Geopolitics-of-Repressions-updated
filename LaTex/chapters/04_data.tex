@@ -13,24 +13,70 @@ Cladistic measure of linguistic similarity counts the number of shared branching
 The full data are provided in the table \ref{tab:} in the appendix. 
 \subsection{Predicting Ethnicity from Names}
 Let  $\boldsymbol{x} = \left(x_1, x_2, x_3\right)$ be features used for predicting ethnicity, that is a person's first name, last name and number of names. Using Bayes theorem, we can express the probability that particular observation  belongs to ethnic group $E_k$ given its features as
-\begin{equation}
+\begin{equation*}
 p(E_k \mid \mathbf{x}) = \frac{p(E_k) \ p(\mathbf{x} \mid E_k)}{p(\mathbf{x})}
-\end{equation}
+\end{equation*}
 in other words, the posterior probability is proportional to the product of prior probability and likelihood. 
 Assuming conditional independence of features allows us to substitute $p(\mathbf{x} \mid E_k)$ such that we get
 
-\begin{equation}
+\begin{equation*}
 p(E_k \mid \mathbf{x}) = \frac{p(E_k) \  \prod_{i=1}^3 p(x_i \mid E_k)\,}{p(\mathbf{x})}
-\end{equation}
+\end{equation*}
 All the terms in this equation can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
 The Naive Bayes classifier then chooses the ethnicity with the highest posterior probability as its prediction
-\begin{equation}
+\begin{equation*}
     \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^{3} p(x_i \mid E_k)
-\end{equation}
-It is important to note that the conditional independence assumption often does not hold in the data and pr. The estimated posterior probabilities have to be taken with a grain of salt. %have are thus not always reliable. 
-However, our main goal is the best out-of-sample accuracy of the model's predictions. In this respect , Naive Bayes classifier have been shown to perform  well in many applications, despite its often violated assumptions \citep{domingos_optimality_1997}.
+\end{equation*}
+It is important to note that the conditional independence assumption often does not hold in the data. The estimated posterior probabilities have to be taken with a grain of salt. %have are thus not always reliable. 
+However, our main goal is the best out-of-sample accuracy of the model's predictions. In this respect, Naive Bayes classifier have been shown to perform  well in many applications, despite its often violated assumptions \citep{domingos_optimality_1997}.
 
 To reliably asses the out-of-sample performance of our model, we used 10-fold cross-validation on the training dataset. That is, the data are first randomly split into 10 groups, Then the model is fit to the data from to the data ..  
-Using this method, we get the 75.4\% accuracy. Nevertheless, it varies
-significantly by ethnicity. We get bigger picture by examining the
-confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. 
+Using this method, we get the overall 75.4\% accuracy. Nevertheless, it varies
+significantly by ethnicity. The specificity and sensitivity by ethnic group are provided in the table \ref{tab:sens_spec}. Some ethnic groups with distinctive names such as Chinese, Korean and German are classified fairly well with sensitivity higher than 75\%. 
+
+Thus, there are biases in our predictions. However, we can try to adjust for them. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
+\begin{equation*}
+    P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right)  
+\end{equation*}
+We are interested in $R_{it}$ but we only directly observe $P_{it}$ and $N_t$. However using simple algebra, $R_{it}$ can be expressed as
+\begin{equation*}
+ R_{it} = \frac{P_{it} - N_t  \left(1 - \beta_i \right)}{\alpha_i + \beta_i - 1}
+\end{equation*}
+The parameters $\alpha_i$ and $\beta_i$ are not known to us but we can use their estimates from the cross-validation on the training data. This assumes that the these parameters do not differ significantly for the training and test data. But this might not be the case. 
+Suppose, for example, that Armenians are often misclassified as Chechens and that the number of Armenians in the data with missing ethnicity  is disproportionately higher than in the data with information on ethnicity. 
+Then the cross-validated specificity for Chechens in the training set will underestimate the specificity in the test set because it does not take into account higher proportion of Armenians. 
+%If, for example, the proportions of the arrests of some ethnic group are substantially different between the test and training set and if there is constant then 
+We can im
+\begin{equation*}
+P_{it}  = \sum_{j = 1}^{18} b_{ij} R_{jt} \qquad i = 1, \dots, 18
+\end{equation*}
+
+First we ap
+\begin{equation*}
+ \mathbf{P}_t = \mathbf{B}_t \cdot \mathbf{R}_t 
+\end{equation*}
+Again, we can easily calculate th
+\begin{equation*}
+\mathbf{R}_t  = \mathbf{B}_t^{-1} \cdot  \mathbf{P}_t
+\end{equation*}
+%\begin{equation*}
+%\begin{array}{rcl} P_{1t} & = & b_{11} R_{1} \\ 
+%f(x,y,z) & = & x + y + z 
+%\end{array}
+%\end{equation*}
+
+
+
+We get bigger picture by examining the
+confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. The confusion matrix is defined as 
+$$A = \left(a_{ij}\right)_{i = 1, \dots, 18,\:j = 1, \dots, 18}$$
+where $a_{ij}$ is number of people with ethnicity $j$ that were classified as belonging to ethnic group $i$. We can adjust the matrix as
+$$B = \left(\frac{a_{ij}}{\sum_j a_{ij}} \right)_{i = 1, \dots, 18,\:j = 1, \dots, 18}$$
+\begin{equation*}
+\begin{pmatrix} 
+a_1t& a_{12} &\dots& a_{1n}\\
+a_{21}&a_2&\dots& a_{2n}\\
+\hdotsfor[2]{4}\\
+a_{n1}&a_{n2}&\dots&D_nt
+\end{pmatrix}
+\end{equation*} 

@@ -1,0 +1,90 @@
+---
+title: "Data import"
+author: "Martin Kosík"
+date: "18 března 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(tidyverse)
+library(readxl)
+library(here)
+library(lubridate)
+Sys.setlocale("LC_CTYPE", "russian") 
+
+```
+
+```{r}
+memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", nrows = 20, sep="\t")
+names(memorial_lists)
+selected_vars <- c("person_id", "nation", "arest_date", "process_date")
+memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="")
+
+memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & arest_date == "None", 1, 0)]
+memorial_lists <- memorial_lists[, nation_latin := stri_trans_general(nation, "cyrillic-latin")]
+
+translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
+
+memorial_lists %>% 
+  count(no_date)
+
+memorial_lists %>% 
+  count(nation, nation_latin, sort = T) %>% 
+  write_xlsx("data/ethnicity_translations.xlsx")
+
+memorial_lists %>% 
+  count(arest_date, sort = T)
+
+memorial_lists %>% 
+  count(ethnicity, sort = T)%>% 
+  View()
+
+
+memorial_lists %>% 
+  count(process_date, sort = T) 
+
+```
+
+```{r}
+memorial_lists <-
+  memorial_lists %>% 
+  left_join(translations, by = "nation") %>% 
+  mutate(ethnicity = ifelse(is.na(ethnicity), "Other", ethnicity))
+
+memorial_lists <- memorial_lists %>% 
+  separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
+  separate(arest_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>% 
+  mutate_at(vars("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
+             funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
+
+```
+
+```{r}
+memorial_lists %>% 
+  filter(!is.na(YEAR), !is.na(YEAR_PROCESS)) %>% 
+  filter(YEAR == YEAR_PROCESS) %>% 
+  count()
+  
+```
+
+
+```{r}
+memorial_lists %>% 
+  count(YEAR, ethnicity) %>% 
+  filter(YEAR < 1960, YEAR > 1920) %>% 
+  mutate(log_n = log(nn + 1)) %>% 
+  ggplot(aes(x = YEAR, y = log_n)) + geom_line() + facet_wrap(~ ethnicity) + theme_bw()
+
+memorial_lists %>% 
+  count(YEAR, ethnicity) %>% 
+  filter(YEAR < 1960, YEAR > 1920) %>% 
+  ggplot(aes(x = YEAR, y = nn)) + geom_line() + facet_wrap(~ ethnicity) + theme_bw() +
+  scale_y_log10()
+
+```
+

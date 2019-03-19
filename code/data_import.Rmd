@@ -88,3 +88,31 @@ memorial_lists %>%
 
 ```
 
+
+# New naive bayes
+
+```{r}
+selected_vars <- c("person_id", "nation", "surname", "name", "patronimic")
+
+
+memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="")
+```
+
+```{r}
+memorial_lists <-
+  memorial_lists %>% 
+  left_join(translations, by = "nation") %>% 
+  mutate(ethnicity = ifelse(is.na(ethnicity), "Other", ethnicity))  
+
+data_labeled <- memorial_lists[!memorial_lists$ethnicity %in% c("Missing", "Other"),]
+data_labeled <- data_labeled %>% 
+  mutate_at(vars(ethnicity, surname, name, patronimic), as.factor)
+
+
+nb_klaR <- NaiveBayes(ethnicity ~ surname + name + patronimic, data = data_labeled, 
+                             fL = 1, usekernel = FALSE)
+
+data_labeled$prediction <- predict(nb_klaR)$class
+```
+

@@ -128,7 +128,32 @@ agg.fns <- rep("id", ncol(times.pred))
 ```{r}
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
 
+sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
+
 sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+```
+
+```{r}
+sc_results$combined %>% 
+  map(tk_tbl) %>% 
+  bind_rows(.id = "variable") %>% 
+  filter(variable %in% c("log_n","pop_total", "clad_sim", "urb_rate")) %>% 
+  filter(index < 1933) %>% 
+ # View()
+  group_by(variable) %>% 
+  summarize_all(mean) %>% 
+  select(-c(index, gaps))
+
+ tibble(w = sc_results$w, ethnicity = names(sc_results$w)) %>% 
+   left_join(ethnicity_controls, by = "ethnicity") %>% 
+   mutate_at(vars(clad_sim, urb_rate, pop_total), ~ sc_results$w * .) %>% 
+   summarise_at(vars(clad_sim, urb_rate, pop_total), ~ sum( .))
+    
+sc_results$combined %>% 
+  keep(~ names(.) %in% c("log_n","pop_total", "clad_sim", "urb_rate"))
+ 
+sc_results$combined  
+  names(sc_results$combined[[4]])
 ```
 
 

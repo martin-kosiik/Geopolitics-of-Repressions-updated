@@ -47,7 +47,7 @@ by_year <- events %>%
 
 events %>% 
   count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921) %>% 
+  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
   mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
          YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
   ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col(position = "fill") + theme_minimal() +
@@ -61,7 +61,7 @@ ggsave(here::here("plots/missing_data_analysis/proportion_by_year.pdf"))
 
 events %>% 
   count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921) %>% 
+  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
   mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
          YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
   ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col() + theme_minimal() +
@@ -107,7 +107,7 @@ min_by_month_all %>%
  events %>% 
   mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing")) %>% 
   count(YEAR, month_missing, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   mutate(YEAR = as_date(YEAR)) %>% 
   ggplot(aes(x = YEAR, y = n, fill = month_missing)) + geom_col(position = "fill")  + theme_minimal() +
   labs(y = element_blank(), x = "Year", fill = "Month of arrest") + 
@@ -136,6 +136,7 @@ conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
 spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
   mutate(ethnicity = str_replace(ethnicity, "Class: ", "")) %>% 
   dplyr::select(ethnicity:Specificity)
+
 
 conf_matrix <- conf_matrix$table
 

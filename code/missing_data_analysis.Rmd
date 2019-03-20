@@ -303,9 +303,9 @@ min_by_year %>%
   mutate(log_n = log(1 + prediction)) %>% 
   ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
   labs(y = "log(1 + arrests)", x = "Year", col = "Prediction type") +
-  scale_color_discrete(labels = c('Full matrix adjustment',
-                              'Parsimonious adjustment', 
-                              "No adjustment")) + 
+  scale_color_discrete(labels = c('Full matrix adj.',
+                              'Parsimonious adj.', 
+                              "No adj.")) + 
   theme_bw()
   
 

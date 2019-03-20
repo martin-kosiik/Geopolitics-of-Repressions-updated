@@ -18,16 +18,24 @@ library(kableExtra)
 ```
 
 ```{r}
-load("data/eventsClean_v1.RData")
 
 events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF-8") %>% 
-  dplyr::select(AID, ethnicity, prediction)
+  dplyr::select(person_id, ethnicity, prediction)
+
+
+selected_vars <- c("person_id", "arest_date", "process_date")
+events <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="")
 
 events <- events %>% 
-  dplyr::select(AID, NAME, YEAR, MONTH, SENTENCE_RESETTLE)
+  left_join(events_preds, "person_id")
+
 
 events <- events %>% 
-  left_join(events_preds, "AID")
+  separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
+  separate(arest_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>% 
+  mutate_at(c("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
+             funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
 
 saveRDS(events, file = here::here("data/eventsClean_v3.RData"))
 
@@ -36,12 +44,6 @@ events <- readRDS(here::here("data/eventsClean_v3.RData"))
 by_year <- events %>% 
   count(YEAR, MONTH, prediction, ethnicity) 
 
-events %>% 
-  count(YEAR, prediction, ethnicity) %>% 
-  filter(is.na(YEAR), !is.na(prediction)) %>% 
-  mutate(ethnicity = fct_reorder(ethnicity, n)) %>% 
-  ggplot(aes(ethnicity, n)) + geom_col() + facet_wrap(~ prediction, scales = "free_x", ncol = 1) + coord_flip() +
-  scale_y_log10()
 
 events %>% 
   count(YEAR, prediction) %>% 
@@ -248,7 +250,7 @@ min_by_q <-  min_by_month_all %>%
 ```{r}
 min_by_year_preds <- events %>% 
   count(YEAR, prediction, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   complete(YEAR, ethnicity, prediction, fill = list(n = 0))
 
 

@@ -14,7 +14,6 @@ library(broom)
 library(lubridate)
 library(here)
 library(readxl)
-library(gsynth)
 library(MSCMT)
 library(kableExtra)
 library(knitr)
@@ -71,7 +70,7 @@ min_by_month <- min_by_month  %>%
 ```{r}
 min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
   filter(ethnicity != "Russian") %>% 
-  #mutate(log_n = log(1 + label + prediction)) %>% 
+  mutate(log_n = log(1 + label)) %>% 
   dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
                    total_pred, Sensitivity, Specificity)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
@@ -79,6 +78,8 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
 
 min_by_year <- min_by_year %>% 
   filter(YEAR < 1940)
+
+
 ```
 
 
@@ -172,6 +173,7 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_all.pdf"))
 
 rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
   map("rmspe") %>% 
@@ -198,6 +200,7 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_mspe_5_lower.pdf"))
 
 mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921","1932"),
                         range.post = c("1933","1939"), type = "mspe")
@@ -209,6 +212,7 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
   labs(x = element_blank(), y = "MSPE ratio")
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/mspe_ratios.pdf"))
 
 ```
 

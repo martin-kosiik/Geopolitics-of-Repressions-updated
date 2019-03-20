@@ -14,6 +14,12 @@ library(tidyverse)
 library(readxl)
 library(here)
 library(lubridate)
+library(klaR)
+library(caret)
+library(pryr)
+library(bnlearn)
+library(bnclassify)
+install.packages("bnlearn")
 Sys.setlocale("LC_CTYPE", "russian") 
 
 ```
@@ -89,6 +95,12 @@ memorial_lists %>%
 ```
 
 
+```{r}
+levels(data_labeled$patronimic) %>% 
+  View()
+```
+
+
 # New naive bayes
 
 ```{r}
@@ -96,23 +108,71 @@ selected_vars <- c("person_id", "nation", "surname", "name", "patronimic")
 
 
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
-                        select = selected_vars, quote="")
+                        select = selected_vars, quote="", stringsAsFactors = TRUE)
+
+translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
+
 ```
+
+
 
 ```{r}
 memorial_lists <-
   memorial_lists %>% 
   left_join(translations, by = "nation") %>% 
-  mutate(ethnicity = ifelse(is.na(ethnicity), "Other", ethnicity))  
+  mutate(ethnicity = as.factor(ifelse(is.na(ethnicity), "Other", ethnicity)))  
 
 data_labeled <- memorial_lists[!memorial_lists$ethnicity %in% c("Missing", "Other"),]
+data_missing <- memorial_lists[memorial_lists$ethnicity  == "Missing",]
+rm(memorial_lists)
+rm(translations)
+gc()
+
+data_labeled_person_id <- data_labeled$person_id
+data_labeled$ethnicity <- droplevels(data_labeled$ethnicity)
+
 data_labeled <- data_labeled %>% 
-  mutate_at(vars(ethnicity, surname, name, patronimic), as.factor)
+  dplyr::select(ethnicity, surname, name , patronimic)
+```
 
 
-nb_klaR <- NaiveBayes(ethnicity ~ surname + name + patronimic, data = data_labeled, 
-                             fL = 1, usekernel = FALSE)
+```{r}
+set.seed(2019)
+folds <- sample(1:10, size = nrow(data_labeled), replace = T)
 
-data_labeled$prediction <- predict(nb_klaR)$class
+CV_nb <- lapply(1:10, function(x){ 
+  nb <- nb('ethnicity', data_labeled)
+  model <- lp(nb, data_labeled[folds != x,] , smooth = 0.005)
+  preds <- predict(model,  data_labeled[folds == x,])
+  return(data.frame(preds, ethnicity = data_labeled$ethnicity[folds == x]))
+})
+
+CV_nb <- do.call(rbind, CV_nb)
+conf_matrix <- confusionMatrix(CV_nb$preds, CV_nb$ethnicity)
+
+saveRDS(conf_matrix, file = here::here("data/conf_matrix.RData"))
+rm(list = c("CV_nb", "folds", "conf_matrix"))
+gc()
+```
+
+
+```{r}
+nb <- nb('ethnicity', data_labeled)
+nb_model <- lp(nb, data_labeled , smooth = 0.005)
+
+data_missing$ethnicity <- predict(nb_model, data_missing)
+data_labeled$person_id <- data_labeled_person_id
+data_missing <- data_missing %>% 
+  dplyr::select(ethnicity, surname, name , patronimic, person_id)
+```
+
+```{r}
+events_preds <- 
+  bind_rows(data_labeled, data_missing, .id = "id") %>% 
+  mutate(prediction = ifelse(id == 1, 0, 1)) %>% 
+  dplyr::select(person_id, -id, everything())
+
+fwrite(events_preds, here::here("data/events_predictions.csv"))
+
 ```
 

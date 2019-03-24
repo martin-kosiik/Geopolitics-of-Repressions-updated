@@ -70,7 +70,7 @@ min_by_month <- min_by_month  %>%
 ```{r}
 min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
   filter(ethnicity != "Russian") %>% 
-  mutate(log_n = log(1 + label)) %>% 
+  mutate(log_n = log(1 + label + pred_adj_full_scaled)) %>% 
   dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
                    total_pred, Sensitivity, Specificity)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
@@ -253,7 +253,7 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
   filter(Weights != 0) %>% 
   arrange(desc(Weights)) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
-        col.names = c("Ethnic group", "Weight"),
+        col.names = c("Ethnic group", "$W$-Weight"),
         caption = "Synthetic German minority weights") %>%
   #footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))

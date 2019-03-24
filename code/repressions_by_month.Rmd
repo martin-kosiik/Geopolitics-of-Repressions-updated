@@ -18,52 +18,6 @@ library(writexl)
 ```
 
 
-```{r, eval = FALSE}
-load(here("data/eventsClean_v1.RData"))
-```
-
-```{r, eval = FALSE}
-minorities_var_names <- names(events) %>% 
-  str_subset("ETHNIC_")
-```
-We exclude Russians from vector of minorities
-```{r, eval = FALSE}
-minorities_var_names <- minorities_var_names[-1] 
-
-```
-
-```{r, eval = FALSE}
-events <- events %>% 
-  select(-c(NEAREST_RAIL_ID:LEVEL_SV)) %>% 
-  mutate(date_ym = str_c(YEAR,  MONTH, 1, sep = "-"))
-
-```
-
-```{r, eval = FALSE}
-min_by_month <- events %>%
-  select(date_ym, ETHNIC_BEL:ETHNIC_CHECHEN) %>% 
-  group_by_all() %>% 
-  count() %>% 
-  ungroup()
-
-
-write_csv(min_by_month, here("data/min_arrests_by_month.csv"))
-
-
-```
-
-```{r}
-min_by_month <- read_csv(here::here("data/min_arrests_by_month.csv"))
-
-min_by_month <- min_by_month %>% 
-  mutate(n_of_eth_gr = rowSums(.[2:18])) %>% 
-  filter(n_of_eth_gr == 1) %>% 
-  select(-n_of_eth_gr) %>% 
-  gather(key= "ethnicity", value = "value", -c(date_ym, n)) %>% 
-  filter(value == 1) %>% 
-  select(-value)
-
-```
 
 ```{r}
 min_by_month <- min_by_month %>% 

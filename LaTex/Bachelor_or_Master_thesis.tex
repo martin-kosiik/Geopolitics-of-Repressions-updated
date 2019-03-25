@@ -25,7 +25,7 @@
    \usepackage{threeparttablex}
    \usepackage[normalem]{ulem}
   \usepackage{makecell}
-
+\usepackage{multirow}
 
 \usepackage{url}
 \usepackage[utf8]{inputenc}
@@ -45,6 +45,7 @@
 %% Sirka textu 136 mm
 \textheight 232mm \textwidth 136mm
 
+\newcommand{\noop}[1]{} 
 %this should generate norm page of approx 1800 characters per page
 %with 30 lines times 60 characters per line (excluding space)
 
@@ -61,8 +62,9 @@
     Using the digitized archival data on 2.3 million individual arrests by the Soviet secret police, I apply difference-in-differences and synthetic control method to estimate how changing geopolitical relations influenced repressions of Germans in the USSR. The estimates of both models imply that that the arrests of Germans relative to other minorities increased by approximately 2\% after 1933. 
 \end{abstract}
 
- %\tableofcontents
-%\newpage
+\newpage
+ \tableofcontents
+\newpage
 \include{LaTex/maintext_bachelor_template} %this just pastes here the content of "maintext.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
 \include{LaTex/chapters/08_references} %this just pastes here the content of "references.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
 \input{LaTex/chapters/09_appendix.tex} %this just pastes here the content of "appendix.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation

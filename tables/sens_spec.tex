@@ -1,12 +1,20 @@
-\begin{table}[t]
+\begingroup\fontsize{7}{9}\selectfont
 
-\caption{\label{tab:sens_spec}Naive Bayes Performance Measures by Ethnicity}
-\centering
-\fontsize{9}{11}\selectfont
-\begin{tabular}{lrr}
+\begin{longtable}{lrr}
+\caption{\label{tab:sens_spec}Naive Bayes Performance Measures by Ethnicity}\\
 \toprule
 Ethnicity & Sensitivity & Specificity\\
 \midrule
+\endfirsthead
+\caption[]{Naive Bayes Performance Measures by Ethnicity \textit{(continued)}}\\
+\toprule
+Ethnicity & Sensitivity & Specificity\\
+\midrule
+\endhead
+\
+\endfoot
+\bottomrule
+\endlastfoot
 Altai & 0.483 & 1.000\\
 Armenian & 0.796 & 0.999\\
 Balkar & 0.971 & 0.999\\
@@ -44,7 +52,5 @@ Tatar & 0.809 & 0.995\\
 Udmurt & 0.092 & 0.999\\
 Ukrainian & 0.423 & 0.977\\
 Uzbek & 0.330 & 0.999\\
-Yakut & 0.199 & 0.997\\
-\bottomrule
-\end{tabular}
-\end{table}
+Yakut & 0.199 & 0.997\\*
+\end{longtable}\endgroup{}

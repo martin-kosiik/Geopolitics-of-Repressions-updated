@@ -1,15 +1,23 @@
 
-\begin{landscape}\begin{table}[t]
+\begin{landscape}\begingroup\fontsize{5}{7}\selectfont
 
-\caption{\label{tab:conf_matrix_count}Confusion Matrix (based on 10-fold cross-validation) - Counts}
-\centering
-\fontsize{5}{7}\selectfont
-\begin{tabular}{lrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+\begin{longtable}{lrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+\caption{\label{tab:conf_matrix_count}Confusion Matrix (based on 10-fold cross-validation) - Counts}\\
 \toprule
 \multicolumn{ 1}{c}{ } & \multicolumn{18}{c}{Reference} \\
 \cmidrule(l{2pt}r{2pt}){2-19}
 Prediction & Altai & Armenian & Balkar & Bashkir & Belorussian & Bulgarian & Buryat & Estonian & Finnish & Georgian & German & Greek & Hungarian & Chechen & Chinese & Chuvash & Japanese & Jewish & Kabardian & Kalmyk & Karelian & Kazakh & Khakas & Komi & Korean & Latvian & Lithuanian & Mari & Moldovan & Mordvin & Ossetian & Polish & Russian & Tatar & Udmurt & Ukrainian & Uzbek & Yakut\\
 \midrule
+\endfirsthead
+\caption[]{Confusion Matrix (based on 10-fold cross-validation) - Counts \textit{(continued)}}\\
+\toprule
+Prediction & Altai & Armenian & Balkar & Bashkir & Belorussian & Bulgarian & Buryat & Estonian & Finnish & Georgian & German & Greek & Hungarian & Chechen & Chinese & Chuvash & Japanese & Jewish & Kabardian & Kalmyk & Karelian & Kazakh & Khakas & Komi & Korean & Latvian & Lithuanian & Mari & Moldovan & Mordvin & Ossetian & Polish & Russian & Tatar & Udmurt & Ukrainian & Uzbek & Yakut\\
+\midrule
+\endhead
+\
+\endfoot
+\bottomrule
+\endlastfoot
 Altai & 972 & 1 & 5 & 2 & 13 & 1 & 9 & 2 & 3 & 2 & 11 & 4 & 1 & 2 & 68 & 4 & 0 & 15 & 2 & 14 & 2 & 128 & 3 & 1 & 13 & 1 & 2 & 11 & 2 & 2 & 3 & 10 & 126 & 27 & 2 & 17 & 1 & 1\\
 Armenian & 2 & 2688 & 12 & 1 & 41 & 2 & 5 & 6 & 5 & 35 & 43 & 11 & 3 & 0 & 0 & 3 & 1 & 79 & 4 & 3 & 1 & 3 & 1 & 0 & 1 & 4 & 6 & 4 & 2 & 5 & 4 & 26 & 200 & 32 & 0 & 45 & 0 & 1\\
 Balkar & 3 & 2 & 48517 & 22 & 2 & 6 & 0 & 0 & 0 & 6 & 25 & 1 & 0 & 70 & 0 & 1 & 0 & 11 & 453 & 12 & 0 & 89 & 0 & 0 & 0 & 0 & 1 & 7 & 1 & 0 & 60 & 1 & 44 & 133 & 0 & 3 & 8 & 0\\
@@ -47,8 +55,6 @@ Tatar & 11 & 1 & 75 & 3990 & 1 & 1 & 9 & 0 & 1 & 2 & 26 & 3 & 0 & 68 & 20 & 25 &
 Udmurt & 9 & 9 & 4 & 9 & 85 & 4 & 16 & 4 & 9 & 9 & 15 & 5 & 2 & 1 & 0 & 24 & 1 & 32 & 0 & 3 & 6 & 9 & 0 & 2 & 5 & 6 & 1 & 19 & 7 & 22 & 7 & 23 & 842 & 33 & 285 & 137 & 0 & 1\\
 Ukrainian & 29 & 36 & 7 & 1 & 4438 & 37 & 10 & 40 & 19 & 51 & 310 & 90 & 29 & 0 & 8 & 78 & 1 & 400 & 0 & 13 & 27 & 25 & 11 & 12 & 15 & 86 & 37 & 24 & 260 & 98 & 12 & 1899 & 17285 & 22 & 17 & 24695 & 1 & 11\\
 Uzbek & 5 & 0 & 33 & 45 & 0 & 0 & 2 & 0 & 0 & 0 & 0 & 0 & 0 & 25 & 13 & 1 & 0 & 6 & 7 & 2 & 1 & 786 & 0 & 0 & 0 & 1 & 0 & 19 & 0 & 0 & 3 & 0 & 9 & 214 & 2 & 1 & 352 & 0\\
-Yakut & 30 & 19 & 3 & 0 & 221 & 30 & 83 & 15 & 32 & 29 & 64 & 39 & 5 & 0 & 14 & 44 & 2 & 51 & 3 & 43 & 17 & 6 & 4 & 9 & 7 & 37 & 5 & 33 & 22 & 40 & 16 & 101 & 1938 & 12 & 9 & 356 & 0 & 311\\
-\bottomrule
-\end{tabular}
-\end{table}
+Yakut & 30 & 19 & 3 & 0 & 221 & 30 & 83 & 15 & 32 & 29 & 64 & 39 & 5 & 0 & 14 & 44 & 2 & 51 & 3 & 43 & 17 & 6 & 4 & 9 & 7 & 37 & 5 & 33 & 22 & 40 & 16 & 101 & 1938 & 12 & 9 & 356 & 0 & 311\\*
+\end{longtable}\endgroup{}
 \end{landscape}

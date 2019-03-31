@@ -33,17 +33,17 @@ ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
 min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
   mutate(log_n = log(1 + label ),
          log_n_pred_full = log(1 + label + pred_adj_full_scaled),
-         log_n_pred = log(1 + label + prediction)) %>% 
-  dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
-                   total_pred, Sensitivity, Specificity)) %>% 
+         log_n_pred = log(1 + label + prediction),
+         log_n_imp_date = log(1 + label_imp_date),
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
-  mutate(post_german = german * ifelse(YEAR >= 1933, 1, 0),
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0),
          ethnicity = as.factor(ethnicity),
          YEAR_sq = YEAR^2) 
 
 min_by_year <- min_by_year %>% 
   filter(YEAR < 1940)
-
 
 
 ```
@@ -63,6 +63,7 @@ opts_current$set(label = "total_arrests_by_ethnicity")
 
 
 ```{r}
+years <- 1930:1958
 years <- 1930:1939
 
 year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
@@ -94,6 +95,10 @@ fmla <- as.formula(paste("log_n ~ ",
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
 
+fmla_imp_date <- as.formula(paste("log_n_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +",
                          paste0("ethnicity_", ethnicities, collapse = " + "), "+ ",
@@ -103,6 +108,15 @@ fmla <- as.formula(paste("log_n ~ ",
 fmla_pred_full <- as.formula(paste("log_n_pred_full ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
+
+fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
+
+
+fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity"))
 
 
 fmla_no_trends <- as.formula(paste("log_n ~ ", 
@@ -208,19 +222,28 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
 }
 
 
-plot_effects_robust_se()
+plot_effects_robust_se() #+ theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ggsave(here::here("plots/effects/annual/point_range_robust_cr2.pdf"))
   
 plot_effects_robust_se(vcov = "CR0")
 ggsave(here::here("plots/effects/annual/point_range_robust_cr0.pdf"))
 
 
-plot_effects_robust_se(formula =  fmla_pred_full)
+plot_effects_robust_se(formula =  fmla_pred_full) #+ theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2.pdf"))
 
 plot_effects_robust_se(diff_model_no_trends)
 
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_no_trends.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date)+theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp.pdf"))
+
+
+plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
 
 ```
 

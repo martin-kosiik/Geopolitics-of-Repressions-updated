@@ -16,33 +16,42 @@ Cladistic measure of linguistic similarity counts the number of shared branching
 The full data are provided in the table \ref{tab:} in the appendix.
 \newpage
 \section{Imputation of Missing Data} \label{sec:missing_data}
+%napis o missing at random, completely at random asumptions
 \subsection{Inferring Ethnicity from Names}
+In this section, we explain our method for predicting ethnicity of an individual from his or her names. Using names for imputing ethnicity has several advantages. First, full name  is available for every individuals in the dataset. Second, names have been shown to be highly predictive of ethnicity in a variety of applications \citep{mateos_review_2007, hofstra_sources_2017, hofstra_predicting_2018}. 
+
+Given the high number of predictors, we need a model that is not  computationally demanding but at the same time achieves reasonable level of prediction accuracy. Naive Bayes classifier meets these criteria and has been for this reason used in wide range of applications including text classification  \citep{gentzkow_text_2019}.
+%We will brief introduce its 
+
+\subsubsection{Naive Bayes Classifier}
+%In particular, we use Naive Bayes classifier. 
 Let  $\boldsymbol{x} = \left(x_1, x_2, x_3\right)$ be features used for predicting ethnicity, that is a person's first, last, and patronymic (given after father's first name) names. Using Bayes theorem, we can express the probability that particular observation  belongs to ethnic group $E_k$ given its features as
-\begin{equation*}
+\begin{equation}
 p(E_k \mid \mathbf{x}) = \frac{p(E_k) \ p(\mathbf{x} \mid E_k)}{p(\mathbf{x})}
-\end{equation*}
+\end{equation}
 in other words, the posterior probability is proportional to the product of prior probability and likelihood. 
 Assuming conditional independence of features allows us to substitute $p(\mathbf{x} \mid E_k)$ such that we get
 
-\begin{equation*}
+\begin{equation}
 p(E_k \mid \mathbf{x}) = \frac{p(E_k) \  \prod_{i=1}^3 p(x_i \mid E_k)\,}{p(\mathbf{x})}
-\end{equation*}
-All the terms in this equation can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
+\end{equation}
+%In this context, the conditional independence of features means within each ethnic group having a certain first name does not influence probability of having some surnames and patronymic names   
+ All terms in this equation can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
 %Thus, having a name that is typical for a given ethnicity results in high probabilty
 %The Naive Bayes classifier assigns high probability to names that are 
 The Naive Bayes classifier then chooses the ethnicity with the highest posterior probability as its prediction
-\begin{equation*}
+\begin{equation}
     \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^{3} p(x_i \mid E_k)
-\end{equation*}
+\end{equation}
 
 However, one potential issue is that whenever a likelihood of a certain feature is estimated to be 0 then the posterior probability is always 0 regardless of the prior  or the likelihoods of other features. For example, suppose that a person has a typical German first name but a rare surname which does not appear in the training set at all. 
 Then the useful information contained in the first name will be completely ignored since the 0 likelihood of the surname will override any other value and we will end up with the posterior probability of zero for all ethnic groups.
 
 To address this problem, we apply Laplace smoothing. 
 For every ethnicity $k$, let $c_j$ be number of people with a name $j$ and $N$ be total number of people.  Without applying any smoothing, we would estimate the likelihood  $p(x_i \mid E_k)$ simply as a relative frequency, i.e. $\hat\theta_j = \frac{c_j}{N}$. With  Laplace smoothing, we estimate  the  likelihood $\hat\theta_j$ as 
-\begin{equation*}
+\begin{equation}
     \hat\theta_j = \frac{c_j + \alpha}{N + \alpha d} \qquad j = 1, \dots, d
-\end{equation*}
+\end{equation}
 where parameter $\alpha > 0 $ is a smoothing parameter.  This ensures that for any finite value of $N$,  $\hat\theta_j$ will never be zero. %Nevertheless,  $\alpha$ should not be set too high since that could 
 
 
@@ -57,9 +66,9 @@ Using this method, we get the overall 75.4\% accuracy. Nevertheless, it varies
 significantly by ethnicity. The specificity and sensitivity by ethnic group are provided in the table \ref{tab:sens_spec}. Some ethnic groups with distinctive names such as Chinese, Korean and German are classified fairly well with sensitivity higher than 75\%. 
 
 Thus, there are biases in our predictions. However, we can try to adjust for them. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
-\begin{equation*}
+\begin{equation}
     P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right)  
-\end{equation*}
+\end{equation}
 We are interested in $R_{it}$ but we only directly observe $P_{it}$ and $N_t$. However using simple algebra, $R_{it}$ can be expressed as
 \begin{equation} \label{eq:pars_adj}
  R_{it} = \frac{P_{it} - N_t  \left(1 - \beta_i \right)}{\alpha_i + \beta_i - 1}
@@ -73,18 +82,18 @@ Fortunately, we can address this potential bias by more building complex modelin
 First for all ethnic groups $i$ and $j$, we define the misclassification rate $b_{ij}$ as share of people with ethnicity $j$ that are classified as $i$.
 Notice that for $i = j$, the misclassification rate is simply prediction accuracy for ethnicity $i$.
 It follows from the definition of the terms that predicted number of arrests for ethnic group $i$ at time $t$,  $P_{it}$, is equal to 
-\begin{equation*}
+\begin{equation}
 P_{it}  = \sum_{j = 1}^{K} b_{ij} R_{jt} \qquad i = 1, \dots, K
-\end{equation*}
+\end{equation}
 This equation can be expressed in matrix form as
-\begin{equation*}
+\begin{equation}
  \mathbf{P}_t = \mathbf{B} \cdot \mathbf{R}_t 
-\end{equation*}
+\end{equation}
 where $\mathbf{P}_t = \left(P_{1t}, \cdots, P_{Kt} \right)$, $\mathbf{R}_t = \left(R_{1t}, \cdots, R_{Kt} \right)$, and $\mathbf{B} = \left(b_{ij}\right)_{i = 1, \dots, K,\:j = 1, \dots, K}$.
 To express $\mathbf{R}_t$, we just  apply basic linear algebra
-\begin{equation*}
+\begin{equation}
 \mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t
-\end{equation*}
+\end{equation}
 We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
 makes only somewhat weaker assumption that the train and test set misclassification rates are not significantly different. 
 %On the other hand, it might be noisier

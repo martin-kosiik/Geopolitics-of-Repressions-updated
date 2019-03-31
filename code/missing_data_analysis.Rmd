@@ -9,6 +9,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -18,34 +19,43 @@ library(kableExtra)
 ```
 
 ```{r}
-load("data/eventsClean_v1.RData")
 
 events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF-8") %>% 
-  dplyr::select(AID, ethnicity, prediction)
+  dplyr::select(person_id, ethnicity, prediction)
+
+
+selected_vars <- c("person_id", "arest_date", "process_date", "birth_place", "nation")
+events <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="")
+events <- events %>% 
+  left_join(events_preds, "person_id")
+
 
 events <- events %>% 
-  dplyr::select(AID, NAME, YEAR, MONTH, SENTENCE_RESETTLE)
-
-events <- events %>% 
-  left_join(events_preds, "AID")
+  separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
+  separate(process_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>%
+  mutate_at(c("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
+             funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
 
 saveRDS(events, file = here::here("data/eventsClean_v3.RData"))
 
 events <- readRDS(here::here("data/eventsClean_v3.RData"))
 
+arrest_date_imputation <- readRDS(file = here::here("data/arrest_date_imputation.RData"))
+
+
+events <- events %>% 
+  left_join(arrest_date_imputation, by = "person_id", suffix = c(".only_label", ""))
+
+
+
 by_year <- events %>% 
   count(YEAR, MONTH, prediction, ethnicity) 
 
-events %>% 
-  count(YEAR, prediction, ethnicity) %>% 
-  filter(is.na(YEAR), !is.na(prediction)) %>% 
-  mutate(ethnicity = fct_reorder(ethnicity, n)) %>% 
-  ggplot(aes(ethnicity, n)) + geom_col() + facet_wrap(~ prediction, scales = "free_x", ncol = 1) + coord_flip() +
-  scale_y_log10()
 
 events %>% 
   count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921) %>% 
+  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
   mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
          YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
   ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col(position = "fill") + theme_minimal() +
@@ -59,7 +69,7 @@ ggsave(here::here("plots/missing_data_analysis/proportion_by_year.pdf"))
 
 events %>% 
   count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921) %>% 
+  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
   mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
          YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
   ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col() + theme_minimal() +
@@ -105,7 +115,7 @@ min_by_month_all %>%
  events %>% 
   mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing")) %>% 
   count(YEAR, month_missing, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   mutate(YEAR = as_date(YEAR)) %>% 
   ggplot(aes(x = YEAR, y = n, fill = month_missing)) + geom_col(position = "fill")  + theme_minimal() +
   labs(y = element_blank(), x = "Year", fill = "Month of arrest") + 
@@ -134,6 +144,7 @@ conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
 spec_sens_data <- as_tibble(conf_matrix$byClass, rownames = "ethnicity") %>% 
   mutate(ethnicity = str_replace(ethnicity, "Class: ", "")) %>% 
   dplyr::select(ethnicity:Specificity)
+
 
 conf_matrix <- conf_matrix$table
 
@@ -244,11 +255,15 @@ min_by_q <-  min_by_month_all %>%
 
 ```
 
+
+
 ## By year
 ```{r}
-min_by_year_preds <- events %>% 
+get_arrests_by_year <- function(data){
+
+min_by_year_preds <- data %>% 
   count(YEAR, prediction, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR)) %>% 
+  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   complete(YEAR, ethnicity, prediction, fill = list(n = 0))
 
 
@@ -289,6 +304,23 @@ min_by_year_all <- min_by_year_all %>%
          n = label + pred_adj_full_scaled, 
          log_n = log(1 + n))
 
+min_by_year_all
+}
+
+all_dates <- events %>% 
+  filter(!is.na(source_date_arrest)) %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+
+only_labeled_dates <- events %>% 
+  filter(!is.na(source_date_arrest), source_date_arrest == "label") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+
+min_by_year_all <- only_labeled_dates %>% 
+  left_join(all_dates, by = c("YEAR", "ethnicity"), suffix = c("", "_imp_date"))
+
+
 write_csv(min_by_year_all, here::here("data/min_by_year_preds.csv")) 
 ```
 
@@ -300,9 +332,9 @@ min_by_year %>%
   mutate(log_n = log(1 + prediction)) %>% 
   ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
   labs(y = "log(1 + arrests)", x = "Year", col = "Prediction type") +
-  scale_color_discrete(labels = c('Full matrix adjustment',
-                              'Parsimonious adjustment', 
-                              "No adjustment")) + 
+  scale_color_discrete(labels = c('Full matrix adj.',
+                              'Parsimonious adj.', 
+                              "No adj.")) + 
   theme_bw()
   
 

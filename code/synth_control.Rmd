@@ -14,7 +14,6 @@ library(broom)
 library(lubridate)
 library(here)
 library(readxl)
-library(gsynth)
 library(MSCMT)
 library(kableExtra)
 library(knitr)
@@ -44,12 +43,14 @@ min_by_q <- min_by_q %>%
 ```
 
 ```{r}
+opts_current$set(label = "sc_weights")
 ethnicity_controls %>% 
-  dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct) %>% 
+  dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct, ind_country) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
-        col.names = c("Ethnic group", "Total population", "Linguistic similarity to Russian", "Urbanization rate"),
+        col.names = c("Ethnic group", "Total population", "Ling. similarity to Russian", 
+                      "Urbanization rate", "Ind. country"),
         caption = "Pre-treatment characteristics of ethnic groups in the USSR for SC") %>%
-  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).",
+  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity). Independent country equals one if the ethnic group was a core group in an independent state that existed in the interwar period.",
            threeparttable = T) %>% 
     write_file(here::here("tables/sc_predictors.tex"))
 
@@ -71,7 +72,7 @@ min_by_month <- min_by_month  %>%
 ```{r}
 min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
   filter(ethnicity != "Russian") %>% 
-  #mutate(log_n = log(1 + label + prediction)) %>% 
+  mutate(log_n = log(1 + label + pred_adj_full_scaled)) %>% 
   dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
                    total_pred, Sensitivity, Specificity)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
@@ -79,6 +80,8 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
 
 min_by_year <- min_by_year %>% 
   filter(YEAR < 1940)
+
+
 ```
 
 
@@ -172,6 +175,7 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_all.pdf"))
 
 rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
   map("rmspe") %>% 
@@ -198,6 +202,7 @@ tk_tbl(sc_placebo$placebo$log_n$gaps) %>%
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_mspe_5_lower.pdf"))
 
 mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921","1932"),
                         range.post = c("1933","1939"), type = "mspe")
@@ -209,6 +214,7 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
   labs(x = element_blank(), y = "MSPE ratio")
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf"))
+ggsave(here::here("plots/synthetic_control/annual/mspe_ratios.pdf"))
 
 ```
 
@@ -249,7 +255,7 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
   filter(Weights != 0) %>% 
   arrange(desc(Weights)) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
-        col.names = c("Ethnic group", "Weight"),
+        col.names = c("Ethnic group", "$W$-Weight"),
         caption = "Synthetic German minority weights") %>%
   #footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))

@@ -1,14 +1,14 @@
 \section{Difference-in-differences}
 Our main specification is the dynamic difference-in-differences model:
 \begin{equation}
- \log\left(1 + y_{it}\right) = \sum_{k= \text{1928Q1}}^{\text{1939Q4}} \beta_k \, \text{German}_{i} \cdot \text{YearQuart}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
+ \log\left(1 + y_{it}\right) = \sum_{k= 1930}^{1939} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
  \label{eq:dynamic_did}
 \end{equation}
 
  %+ \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}    
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year-quarter $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{YearQuart}_{t}^k$ are dummy variables that equals 1 if its year-quarter $k$ equals to $t$ and 0 otherwise (except for 1939Q4 which is equal to 1 after the fourth quarter of 1939 and zero otherwise) . The coefficients of interest are $\beta_k$. 
-Prior to second quarter of 1933 they capture the pre-treatment trends the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After second quarter of 1933 they the dynamic lagged effects.
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise (except for 1939 which is equal to 1 if $t \geq 1939$ and zero otherwise) . The coefficients of interest are $\beta_k$. 
+Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects.
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
 The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific quadratic time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (\citealt{angrist_mostly_2009}). 
 
@@ -104,7 +104,7 @@ for estimating rareness of large  post-treatment gap for a treatment with a good
 
 %Morever, the pre-treatment MSPE is quite small (0.52) which means that the synthetic German minority captures the actual pre-treatment trends relatively well. However, the pre-treatment MSPE of a few minorities is much larger indicating that no combination of donor ethnic groups fits well their time series. As \citet{abadie_synthetic_2010} note,  if there is poor fit of the synthetic control to the actual trends in the pre-treatment period then its post-treatment gap does not provide good comparison to the well fit ethnic groups. 
 %large post-treatment gap would not indicate the presence of an effect but  
-Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit (Tatars, ...). The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_5_times}. The post-1933 gaps in German arrests now stand out more clearly. 
+Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit. The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_5_times}. The post-1933 gaps in German arrests now stand out more clearly. 
 
 \begin{figure}[hbtp] 
 \begin{subfigure}{\textwidth}

@@ -19,42 +19,94 @@ library(caret)
 library(pryr)
 library(bnlearn)
 library(bnclassify)
-install.packages("bnlearn")
 Sys.setlocale("LC_CTYPE", "russian") 
-
+library(naniar)
+install.packages("naniar")
 ```
 
 ```{r}
+memorial_lists %>% 
+  #filter()
+  count(memory_book_url, sort = T)
+memorial_lists %>% 
+  filter(previous_repression != "None") %>% 
+  View()
+
+```
+missing arrest date: 1 650 941
+non-missing arrest date: 1 053 658
+missing arrest date but non-missing process date: 903506
+```{r}
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", nrows = 20, sep="\t")
 names(memorial_lists)
+selected_vars <- c("person_id", "nation", "surname", "name", "previous_repression",
+                   "next_repression", "rehabilitation_reason", "memory_book", "memory_book_url")
 selected_vars <- c("person_id", "nation", "arest_date", "process_date")
+memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="", na.strings = "None")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="")
 
+memorial_lists <- memorial_lists[, place_missing := ifelse(birth_place == "None" & live_place == "None", 1, 0)]
+
+
 memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & arest_date == "None", 1, 0)]
 memorial_lists <- memorial_lists[, nation_latin := stri_trans_general(nation, "cyrillic-latin")]
+memorial_lists <- memorial_lists[, no_ethnicity := ifelse(nation == "None", 1, 0)]
+memorial_lists <- memorial_lists[, no_date_of_arrest:= ifelse(arest_date == "None", 1, 0)]
+memorial_lists <- memorial_lists[, no_date_of_process:= ifelse(process_date == "None", 1, 0)]
+
 
 translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
 
 memorial_lists %>% 
-  count(no_date)
+  count(no_date, no_ethnicity) %>% 
+  mutate(no_date = recode_factor(no_date, `1` = "Missing",  `0` = "Non-missing"),
+         no_ethnicity = recode_factor(no_ethnicity, `1` = "Missing", `0` = "Non-missing")) %>% 
+  spread(key = no_date, value = n)
+
+memorial_lists %>% 
+  count(no_date_of_arrest, no_date_of_process) %>% 
+  mutate(no_date_of_arrest = recode_factor(no_date_of_arrest, `1` = "Missing",  `0` = "Non-missing"),
+         no_date_of_process = recode_factor(no_date_of_process, `1` = "Missing", `0` = "Non-missing")) %>% 
+  spread(key = no_date_of_arrest, value = n)
+
+
+memorial_lists_nas <- replace_with_na_all(memorial_lists,
+                    condition = ~.x == "None")
+
+memorial_lists_sample <- memorial_lists %>% 
+  sample_n(50000)
+vis_miss(memorial_lists_sample, cluster = TRUE) 
+
+
 
 memorial_lists %>% 
   count(nation, nation_latin, sort = T) %>% 
   write_xlsx("data/ethnicity_translations.xlsx")
 
-memorial_lists %>% 
-  count(arest_date, sort = T)
-
-memorial_lists %>% 
-  count(ethnicity, sort = T)%>% 
-  View()
+```
 
 
-memorial_lists %>% 
-  count(process_date, sort = T) 
+```{r}
+  ggplot2::ggplot(data = memorial_lists_sample,
+                  ggplot2::aes_string(x = "variable",
+                                      y = "rows",
+                                    # text assists with plotly mouseover
+                                    text = "value")) +
+  ggplot2::geom_raster(ggplot2::aes_string(fill = "None")) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45,
+                                                     vjust = 1,
+                                                     hjust = 1)) +
+  ggplot2::labs(x = "",
+                y = "Observations") +
+    # flip the axes
+    ggplot2::scale_y_reverse() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(hjust = 0.5))
 
 ```
+
 
 ```{r}
 memorial_lists <-
@@ -64,7 +116,7 @@ memorial_lists <-
 
 memorial_lists <- memorial_lists %>% 
   separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
-  separate(arest_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>% 
+  separate(process_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>%
   mutate_at(vars("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
              funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
 

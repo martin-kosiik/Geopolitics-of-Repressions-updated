@@ -9,6 +9,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -32,13 +33,21 @@ events <- events %>%
 
 events <- events %>% 
   separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
-  separate(arest_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>% 
+  separate(process_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>%
   mutate_at(c("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
              funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
 
 saveRDS(events, file = here::here("data/eventsClean_v3.RData"))
 
 events <- readRDS(here::here("data/eventsClean_v3.RData"))
+
+arrest_date_imputation <- readRDS(file = here::here("data/arrest_date_imputation.RData"))
+
+
+events <- events %>% 
+  left_join(arrest_date_imputation, by = "person_id", suffix = c(".only_label", ""))
+
+
 
 by_year <- events %>% 
   count(YEAR, MONTH, prediction, ethnicity) 
@@ -246,9 +255,13 @@ min_by_q <-  min_by_month_all %>%
 
 ```
 
+
+
 ## By year
 ```{r}
-min_by_year_preds <- events %>% 
+get_arrests_by_year <- function(data){
+
+min_by_year_preds <- data %>% 
   count(YEAR, prediction, ethnicity) %>% 
   filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   complete(YEAR, ethnicity, prediction, fill = list(n = 0))
@@ -290,6 +303,23 @@ min_by_year_all <- min_by_year_all %>%
          pred_adj_full_scaled = round(pred_adj_full * (total_pred/total_pred_adj_full)),
          n = label + pred_adj_full_scaled, 
          log_n = log(1 + n))
+
+min_by_year_all
+}
+
+all_dates <- events %>% 
+  filter(!is.na(source_date_arrest)) %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+
+only_labeled_dates <- events %>% 
+  filter(!is.na(source_date_arrest), source_date_arrest == "label") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+
+min_by_year_all <- only_labeled_dates %>% 
+  left_join(all_dates, by = c("YEAR", "ethnicity"), suffix = c("", "_imp_date"))
+
 
 write_csv(min_by_year_all, here::here("data/min_by_year_preds.csv")) 
 ```

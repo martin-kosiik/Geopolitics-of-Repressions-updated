@@ -14,14 +14,41 @@ library(pscl)
 library(broom)
 install.packages("rstanarm")
 library(rstanarm)
+library(scales)
 ```
 
 Checkout GLMMadaptive 
 ```{r}
+selected_vars <- c("person_id", "arest_date", "process_date")
+memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+                        select = selected_vars, quote="")
+
+memorial_lists <- memorial_lists[surname != "None",]
+
+memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & arest_date == "None", 1, 0)]
+
+memorial_lists <- memorial_lists %>% 
+  separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
+  separate(process_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>%
+  mutate_at(vars("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
+             funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
+
+month_freq <- memorial_lists %>% 
+  filter(!is.na(MONTH_PROCESS)) %>% 
+  add_count() %>% 
+  group_by(MONTH_PROCESS) %>% 
+  summarise(month_freq = n()/n[1]) %>% 
+  pull(month_freq)
+
+set.seed(2019)
+
 some_date <-  memorial_lists %>% 
   filter(no_date == 0) %>% 
   mutate(MONTH_PROCESS_simple_imp = ifelse(is.na(MONTH_PROCESS),
                                            base::sample(1:12, size = 1, prob = rep(1/12, 12)),
+                                           MONTH_PROCESS),
+         MONTH_PROCESS_freq_imp = ifelse(is.na(MONTH_PROCESS),
+                                           base::sample(1:12, size = 1, prob = month_freq),
                                            MONTH_PROCESS),
          DAY_PROCESS_simple_imp = ifelse(is.na(DAY_PROCESS),
                                            case_when(MONTH_PROCESS_simple_imp %in% c(1, 3, 5, 7, 8, 10, 12) ~ 
@@ -30,17 +57,20 @@ some_date <-  memorial_lists %>%
                                                        base::sample(1:30, size = 1, prob = rep(1/30, 30)),
                                                      MONTH_PROCESS_simple_imp == 2 ~
                                                        base::sample(1:28, size = 1, prob = rep(1/28, 28))),
+                                           DAY_PROCESS),
+         DAY_PROCESS_freq_imp = ifelse(is.na(DAY_PROCESS),
+                                           case_when(MONTH_PROCESS_freq_imp %in% c(1, 3, 5, 7, 8, 10, 12) ~ 
+                                                       base::sample(1:31, size = 1, prob = rep(1/31, 31)),
+                                                     MONTH_PROCESS_freq_imp %in% c(4, 6, 9, 11) ~ 
+                                                       base::sample(1:30, size = 1, prob = rep(1/30, 30)),
+                                                     MONTH_PROCESS_freq_imp == 2 ~
+                                                       base::sample(1:28, size = 1, prob = rep(1/28, 28))),
                                            DAY_PROCESS))
   
-
-memorial_lists %>% 
-  count(arest_date, sort = T)
 
 missing_month_not_year <-  memorial_lists %>% 
   filter(is.na(MONTH_PROCESS) & !is.na(YEAR_PROCESS)) %>% 
   filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961)
-
-
   
 
 non_missing_process_mon_year <- memorial_lists %>% 
@@ -50,14 +80,6 @@ non_missing_process_mon_year <- memorial_lists %>%
          YEAR_PROCESS =as.factor(YEAR_PROCESS)) %>% 
   dplyr::select(MONTH_PROCESS, YEAR_PROCESS)
 
-nb_month <- NaiveBayes(as.factor(MONTH_PROCESS) ~ as.factor(YEAR_PROCESS), data = non_missing_process_mon_year)
-
-preds <- predict(nb_month, data = missing_month_not_year)
-
-head(preds$posterior)
-
-missing_month_not_year$MONTH_PROCESS_imp <- map_dbl(1:nrow(missing_month_not_year),
-                                                    ~ base::sample(1:12, size = 1, prob = preds$posterior[., ]))
 
 
 
@@ -70,9 +92,6 @@ both_dates <- some_date %>%
   filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961) %>% 
   filter(diff_days >= 0)
   
-
-
-
 
 missing_day <- memorial_lists %>% 
   filter((!is.na(MONTH)) & (!is.na(MONTH_PROCESS))) %>% 
@@ -99,14 +118,39 @@ lm_model_simple_sigma <- summary(lm_model_simple)$sigma
 ```
 
 ```{r}
+glm.sign <- glm(I(diff_days > 0) ~ as.factor(YEAR_PROCESS), 
+                data = both_dates, family = binomial(link = logit))
+summary(glm.sign)
+lm.ifpos <- lm(I(log(diff_days)) ~ as.factor(YEAR_PROCESS),
+               data = both_dates, subset = diff_days > 0) 
+summary(lm.ifpos)
+
+
+
+```
+
+
+```{r}
 missing_date_of_arrest <- some_date %>% 
   filter(is.na(YEAR) & !is.na(YEAR_PROCESS)) %>% 
-  dplyr::select(person_id) %>% 
+  dplyr::select(person_id, YEAR_PROCESS) %>% 
+  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961)
+
+
+missing_date_of_arrest <-missing_date_of_arrest %>% 
   mutate(diff_day_imp = round(exp(rnorm(n(), mean = lm_model_simple_intercept, sd = lm_model_simple_sigma)) - 1),
          diff_day_imp = ifelse(diff_day_imp < 0, 0, diff_day_imp))
 
 
-some_date <- some_date %>% 
+
+missing_date_of_arrest <- missing_date_of_arrest %>% 
+  mutate(pred.sign = rbinom(n(), 1, predict(glm.sign, ., type="response")),
+         pred.pos.log = rnorm(n(), mean = predict(lm.ifpos, .), sd = summary(lm.ifpos)$sigma),
+         diff_day_imp_complex = round(exp(pred.pos.log) * pred.sign))
+
+
+
+simple_imp <- some_date %>% 
   left_join(missing_date_of_arrest, by = "person_id") %>% 
   mutate(date_process_simple_imp = as_date(str_c(YEAR_PROCESS, MONTH_PROCESS_simple_imp, DAY_PROCESS_simple_imp,
                                          sep = "-")),
@@ -117,21 +161,68 @@ some_date <- some_date %>%
                                         TRUE ~ "missing"),
          YEAR = ifelse(!is.na(year_arrest_simple_imp), year_arrest_simple_imp, YEAR)) 
 
+complex_imp <- some_date %>% 
+  left_join(missing_date_of_arrest %>% select(person_id, diff_day_imp_complex), by = "person_id") %>% 
+  mutate(date_process_freq_imp = as_date(str_c(YEAR_PROCESS, MONTH_PROCESS_freq_imp, DAY_PROCESS_simple_imp,
+                                         sep = "-")),
+         date_arrest_complex_imp = date_process_freq_imp - days(diff_day_imp_complex),
+         year_arrest_complex_imp = year(date_arrest_complex_imp), 
+         source_date_arrest = case_when(!is.na(YEAR) ~ "label",
+                                        !is.na(year_arrest_complex_imp) ~ "prediction",
+                                        TRUE ~ "missing"),
+         YEAR = ifelse(!is.na(year_arrest_complex_imp), year_arrest_complex_imp, YEAR)) 
 
+# Choose either complex  or simple imputation
 
-some_date <- some_date %>% 
+imputation <- complex_imp %>% 
   filter(source_date_arrest != "missing") %>% 
   dplyr::select(person_id, YEAR, source_date_arrest)
 
-saveRDS(some_date, file = here::here("data/arrest_date_imputation.RData"))
+saveRDS(imputation, file = here::here("data/arrest_date_imputation.RData"))
 
 
 ```
+
+Plots 
+```{r}
+mylog10_trans <- function (base = 10) 
+{
+  trans <- function(x) log(x + 1, base)
+  inv <- function(x) base^x
+  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
+            domain = c(1e-100, Inf))
+}
+
+
+missing_date_of_arrest %>% 
+  mutate(log_day = log(1 + diff_day_imp_complex)) %>% 
+  ggplot(aes(x = diff_day_imp_complex)) + geom_histogram(col = "white") + theme_minimal()+
+  scale_x_continuous(trans = "mylog10")
+ggsave(here::here("plots/imputing_arrest_date/mixed_model_preds_hist.pdf"))
+
+
+# Why is non-mixed log-normal model bad
+ 
+both_dates %>% 
+  filter(abs(diff_days) < 5000) %>% 
+  mutate(log_diff_days = log(1 + diff_days)) %>% 
+  ggplot(aes(x = diff_days)) + geom_histogram(aes(y=..density..), col = "white") + 
+    geom_density(aes(y=..density.., position="stack"), col = "red") +
+    stat_function(fun = function(x, mean, sd) dnorm(log(x + 1) , mean, sd), 
+                  args = list(mean = lm_model$coefficients[1], sd = summary(lm_model)$sigma), 
+                  col = "blue", size=1.5) + scale_x_continuous(trans = "mylog10") +
+  theme_minimal() + labs(x = "Number of days between arrest and process dates")
+
+ggsave(here::here("plots/imputing_arrest_date/simple_lm_hist.pdf"))
+```
+
+
 
 ```{r}
 coef_sims <- crossing(tidy(lm_model), sim_num = 1:1000) %>% 
   mutate(coef = rnorm(n(), mean = estimate, sd = std.error)) 
 
+lm_model <-  lm(log(1 +diff_days) ~ 1, data = both_dates)
 
 zip_model <-  zeroinfl(diff_days ~ 1, data = filter(both_dates, diff_days >= 0), dist = "negbin")
 
@@ -170,15 +261,7 @@ pi_hat <- exp(zip_model$coefficients$zero)/(1 + exp(zip_model$coefficients$zero)
 lambda_hat <- exp(zip_model$coefficients$count)
 
 
-both_dates %>% 
-  filter(abs(diff_days) < 5000) %>% 
-  filter(diff_days >= 0) %>% 
-  mutate(log_diff_days = log(1 + diff_days)) %>% 
-  ggplot(aes(x = log_diff_days)) + geom_histogram(aes(y=..density..)) + 
-    geom_density(aes(y=..density.., position="stack"), col = "red") +
-    stat_function(fun = dnorm, args = list(mean = lm_model$coefficients[1], sd = summary(lm_model)$sigma), 
-                  col = "blue", size=1.5) + 
-  theme_minimal()
+
 
 both_dates %>% 
   filter(abs(diff_days) < 5000) %>% 

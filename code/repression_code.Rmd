@@ -51,7 +51,7 @@ min_by_year <- min_by_year %>%
 Some summary statstics
 ```{r}
 opts_current$set(label = "total_arrests_by_ethnicity")
- min_by_year %>% 
+min_by_year %>% 
   group_by(ethnicity) %>% 
   summarize(Arrests_label = sum(label_imp_date), Arrests_preds = sum(label_imp_date + prediction_imp_date),
             Arrests_preds_adj = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 

@@ -21,7 +21,8 @@ library(bnlearn)
 library(bnclassify)
 Sys.setlocale("LC_CTYPE", "russian") 
 library(naniar)
-install.packages("naniar")
+library(knitr)
+library(kableExtra)
 ```
 
 ```{r}
@@ -29,7 +30,7 @@ memorial_lists %>%
   #filter()
   count(memory_book_url, sort = T)
 memorial_lists %>% 
-  filter(previous_repression != "None") %>% 
+  filter(surname == "None") %>% 
   View()
 
 ```
@@ -41,11 +42,13 @@ memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", nrows 
 names(memorial_lists)
 selected_vars <- c("person_id", "nation", "surname", "name", "previous_repression",
                    "next_repression", "rehabilitation_reason", "memory_book", "memory_book_url")
-selected_vars <- c("person_id", "nation", "arest_date", "process_date")
+selected_vars <- c("person_id", "nation", "arest_date", "process_date", "surname", "name")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="", na.strings = "None")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="")
+
+memorial_lists <- memorial_lists[surname != "None",]
 
 memorial_lists <- memorial_lists[, place_missing := ifelse(birth_place == "None" & live_place == "None", 1, 0)]
 
@@ -53,59 +56,63 @@ memorial_lists <- memorial_lists[, place_missing := ifelse(birth_place == "None"
 memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & arest_date == "None", 1, 0)]
 memorial_lists <- memorial_lists[, nation_latin := stri_trans_general(nation, "cyrillic-latin")]
 memorial_lists <- memorial_lists[, no_ethnicity := ifelse(nation == "None", 1, 0)]
-memorial_lists <- memorial_lists[, no_date_of_arrest:= ifelse(arest_date == "None", 1, 0)]
-memorial_lists <- memorial_lists[, no_date_of_process:= ifelse(process_date == "None", 1, 0)]
+memorial_lists <- memorial_lists[, no_date_of_arrest := ifelse(arest_date == "None", 1, 0)]
+memorial_lists <- memorial_lists[, no_date_of_process := ifelse(process_date == "None", 1, 0)]
 
 
 translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
 
+opts_current$set(label = "missingness_of_ethnicity_and_date")
 memorial_lists %>% 
   count(no_date, no_ethnicity) %>% 
-  mutate(no_date = recode_factor(no_date, `1` = "Missing",  `0` = "Non-missing"),
-         no_ethnicity = recode_factor(no_ethnicity, `1` = "Missing", `0` = "Non-missing")) %>% 
-  spread(key = no_date, value = n)
+  mutate(no_date = recode_factor(no_date, `1` = "Missing",  `0` = "Present"),
+         no_ethnicity = recode_factor(no_ethnicity, `1` = "Missing", `0` = "Present")) %>% 
+  spread(key = no_date, value = n) %>% 
+    kable("latex", booktabs = T, caption = "Missingness of Ethnicity and Dates of Arrest and Process",
+          linesep = "",
+        col.names = c("Ethnicity", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Date of Arrest or Process" = 3)) %>% 
+  #kable_styling(font_size = 8) %>% 
+  write_file("tables/missingness_of_ethnicity_and_date.tex")
 
+opts_current$set(label = "missing_date_of_arrest_process")
 memorial_lists %>% 
   count(no_date_of_arrest, no_date_of_process) %>% 
-  mutate(no_date_of_arrest = recode_factor(no_date_of_arrest, `1` = "Missing",  `0` = "Non-missing"),
-         no_date_of_process = recode_factor(no_date_of_process, `1` = "Missing", `0` = "Non-missing")) %>% 
-  spread(key = no_date_of_arrest, value = n)
+  mutate(no_date_of_arrest = recode_factor(no_date_of_arrest, `1` = "Missing",  `0` = "Present"),
+         no_date_of_process = recode_factor(no_date_of_process, `1` = "Missing", `0` = "Present")) %>% 
+  spread(key = no_date_of_arrest, value = n) %>% 
+  kable("latex", booktabs = T, caption = "Missing Dates of Arrest and Process", linesep = "",
+        col.names = c("Date of Process", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Date of Arrest" = 3)) %>% 
+  #kable_styling(font_size = 8) %>% 
+  write_file("tables/missing_date_of_arrest_process.tex")
 
 
 memorial_lists_nas <- replace_with_na_all(memorial_lists,
                     condition = ~.x == "None")
 
-memorial_lists_sample <- memorial_lists %>% 
-  sample_n(50000)
-vis_miss(memorial_lists_sample, cluster = TRUE) 
-
-
-
-memorial_lists %>% 
-  count(nation, nation_latin, sort = T) %>% 
-  write_xlsx("data/ethnicity_translations.xlsx")
 
 ```
 
 
 ```{r}
-  ggplot2::ggplot(data = memorial_lists_sample,
-                  ggplot2::aes_string(x = "variable",
-                                      y = "rows",
-                                    # text assists with plotly mouseover
-                                    text = "value")) +
-  ggplot2::geom_raster(ggplot2::aes_string(fill = "None")) +
-  ggplot2::theme_minimal() +
-  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45,
-                                                     vjust = 1,
-                                                     hjust = 1)) +
-  ggplot2::labs(x = "",
-                y = "Observations") +
-    # flip the axes
-    ggplot2::scale_y_reverse() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(hjust = 0.5))
+n_of_obs <- nrow(memorial_lists)
 
+opts_current$set(label = "missing_data_count")
+memorial_lists %>% 
+  dplyr::select(nation, arest_date, process_date, name) %>% 
+  summarise_all(funs(sum(. == "None"))) %>% 
+  gather(key = "Variable", value = "missing_count") %>% 
+  mutate(missing_pct = missing_count/n_of_obs * 100,
+         Variable = recode_factor(Variable, "nation" = "Ethnicity","arest_date" = "Date of Arrest", 
+                       "process_date" =  "Date of Process", "name" = "First Name", "surname" = "Surname")) %>% 
+  kable("latex", booktabs = T, caption = "Missing Data by Variable", linesep = "",
+        col.names = c("Variable", "Number of Missing Obs.", "Percent of Missing Obs."),
+        format.args = list(big.mark = " ")) %>% 
+ # kable_styling(font_size = 8) %>% 
+  write_file("tables/missing_data_count.tex")
 ```
+
 
 
 ```{r}

@@ -53,9 +53,14 @@ Some summary statstics
 opts_current$set(label = "total_arrests_by_ethnicity")
  min_by_year %>% 
   group_by(ethnicity) %>% 
-  summarize(Arrests = sum(n)) %>% 
-  kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", 
-        col.names = c("Ethnicity", "Number of arrests")) %>% 
+  summarize(Arrests_label = sum(label_imp_date), Arrests_preds = sum(label_imp_date + prediction_imp_date),
+            Arrests_preds_adj = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
+  arrange(desc(Arrests_label)) %>% 
+  kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
+        col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadjust. Imputation", 
+                      "Labeled + Unadjust. Imputation"), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Reference" = 4)) %>% 
+  kable_styling(font_size = 8) %>% 
   write_file("tables/total_arrests_tab.tex")
 
   

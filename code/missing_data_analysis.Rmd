@@ -151,9 +151,9 @@ conf_matrix <- conf_matrix$table
 opts_current$set(label = "conf_matrix_count")
 as_tibble(conf_matrix) %>% 
   spread(key = Reference, value = n) %>% 
-  kable("latex", booktabs = T, linesep = "",
+  kable("latex", booktabs = T, linesep = "", longtable = T,
         caption = "Confusion Matrix (based on 10-fold cross-validation) - Counts") %>% 
-  kable_styling(font_size = 5) %>% 
+  kable_styling(font_size = 5, latex_options = c("repeat_header")) %>% 
   add_header_above(c(" " = 1, "Reference" = 18)) %>% 
   landscape() %>% 
     write_file(here::here("tables/conf_matrix_count.tex"))
@@ -163,9 +163,9 @@ conf_matrix <- apply(conf_matrix, 2, function(x) x/sum(x))
 
 opts_current$set(label = "conf_matrix_prop")
 as_tibble(conf_matrix, rownames = "Prediction") %>% 
-  kable("latex", booktabs = T, linesep = "", digits = 3,
+  kable("latex", booktabs = T, linesep = "", digits = 3, longtable = T,
         caption = "Confusion Matrix (based on 10-fold cross-validation) - Proportions") %>% 
-  kable_styling(font_size = 5) %>% 
+  kable_styling(font_size = 5, latex_options = c("repeat_header")) %>% 
   add_header_above(c(" " = 1, "Reference" = 18)) %>% 
   landscape() %>% 
     write_file(here::here("tables/conf_matrix_prop.tex"))
@@ -173,9 +173,9 @@ as_tibble(conf_matrix, rownames = "Prediction") %>%
 opts_current$set(label = "sens_spec")
 spec_sens_data %>% 
   rename(Ethnicity = ethnicity) %>% 
-  kable("latex", booktabs = T, linesep = "", digits = 3,
+  kable("latex", booktabs = T, linesep = "", digits = 3, longtable = T,
         caption = "Naive Bayes Performance Measures by Ethnicity") %>% 
-  kable_styling(font_size = 9) %>% 
+  kable_styling(font_size = 8, latex_options = c("repeat_header")) %>% 
     write_file(here::here("tables/sens_spec.tex"))
 
 ```

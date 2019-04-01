@@ -71,7 +71,7 @@ memorial_lists %>%
     kable("latex", booktabs = T, caption = "Missingness of Ethnicity and Dates of Arrest and Process",
           linesep = "",
         col.names = c("Ethnicity", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Date of Arrest or Process" = 3)) %>% 
+  add_header_above(c(" " = 1, "Date of Arrest or Process" = 2)) %>% 
   #kable_styling(font_size = 8) %>% 
   write_file("tables/missingness_of_ethnicity_and_date.tex")
 
@@ -83,7 +83,7 @@ memorial_lists %>%
   spread(key = no_date_of_arrest, value = n) %>% 
   kable("latex", booktabs = T, caption = "Missing Dates of Arrest and Process", linesep = "",
         col.names = c("Date of Process", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Date of Arrest" = 3)) %>% 
+  add_header_above(c(" " = 1, "Date of Arrest" = 2)) %>% 
   #kable_styling(font_size = 8) %>% 
   write_file("tables/missing_date_of_arrest_process.tex")
 
@@ -106,7 +106,7 @@ memorial_lists %>%
   mutate(missing_pct = missing_count/n_of_obs * 100,
          Variable = recode_factor(Variable, "nation" = "Ethnicity","arest_date" = "Date of Arrest", 
                        "process_date" =  "Date of Process", "name" = "First Name", "surname" = "Surname")) %>% 
-  kable("latex", booktabs = T, caption = "Missing Data by Variable", linesep = "",
+  kable("latex", booktabs = T, caption = "Missing Data by Variable", linesep = "", digits = 2,
         col.names = c("Variable", "Number of Missing Obs.", "Percent of Missing Obs."),
         format.args = list(big.mark = " ")) %>% 
  # kable_styling(font_size = 8) %>% 

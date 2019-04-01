@@ -58,8 +58,8 @@ min_by_year %>%
   arrange(desc(Arrests_label)) %>% 
   kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
         col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadjust. Imputation", 
-                      "Labeled + Unadjust. Imputation"), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Reference" = 4)) %>% 
+                      "Labeled + Adjust. Imputation"), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Reference" = 3)) %>% 
   kable_styling(font_size = 8) %>% 
   write_file("tables/total_arrests_tab.tex")
 

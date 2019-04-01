@@ -14,10 +14,19 @@ Specifically, we acquired total population of the ethnic groups and their urbani
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree and it has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 
 The full data are provided in the table \ref{tab:} in the appendix.
+\subsection{Missing Data Analysis}
+Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity and date of arrest is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the 1 197 373 with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
+\input{tables/missing_data_count.tex}
+
+Another major challenge is dealing with missing date of arrests. 
+One partial solution might be to use date of process to impute the missing date of arrest. The table \ref{tab:missing_date_of_arrest_process}
+\input{tables/missing_date_of_arrest_process.tex}
+
+
 \newpage
 \section{Imputation of Missing Data} \label{sec:missing_data}
 %napis o missing at random, completely at random asumptions
-\subsection{Inferring Ethnicity from Names}
+\subsection{Inferring Ethnicity from Names} \label{subsec:inferring_ethnicity}
 In this section, we explain our method for predicting ethnicity of an individual from his or her names. Using names for imputing ethnicity has several advantages. First, full name  is available for every individuals in the dataset. Second, names have been shown to be highly predictive of ethnicity in a variety of applications \citep{mateos_review_2007, hofstra_sources_2017, hofstra_predicting_2018}. 
 
 Given the high number of predictors, we need a model that is not  computationally demanding but at the same time achieves reasonable level of prediction accuracy. Naive Bayes classifier meets these criteria and has been for this reason used in wide range of applications including text classification  \citep{gentzkow_text_2019}.

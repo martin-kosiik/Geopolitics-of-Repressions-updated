@@ -20,7 +20,9 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 \input{tables/missing_date_of_arrest_process.tex}
 
 
-We created our main dataset by counting number of arrest for each ethnicity by year-quater.  A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
+After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. In the original dataset, there were more than 120 different ethnic groups howeve
+
+A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
 With 17  minorities (Armenian, Belorussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian) and 148 time periods (from 1921 to 1958) this gives us 2652 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:universe}, both in the appendix. 
 
 In addition to data on repressions, we also obtained some information on a few characteristics of the 17 ethnic groups in the USSR. 
@@ -129,3 +131,25 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 %We get bigger picture by examining the
 %confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. The confusion matrix is defined as 
 
+\subsection{Imputing Missing Date of Arrest} \label{subsec:imputing_missing_date}
+ We show the histogram for number of days between arrest and process (on scale $\log(1 + x)$) in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with majority of number of days ranging from 8 to 1000.  However, the transformed data seems to be following normal distribution.  
+
+ \begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{plots/imputing_arrest_date/simple_lm_hist.pdf}
+\caption{Histogram for Number of Days between Arrest and Process (shown on $\log(1 + x)$ scale)}
+\label{fig:simple_lm_hist}
+\end{figure}
+We therefore proceed to model the number of days in a two-stage process 
+by first predicting if a the number of days is zero and then fitting log-normal regression to the positive date. 
+described in Gelman and Hill (chapter 25). 
+Let $y$ be the number of days between arrest of an individual and his or her process and $X$ be set of dummy variables indicating the year of process. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
+\begin{equation}
+\Pr\left( I_i^y = 1 \right)  = \text{logit}^{-1} \left(X_i \alpha \right).
+\end{equation}
+In the second stage, simple log-linear regression is applied to predict only the positive values $y^{\text{pos}} = y$
+\begin{equation}
+\log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
+\end{equation}
+After  these models are fitted to the data with non-missing date of arrest and year of process, we apply them to the missing data to get the predicted probability of $y$  being non-zero and the mean value of $y$ if it is non-zero. For each observation with missing date of arrest, we then randomly draw from the Bernoulli distribution with the predicted probability as its parameter to obtain $\hat I_i^y$. We also draw  obtain
+The predicted probability is then used as a parameter 

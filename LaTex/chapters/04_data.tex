@@ -3,8 +3,22 @@ Our data on soviet repressions come from  \citet{zhukov_stalins_2018}\footnote{I
  However, the data are not complete and include only about 70\% of estimated 3.8  million people convicted under Article 58.
 
 Another major issue with the data is frequent  missingness of information on ethnicity and date of arrests. 
-% rekni kolik presne chyby
 We try to address this issue by imputing missing values using names and date of process. The imputation procedures are described in section 
+
+%\subsection{Missing Data Analysis}
+Missing data presents another major challenge. 
+%Another major issue with the data is frequent  
+ Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the 1 197 373 with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
+\input{tables/missing_data_count.tex}
+
+Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity. 
+One solution, albeit only partial, might be to use the date of process (where it is available)  to extrapolate the missing date of arrest.
+As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of process. 
+Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of process are known. 
+%Unfortunately, not much can be done address this problem. 
+%The table \ref{tab:missing_date_of_arrest_process} shows for this 
+\input{tables/missing_date_of_arrest_process.tex}
+
 
 We created our main dataset by counting number of arrest for each ethnicity by year-quater.  A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
 With 17  minorities (Armenian, Belorussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian) and 148 time periods (from 1921 to 1958) this gives us 2652 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:universe}, both in the appendix. 
@@ -14,13 +28,6 @@ Specifically, we acquired total population of the ethnic groups and their urbani
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree and it has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 
 The full data are provided in the table \ref{tab:} in the appendix.
-\subsection{Missing Data Analysis}
-Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity and date of arrest is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the 1 197 373 with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
-\input{tables/missing_data_count.tex}
-
-Another major challenge is dealing with missing date of arrests. 
-One partial solution might be to use date of process to impute the missing date of arrest. The table \ref{tab:missing_date_of_arrest_process}
-\input{tables/missing_date_of_arrest_process.tex}
 
 
 \newpage

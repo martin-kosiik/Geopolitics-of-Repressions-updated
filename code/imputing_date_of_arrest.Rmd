@@ -24,7 +24,7 @@ selected_vars <- c("person_id", "arest_date", "process_date")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="")
 
-memorial_lists <- memorial_lists[surname != "None",]
+#memorial_lists <- memorial_lists[surname != "None",]
 
 memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & arest_date == "None", 1, 0)]
 
@@ -68,6 +68,19 @@ some_date <-  memorial_lists %>%
                                                        base::sample(1:28, size = 1, prob = rep(1/28, 28))),
                                            DAY_PROCESS))
   
+memorial_lists %>% 
+  filter(!is.na(YEAR_PROCESS)) %>% 
+  filter(no_date == 0) %>% 
+  filter(arest_date == "None") %>% 
+  group_by(na.month = is.na(MONTH_PROCESS)) %>% 
+  count()
+
+memorial_lists %>% 
+  filter(!is.na(YEAR_PROCESS)) %>% 
+  filter(no_date == 0) %>% 
+  filter(arest_date == "None") %>% 
+  group_by(na.day = is.na(DAY_PROCESS)) %>% 
+  count()
 
 missing_month_not_year <-  memorial_lists %>% 
   filter(is.na(MONTH_PROCESS) & !is.na(YEAR_PROCESS)) %>% 
@@ -131,7 +144,8 @@ var_labels <- names(glm.sign$coefficients) %>%
   str_replace_all("as.factor\\(YEAR_PROCESS\\)", "Year of Process - ")
 
 stargazer(glm.sign, lm.ifpos, 
-          omit.stat = c("ser", "f"), label = "tab:date_imp_results",
+          omit.stat = c("ser", "f"), label = "tab:date_imp_results", font.size = "small", no.space = T, 
+          table.placement = "!h",
           covariate.labels = var_labels, title = "Arrest Date Imputation - Model Results",
           dep.var.labels = c("$I^y$", "$log(y^{\\text{pos}})$")) %>% 
  cat(sep = '\n', file = here::here("tables/date_imp_results.tex"))

@@ -10,6 +10,7 @@
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}
 
+\section*{Additional Tables}
 \input{tables/total_arrests_tab.tex}
 \newpage
 
@@ -23,15 +24,21 @@
 \input{tables/conf_matrix_prop.tex}
 \newpage
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=1.2\textwidth]{plots/arrests/arrests_by_ethnicity_quart.pdf}
-\caption{Arrests by ethnicity and year (in $log(1 + \text{arrests}_{it})$)}
-\label{fig:universe}
-\end{figure}
+\input{tables/date_imp_results.tex}
 \newpage
 
 \input{tables/sc_predictors.tex}
+\newpage
+
+\section*{Additional Figures}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1.2\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
+\caption{Histogram of Imputed Number of days between Arrest and Process}
+\label{fig:mixed_model_preds_hist}
+\end{figure}
+
 
 %\input{tables/diff_table.tex}
 %\thispagestyle{empty}

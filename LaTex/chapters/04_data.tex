@@ -11,7 +11,8 @@ Missing data presents another major challenge.
  Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the 1 197 373 with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
 \input{tables/missing_data_count.tex}
 
-Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity. 
+Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity.\footnote{
+We consider a date missing only if not even year of arrest is available. Many observations have information on year of arrest even though the exact month or day are missing. We do not categorize these observation as having missing date of arrest since our fundamental unit of analysis is a year and thus month and day are not of high interest to us. The same applies to the date of process.} 
 One solution, albeit only partial, might be to use the date of process (where it is available)  to extrapolate the missing date of arrest.
 As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of process. 
 Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of process are known. 
@@ -132,7 +133,8 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 %confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. The confusion matrix is defined as 
 
 \subsection{Imputing Missing Date of Arrest} \label{subsec:imputing_missing_date}
- We show the histogram for number of days between arrest and process (on scale $\log(1 + x)$) in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with majority of number of days ranging from 8 to 1000.  However, the transformed data seems to be following normal distribution.  
+ We show the histogram for number of days between arrest and process (on scale $\log(1 + x)$) in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.  Second, the transformed data seems to be following the normal distribution except for the density at 0
+ which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
 
  \begin{figure}[h]
 \centering
@@ -140,9 +142,10 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 \caption{Histogram for Number of Days between Arrest and Process (shown on $\log(1 + x)$ scale)}
 \label{fig:simple_lm_hist}
 \end{figure}
-We therefore proceed to model the number of days in a two-stage process 
-by first predicting if a the number of days is zero and then fitting log-normal regression to the positive date. 
-described in Gelman and Hill (chapter 25). 
+
+To address this problem, we model the zero and positive values separately in a two-stage process 
+%by first predicting if a the number of days is zero and then fitting log-normal regression to the positive date. 
+using a method described in \citet[p. 537-538]{gelman_data_2006}. 
 Let $y$ be the number of days between arrest of an individual and his or her process and $X$ be set of dummy variables indicating the year of process. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
 \begin{equation}
 \Pr\left( I_i^y = 1 \right)  = \text{logit}^{-1} \left(X_i \alpha \right).
@@ -151,5 +154,21 @@ In the second stage, simple log-linear regression is applied to predict only the
 \begin{equation}
 \log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
 \end{equation}
-After  these models are fitted to the data with non-missing date of arrest and year of process, we apply them to the missing data to get the predicted probability of $y$  being non-zero and the mean value of $y$ if it is non-zero. For each observation with missing date of arrest, we then randomly draw from the Bernoulli distribution with the predicted probability as its parameter to obtain $\hat I_i^y$. We also draw  obtain
-The predicted probability is then used as a parameter 
+We then fit the first model to the data where the exact dates of both arrest and process are available and the second model to the subset of the same  data for which $y > 0$.
+The results of both of these models provided in the table \ref{tab:date_imp_results} in the appendix. 
+
+%After  these models are fitted to the data with non-missing date of arrest and year of process,
+We  proceed to apply the fitted models to the missing data to get the predicted probability of $y$  being positive and the mean value of $y$ if it is positive. For each observation with missing date of arrest, we then randomly draw from the Bernoulli distribution with the predicted probability as its parameter to obtain $\hat I_i^y$. We also draw  obtain
+The predicted probability is then used as a parameter.
+
+The histogram of the imputed values is provided in the figure \ref{fig:mixed_model_preds_hist} in the appendix. 
+The resulting distribution  highly resembles the distribution  in the figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the real data fairly well. 
+
+Another issue is that for significant number of observations we do not have the exact date of process but only year. In particular, 
+while the year of process is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of process is missing for 369 393 of them and the day for 390 174. 
+To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of process in the non-missing data between the years 1921 to 1960. 
+Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability. 
+The imputed months and days of process are therefore only weakly informed guesses, nevertheless they enable us to proceed in the analysis. 
+
+
+%for the subset of the data where the date of arrest is to be imputed, 369 393 observations lack the month of the process and 390 174 miss the day out of the total 903 455 (all have year). 

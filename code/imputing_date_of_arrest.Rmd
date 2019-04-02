@@ -15,6 +15,7 @@ library(broom)
 install.packages("rstanarm")
 library(rstanarm)
 library(scales)
+library(stargazer)
 ```
 
 Checkout GLMMadaptive 
@@ -103,7 +104,7 @@ missing_day <- memorial_lists %>%
 
 glm_model <-  glm(log(1 +diff_days) ~ 1, data = filter(both_dates, diff_days >= 0))
 
-lm_model <-  lm(log(1 +diff_days) ~ as.factor(YEAR_PROCESS), data = both_dates)
+lm_model <-  lm(log10(1 +diff_days) ~ as.factor(YEAR_PROCESS), data = both_dates)
 glm_model <-  glm(log(1 +diff_days) ~ as.factor(YEAR_PROCESS), family = gaussian, data = both_dates)
 
 stan_glm_model <-  stan_glm(log(1 +diff_days) ~ as.factor(YEAR_PROCESS), family = gaussian, data = both_dates)
@@ -112,7 +113,7 @@ stan_lm_model <-  stan_glm(log(1 +diff_days) ~ as.factor(YEAR_PROCESS), data = b
 
 
 ```{r}
-lm_model_simple <-  lm(log(1 +diff_days) ~ 1, data = both_dates)
+lm_model_simple <-  lm(log10(1 +diff_days) ~ 1, data = both_dates)
 lm_model_simple_intercept <- lm_model_simple$coefficients[[1]]
 lm_model_simple_sigma <- summary(lm_model_simple)$sigma
 ```
@@ -125,7 +126,15 @@ lm.ifpos <- lm(I(log(diff_days)) ~ as.factor(YEAR_PROCESS),
                data = both_dates, subset = diff_days > 0) 
 summary(lm.ifpos)
 
+var_labels <- names(glm.sign$coefficients) %>% 
+  #str_subset("german:post_") %>% 
+  str_replace_all("as.factor\\(YEAR_PROCESS\\)", "Year of Process - ")
 
+stargazer(glm.sign, lm.ifpos, 
+          omit.stat = c("ser", "f"), label = "tab:date_imp_results",
+          covariate.labels = var_labels, title = "Arrest Date Imputation - Model Results",
+          dep.var.labels = c("$I^y$", "$log(y^{\\text{pos}})$")) %>% 
+ cat(sep = '\n', file = here::here("tables/date_imp_results.tex"))
 
 ```
 
@@ -188,30 +197,40 @@ Plots
 mylog10_trans <- function (base = 10) 
 {
   trans <- function(x) log(x + 1, base)
-  inv <- function(x) base^x
+  inv <- function(x) base^(x) - 1 
   trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
-            domain = c(1e-100, Inf))
+            domain = c(0, Inf))
 }
 
 
 missing_date_of_arrest %>% 
   mutate(log_day = log(1 + diff_day_imp_complex)) %>% 
-  ggplot(aes(x = diff_day_imp_complex)) + geom_histogram(col = "white") + theme_minimal()+
-  scale_x_continuous(trans = "mylog10")
+  ggplot(aes(x = diff_day_imp_complex)) + geom_histogram(aes(y=..density..),col = "white") + theme_minimal()+
+  scale_x_continuous(trans = "mylog10", breaks = c(0,2,10,100,1000,10000))+
+  labs(x = "Number of days between arrest and process dates") + 
+  theme(axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + expand_limits(x = -0.01)
 ggsave(here::here("plots/imputing_arrest_date/mixed_model_preds_hist.pdf"))
 
 
 # Why is non-mixed log-normal model bad
  
 both_dates %>% 
-  filter(abs(diff_days) < 5000) %>% 
+  #filter(abs(diff_days) < 5000) %>% 
   mutate(log_diff_days = log(1 + diff_days)) %>% 
   ggplot(aes(x = diff_days)) + geom_histogram(aes(y=..density..), col = "white") + 
-    geom_density(aes(y=..density.., position="stack"), col = "red") +
-    stat_function(fun = function(x, mean, sd) dnorm(log(x + 1) , mean, sd), 
+    #geom_density(aes(y=..density.., position="stack"), col = "red") +
+    stat_function(fun = function(x, mean, sd) dnorm(log10(x + 1) , mean, sd), 
                   args = list(mean = lm_model$coefficients[1], sd = summary(lm_model)$sigma), 
-                  col = "blue", size=1.5) + scale_x_continuous(trans = "mylog10") +
-  theme_minimal() + labs(x = "Number of days between arrest and process dates")
+                  col = "blue", size=1.5) + 
+  scale_x_continuous(trans = "mylog10", breaks = c(0,2,10,100,1000,10000)) +
+  theme_minimal() + labs(x = "Number of days between arrest and process dates") +
+  theme(axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12))
 
 ggsave(here::here("plots/imputing_arrest_date/simple_lm_hist.pdf"))
 ```
@@ -222,7 +241,7 @@ ggsave(here::here("plots/imputing_arrest_date/simple_lm_hist.pdf"))
 coef_sims <- crossing(tidy(lm_model), sim_num = 1:1000) %>% 
   mutate(coef = rnorm(n(), mean = estimate, sd = std.error)) 
 
-lm_model <-  lm(log(1 +diff_days) ~ 1, data = both_dates)
+lm_model <-  lm(log10(1 +diff_days) ~ 1, data = both_dates)
 
 zip_model <-  zeroinfl(diff_days ~ 1, data = filter(both_dates, diff_days >= 0), dist = "negbin")
 

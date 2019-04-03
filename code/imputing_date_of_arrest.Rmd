@@ -145,7 +145,7 @@ var_labels <- names(glm.sign$coefficients) %>%
 
 stargazer(glm.sign, lm.ifpos, 
           omit.stat = c("ser", "f"), label = "tab:date_imp_results", font.size = "small", no.space = T, 
-          table.placement = "!h",
+          table.placement = "!h", single.row = T, header = F,
           covariate.labels = var_labels, title = "Arrest Date Imputation - Model Results",
           dep.var.labels = c("$I^y$", "$log(y^{\\text{pos}})$")) %>% 
  cat(sep = '\n', file = here::here("tables/date_imp_results.tex"))

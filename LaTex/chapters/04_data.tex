@@ -19,18 +19,19 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 %Unfortunately, not much can be done address this problem. 
 %The table \ref{tab:missing_date_of_arrest_process} shows for this 
 \input{tables/missing_date_of_arrest_process.tex}
+\input{tables/missingness_of_ethnicity_and_date.tex}
 
 
-After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. In the original dataset, there were more than 120 different ethnic groups howeve
+After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
 
-A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
-With 17  minorities (Armenian, Belorussian, Estonian, German, Greek, Chechen, Chinese, Jewish, Kabardin, Kalmyk, Korean, Latvian, Lithuanian, Ossetian, Polish, Tatar and Ukrainian) and 148 time periods (from 1921 to 1958) this gives us 2652 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:universe}, both in the appendix. 
+%A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
+With 38  minorities  and 40 time periods (from 1921 to 1960) we have 1520 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:total_arrests_by_ethnicity} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}, both in the appendix. 
 
-In addition to data on repressions, we also obtained some information on a few characteristics of the 17 ethnic groups in the USSR. 
+In addition to data on repressions, we also obtained some information on some characteristics of the  ethnic groups in our dataset. 
 Specifically, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{It is available online at \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree and it has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 
-The full data are provided in the table \ref{tab:} in the appendix.
+The full data are provided in the table \ref{tab:sc_predictors} in the appendix.
 
 
 \newpage

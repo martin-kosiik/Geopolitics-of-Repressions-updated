@@ -133,7 +133,11 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 %confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. The confusion matrix is defined as 
 
 \subsection{Imputing Missing Date of Arrest} \label{subsec:imputing_missing_date}
- We show the histogram for number of days between arrest and process (on scale $\log(1 + x)$) in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.  Second, the transformed data seems to be following the normal distribution except for the density at 0
+Our strategy for imputing the missing arrest dates is to  predict it from the date of process. For this reason, we model the number of days between arrest and process and fit it to a subset of the data for which both dates are known. It  is reasonable to expect that the average number of day from  arrest to process could  vary considerably throughout the years.    %FOr example
+Hence we use the year of process as a predictor to our model. 
+
+Nevertheless, we begin by examining the data with both dates available. 
+The histogram for number of days between arrest and process (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.  Second, the transformed data seems to be following the normal distribution except for the density at 0
  which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
 
  \begin{figure}[h]
@@ -155,7 +159,8 @@ In the second stage, simple log-linear regression is applied to predict only the
 \log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
 \end{equation}
 We then fit the first model to the data where the exact dates of both arrest and process are available and the second model to the subset of the same  data for which $y > 0$.
-The results of both of these models provided in the table \ref{tab:date_imp_results} in the appendix. 
+The results of both of these models provided in the table \ref{tab:date_imp_results} in the appendix. The years of process appear to be important predictors both in the first stage and even more in the second stage. 
+However, the unexplained variance is still high constituting about 76\% of the total variance in the second model. 
 
 %After  these models are fitted to the data with non-missing date of arrest and year of process,
 We  proceed to apply the fitted models to the missing data to get the predicted probability of $y$  being positive and the mean value of $y$ if it is positive. For each observation with missing date of arrest, we then randomly draw from the Bernoulli distribution with the predicted probability as its parameter to obtain $\hat I_i^y$. We also draw  obtain
@@ -170,5 +175,8 @@ To fill in the missing month, we take a random sample from all months with proba
 Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability. 
 The imputed months and days of process are therefore only weakly informed guesses, nevertheless they enable us to proceed in the analysis. 
 
-
+%Once we have completed the above steps, 
+The final step is to calculate the imputed date of arrest by subtracting the predicted number of days from the date of process (i.e. we go back in time by given number of days). Since we conduct the analysis with annual observations, we ignore predicted month and day of arrests  keep only information on year. The number of arrests for each ethnicity by year (including the imputed years) is then counted for the period from 1921 to 1960 which forms our final dataset. 
+%involves only counting back 
+%we have the exact date of process and the predicted 
 %for the subset of the data where the date of arrest is to be imputed, 369 393 observations lack the month of the process and 390 174 miss the day out of the total 903 455 (all have year). 

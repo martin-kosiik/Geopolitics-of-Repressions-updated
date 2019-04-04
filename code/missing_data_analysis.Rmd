@@ -49,92 +49,25 @@ events <- events %>%
 
 
 
-by_year <- events %>% 
-  count(YEAR, MONTH, prediction, ethnicity) 
-
-
 events %>% 
-  count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
-  mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
-         YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
-  ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col(position = "fill") + theme_minimal() +
-  labs(y = element_blank(), x = "Year", fill = "Information on ethnicity") + 
-  theme(#panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) +
-  scale_x_date(date_minor_breaks = "1 year", date_breaks = "3 year", date_labels = "%Y")
+  count(YEAR, source_date_arrest, sort =T) %>% 
+  filter(YEAR >= 1921, YEAR < 1961) %>% 
+  mutate(source_date_arrest = recode_factor(source_date_arrest, "prediction" = "Only arrest date imputations",
+                                            "label" = "Only labeled data (no imputation)")) %>% 
+  ggplot(aes(x = YEAR, y = n, col = source_date_arrest)) + geom_line() +
+  scale_y_continuous(trans = "mylog10" , breaks = c(0,10,100,1000,10000, 100000), labels = comma)+
+  #scale_x_continuous(breaks = c(1920, 1930, 1940, 1950)) + 
+  labs(y = "Number of Arrests", x = "Year", 
+       caption = expression("Values on y-axis are plotted on the"~log[10](1 + y)~"scale."),
+       col = element_blank()) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.y = element_blank(), 
+        legend.position="bottom", 
+        text = element_text(size=12))
 
-ggsave(here::here("plots/missing_data_analysis/proportion_by_year.pdf"))
+ggsave(here::here("plots/arrests/date_imputation_line.pdf"))
 
-events %>% 
-  count(YEAR, prediction) %>% 
-  filter(!is.na(YEAR), !is.na(prediction), YEAR >= 1921, YEAR < 1961) %>% 
-  mutate(prediction = ifelse(prediction == 1, "missing", "not missing"),
-         YEAR = as_date(str_c(YEAR, "-01-01"))) %>% 
-  ggplot(aes(x = YEAR, y = n, fill = prediction)) + geom_col() + theme_minimal() +
-  labs(y = element_blank(), x = "Year", fill = "Information on ethnicity") + 
-  theme(#panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) +
-  scale_x_date(date_minor_breaks = "1 year", date_breaks = "3 year", date_labels = "%Y") +
-  scale_y_continuous(labels = comma)
-
-ggsave(here::here("plots/missing_data_analysis/count_by_year.pdf"))
-
-
-events %>% 
-  count(YEAR, prediction, ethnicity) %>% 
-  filter(is.na(YEAR), !is.na(prediction)) %>% 
-  mutate(ethnicity = fct_reorder(ethnicity, n, sum),
-         prediction = as.factor(prediction)) %>% 
-  ggplot(aes(ethnicity, n, fill = prediction)) + geom_col(position = "fill") + coord_flip() #+ scale_y_log10()
-
-by_year %>% 
-  mutate(log_n = log(1 + n)) %>% 
-  ggplot(aes(x = YEAR, y = log_n, col = as.factor(prediction))) + geom_line() +
-  facet_wrap(~ ethnicity, scales = "free_y") + theme_bw()
-
-
-by_year %>% 
-  complete(YEAR,  ethnicity, prediction, fill = list(n = 0)) %>% 
-  mutate(prediction = ifelse(prediction == 1, "prediction", "label")) %>% 
-  spread(key = prediction, value = n) 
-
-min_by_month_all %>%
-  mutate(year = year(date)) %>% 
-  group_by(year, ethnicity) %>% 
-  summarize_at(vars(label, pred_adj_scaled, n), sum) %>% 
-  ungroup() %>% 
-  mutate(diffrence = pred_adj_scaled - label, 
-         log_diff = log(1 + abs(diffrence)),
-         sgn_log_diff = sign(diffrence) * log_diff) %>% 
-  ggplot(aes(x = year, y = sgn_log_diff)) + geom_line() + facet_wrap(~ethnicity) +
-  labs(y = "log(1 + y)", x = "year") + theme_bw()
-
- events %>% 
-  mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing")) %>% 
-  count(YEAR, month_missing, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
-  mutate(YEAR = as_date(YEAR)) %>% 
-  ggplot(aes(x = YEAR, y = n, fill = month_missing)) + geom_col(position = "fill")  + theme_minimal() +
-  labs(y = element_blank(), x = "Year", fill = "Month of arrest") + 
-  theme(#panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + 
-     scale_x_date(date_minor_breaks = "1 year", date_breaks = "3 year", date_labels = "%Y")
-
-ggsave(here::here("plots/missing_data_analysis/proportion_month_mis_by_year.pdf"))
-
-
- events %>% 
-  mutate(month_missing = ifelse(is.na(MONTH), "missing", "not misssing"), 
-         year_missing = ifelse(is.na(YEAR), "missing", "not misssing")) %>% 
-  count(year_missing, month_missing) 
-  
-
- 
- 
 ```
 
 
@@ -180,79 +113,10 @@ spec_sens_data %>%
 
 ```
 
-## By month
 ```{r}
-min_by_month_preds <- events %>% 
-  count(YEAR, MONTH, prediction, ethnicity) %>% 
-  filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), !is.na(MONTH)) %>% 
-  mutate(date = as_date(str_c(YEAR,  MONTH, "01", sep = "-"))) %>% 
-  complete(date, ethnicity, prediction, fill = list(n = 0)) %>% 
-  dplyr::select(-c(YEAR, MONTH))
-
-
-min_by_month_all <- min_by_month_preds %>% 
-  mutate(prediction = ifelse(prediction == 1, "prediction", "label")) 
-
-
-pred_adj_full_by_month <- min_by_month_all %>% 
-  filter(prediction == "prediction") %>% 
-  dplyr::select(-prediction) %>% 
-  nest(-date) %>% 
-  mutate(pred_adj_full = map(data, ~ solve(conf_matrix, .$n))) %>% 
-  unnest(pred_adj_full, data) %>% 
-  mutate(pred_adj_full = ifelse(pred_adj_full < 0, 0, pred_adj_full)) %>% 
-  dplyr::select(-n)
-  
-  
-
-min_by_month_all <- min_by_month_all %>% 
-  spread(key = prediction, value = n) %>% 
-  left_join(spec_sens_data, by = "ethnicity") %>% 
-  left_join(pred_adj_full_by_month, by = c("date", "ethnicity")) %>% 
-  group_by(date) %>% 
-  add_tally(wt = prediction) %>% 
-  ungroup() %>% 
-  rename(total_pred_by_date = n) %>% 
-  mutate(pred_adj = (prediction - total_pred_by_date * (1 - Specificity))/(Sensitivity + Specificity -1),
-         pred_adj = ifelse(pred_adj < 0, 0, pred_adj),
-         german = ifelse(ethnicity == "German", 1, 0)) %>% 
-  add_tally(wt = prediction) %>% 
-  rename(total_pred = n) %>% 
-  add_tally(wt = pred_adj) %>% 
-  rename(total_pred_adj = n) %>% 
-  add_tally(wt = pred_adj_full) %>% 
-  rename(total_pred_adj_full = n) %>% 
-  mutate(pred_adj_scaled = round(pred_adj * (total_pred/total_pred_adj)),
-         pred_adj_full_scaled = round(pred_adj_full * (total_pred/total_pred_adj_full)),
-         n = label + pred_adj_full_scaled, 
-         log_n = log(1 + n))
-
-
-min_by_month_all %>% 
-  summarise(pred_adj = sum(pred_adj), prediction = sum(prediction), label = sum(label),
-            pred_adj_scaled = sum(pred_adj_scaled), pred_adj_full_scaled = sum(pred_adj_full_scaled))
-
-```
-
-## By quarter
-```{r}
-min_by_q <-  min_by_month_all %>% 
-  mutate(year_q = quarter(date, with_year = T),
-         year_q_date = floor_date(date, unit = "quarter")) %>% 
-  group_by(year_q, year_q_date, ethnicity, german) %>% 
-  summarize(n = sum(n)) %>% 
-  ungroup() %>% 
-  mutate(log_n = log(n + 1)) %>% 
-  group_by(ethnicity) %>% 
-  mutate(t = row_number()) %>% 
-  ungroup() %>% 
-  mutate(pre_treatment = ifelse(year_q_date >= "1928-01-01" & year_q_date <= "1933-01-01", 1, 0),
-         hostility = ifelse(year_q_date >= "1933-03-23" & year_q_date <= "1939-08-23", 1, 0), 
-         pact = ifelse(year_q_date > "1939-08-23" & year_q_date < "1941-06-22", 1, 0), 
-         war = ifelse(year_q_date >= "1941-06-22" & year_q_date < "1945-05-08", 1, 0),
-         post_war = ifelse(year_q_date >= "1945-05-08", 1, 0), 
-         ethnicity = as.factor(ethnicity)) 
-
+spec_sens_data %>% 
+  mutate(resut = (Sensitivity + Specificity -1)) %>% 
+  View()
 ```
 
 
@@ -261,7 +125,7 @@ min_by_q <-  min_by_month_all %>%
 ```{r}
 get_arrests_by_year <- function(data){
 
-min_by_year_preds <- data %>% 
+min_by_year_preds <- events %>% 
   count(YEAR, prediction, ethnicity) %>% 
   filter(YEAR >= 1921, !is.na(ethnicity), !is.na(YEAR), YEAR < 1961) %>% 
   complete(YEAR, ethnicity, prediction, fill = list(n = 0))

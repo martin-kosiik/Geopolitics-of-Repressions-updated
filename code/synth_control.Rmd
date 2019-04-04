@@ -43,15 +43,16 @@ min_by_q <- min_by_q %>%
 ```
 
 ```{r}
-opts_current$set(label = "sc_weights")
+opts_current$set(label = "sc_predictors")
 ethnicity_controls %>% 
   dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct, ind_country) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Ethnic group", "Total population", "Ling. similarity to Russian", 
                       "Urbanization rate", "Ind. country"),
-        caption = "Pre-treatment characteristics of ethnic groups in the USSR for SC") %>%
+        caption = "Pre-treatment characteristics of ethnic groups in the USSR") %>%
   footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity). Independent country equals one if the ethnic group was a core group in an independent state that existed in the interwar period.",
            threeparttable = T) %>% 
+  kable_styling(latex_options = c("hold_position")) %>% 
     write_file(here::here("tables/sc_predictors.tex"))
 
 

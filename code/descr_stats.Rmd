@@ -1,0 +1,134 @@
+---
+title: "Summary Statistics"
+author: "Martin Kosík"
+date: "3 dubna 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(scales)
+```
+
+```{r}
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
+  mutate(log_n = log(1 + label ),
+         log_n_pred_full = log(1 + label + pred_adj_full_scaled),
+         log_n_pred = log(1 + label + prediction),
+         log_n_imp_date = log(1 + label_imp_date),
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date))
+```
+
+
+```{r}
+opts_current$set(label = "total_arrests_by_ethnicity")
+min_by_year %>% 
+  group_by(ethnicity) %>% 
+  summarize(Arrests_label = sum(label_imp_date), Arrests_preds = sum(label_imp_date + prediction_imp_date),
+            Arrests_preds_adj = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
+  arrange(desc(Arrests_label)) %>% 
+  kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
+        col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadj. Imputation", 
+                      "Labeled + Adj. Imputation"), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Reference" = 3)) %>% 
+  kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
+  write_file("tables/total_arrests_tab.tex")
+
+  
+```
+
+```{r}
+mylog10_trans <- function (base = 10) 
+{
+  trans <- function(x) log(x + 1, base)
+  inv <- function(x) base^(x) - 1 
+  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
+            domain = c(0, Inf))
+}
+
+  
+```
+
+```{r}
+min_by_year %>% 
+  #mutate(log_day = log(1 + diff_day_imp_complex)) %>% 
+  ggplot(aes(x = label)) + geom_histogram(col = "white") + theme_minimal()+
+  scale_x_continuous(trans = "mylog10" , breaks = c(0,2,10,100,1000,10000))+
+  labs(x = "Number arrests of each ethnic group for a given year") + 
+  theme(axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + expand_limits(x = -0.01)
+ggsave(here::here("plots/arrests/log_x_1_hist.pdf"))
+
+```
+
+```{r}
+min_by_year %>% 
+  transmute(label, pred_adj_full_scaled = label + pred_adj_full_scaled, 
+            label_imp_date, pred_adj_full_scaled_imp_date = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
+  #dplyr::select(label,  pred_adj_full_scaled, label_imp_date, pred_adj_full_scaled_imp_date) %>% 
+  gather(key = "key", value = "n") %>% 
+  mutate(key = recode_factor(key, "label" = "no imputaion (only labeled data)",
+                            "label_imp_date" =  "labels + arrest date imputation",
+                            "pred_adj_full_scaled" = "labels + ethnicity imputation",
+                            "pred_adj_full_scaled_imp_date" = "labels + ethnicity + arrest date imputation")) %>% 
+  ggplot(aes(x = n)) + geom_histogram(col = "white") + theme_bw()+
+  facet_wrap(~ key) + 
+  scale_x_continuous(trans = "mylog10" , breaks = c(0,2,10,100,1000,10000))+
+  labs(x = "Number arrests of each ethnic group for a given year",
+       caption = expression("Values on x-axis are plotted on the"~log[10](1 + x)~"scale.")
+       ) + 
+  theme(#axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
+       #strip.background = element_rect(colour="black"),
+        text = element_text(size=12)) + expand_limits(x = -0.01)
+ggsave(here::here("plots/arrests/facet_hist.pdf"))
+
+```
+
+```{r}
+min_by_year %>% 
+  dplyr::select(YEAR, ethnicity, label, label_imp_date) %>% 
+  mutate(label_imp_date = label_imp_date -label) %>% 
+  gather(key = "type", value = "arrests", -YEAR, -ethnicity) %>% 
+  mutate(type = recode_factor(type, "label" = "Known year of arrest",
+                                         "label_imp_date" = "Imputed year of arrest")) %>%   
+  ggplot(aes(x = YEAR, y = arrests, col = type)) + geom_line() + facet_wrap(~ethnicity) +
+  scale_y_continuous(trans = "mylog10" , breaks = c(0,10,100,1000,10000))+
+  scale_x_continuous(breaks = c(1920, 1930, 1940, 1950)) + 
+  labs(y = "Number of Arrests", x = "Year", col = "Type",
+       caption = expression("Values on y-axis are plotted on the"~log[10](1 + y)~"scale.")) + theme_bw() +
+  theme(#axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.y = element_blank(), 
+        legend.position="bottom", 
+        text = element_text(size=12))
+ggsave(here::here("plots/arrests/facet_by_year.pdf"), scale = 1.2)
+```
+
+```{r}
+min_by_year %>% 
+  dplyr::select(YEAR, ethnicity, prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
+  gather(key = "prediction_type", value = "arrests", -YEAR, -ethnicity) %>% 
+  mutate(prediction_type = recode_factor(prediction_type, "prediction" = "No adjustment",
+                                         "pred_adj_scaled" = "Parsimonious adj.", 
+                                         "pred_adj_full_scaled" = "Full matrix adj.")) %>% 
+  ggplot(aes(x = YEAR, y = arrests, col = prediction_type)) + geom_line() + facet_wrap(~ethnicity) +
+  scale_y_continuous(trans = "mylog10" , breaks = c(0,10,100,1000,10000))+
+  scale_x_continuous(breaks = c(1920, 1930, 1940, 1950)) + 
+  labs(y = "Number of Arrests", x = "Year", 
+       caption = expression("Values on y-axis are plotted on the"~log[10](1 + y)~"scale."),
+       col = "Prediction type") + theme_bw() +
+  theme(#axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.y = element_blank(), 
+        legend.position="bottom", 
+        text = element_text(size=12))
+ggsave(here::here("plots/arrests/prediction_type_by_year.pdf"), scale = 1.2)
+```
+
+

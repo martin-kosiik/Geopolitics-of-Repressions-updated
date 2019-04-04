@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 install.packages("pscl")
 library(pscl)
 library(broom)
-install.packages("rstanarm")
+library(lubridate)
 library(rstanarm)
 library(scales)
 library(stargazer)
@@ -174,7 +174,7 @@ missing_date_of_arrest <- missing_date_of_arrest %>%
 
 
 simple_imp <- some_date %>% 
-  left_join(missing_date_of_arrest, by = "person_id") %>% 
+  left_join(missing_date_of_arrest  %>% select(person_id, diff_day_imp), by = "person_id") %>% 
   mutate(date_process_simple_imp = as_date(str_c(YEAR_PROCESS, MONTH_PROCESS_simple_imp, DAY_PROCESS_simple_imp,
                                          sep = "-")),
          date_arrest_simple_imp = date_process_simple_imp - days(diff_day_imp),

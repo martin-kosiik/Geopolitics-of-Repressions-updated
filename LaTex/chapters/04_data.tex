@@ -1,6 +1,15 @@
-Our data on soviet repressions come from  \citet{zhukov_stalins_2018}\footnote{In particular, we downloaded the data from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} who use  the Victims of Political Terror archive \footnote{The Memorial archive can be accessed at \url{http://base.memo.ru/} (new version) or at \url{http://lists.memo.ru/} (older version)} collected by a Russian NGO Memorial. The main sources of the Memorial lists are declassified Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression.
- The Memorial archives include 2.7 million individual arrests by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and  in many cases additional information such as ethnicity, occupation and party membership. 
- However, the data are not complete and include only about 70\% of estimated 3.8  million people convicted under Article 58.
+Our data on Soviet repressions come from  the Victims of Political Terror in the USSR database by the Russian human rights organization \citet{memorial_zhertvy_2017}.\footnote{The database can be accessed and searched from  \url{http://base.memo.ru/} (new version) or at \url{http://lists.memo.ru/} (older version). However, we downloaded the file with every record from the database from \url{https://github.com/MemorialInternational/memorial_data_FULL_DB/blob/master/data/lists.memo.ru-disk/lists.memo.ru-disk.zip}} 
+The Memorial data has already been used in empirical research by \citet{zhukov_stalins_2018} to estimate the  effects of the Soviet repressions on the current political participation. 
+ The main sources of the Memorial lists are declassified Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression, and \enquote{Books of Memory}. 
+Vast  majority records in the database are individual arrests under  Article 58. 
+This means that the victims of other repressive activities of the Soviet state such mass forced migration, counter-insurgency operations of the Red Army during Russian Civil War or famines are mostly excluded. Therefore our research focuses on one  particular type of repression (individual arrests by the NKVD). 
+
+Nevertheless, even if we restrict ourselves to the individual arrests, the Memorial database is still not complete.
+At the time of our access to the database, the databes contained 2.7 million records which is approximately 70\% of 3.8 million people convicted under Article 58 between 1921 and 1953.
+
+%\footnote{In particular, we downloaded the data from the replications file archive of the journal available  from \url{https://www.prio.org/JPR/Datasets/}} who use  the Victims of Political Terror archive  collected by a Russian NGO Memorial.
+%individual arrests by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and  in many cases additional information such as ethnicity, occupation and party membership. 
+ %However, the data are not complete and include only about 70\% of estimated 3.8  million people convicted under Article 58.
 
 %Another major issue with the data is frequent  missingness of information on ethnicity and date of arrests. 
 %We try to address this issue by imputing missing values using names and date of process. The imputation procedures are described in section \ref{subsec:inferring_ethnicity} \ref{subsec:imputing_missing_date}.
@@ -47,21 +56,21 @@ Given the high number of predictors, we need a model that is not  computationall
 %In particular, we use Naive Bayes classifier. 
 Let  $\boldsymbol{x} = \left(x_1, x_2, x_3\right)$ be features used for predicting ethnicity, that is a person's first, last, and patronymic (given after father's first name) names. Using Bayes theorem, we can express the probability that particular observation  belongs to ethnic group $E_k$ given its features as
 \begin{equation}
-p(E_k \mid \mathbf{x}) = \frac{p(E_k) \ p(\mathbf{x} \mid E_k)}{p(\mathbf{x})}
+p(E_k \mid \mathbf{x}) = \frac{p(E_k) \ p(\mathbf{x} \mid E_k)}{p(\mathbf{x})},
 \end{equation}
 in other words, the posterior probability is proportional to the product of prior probability and likelihood. 
 Assuming conditional independence of features allows us to substitute $p(\mathbf{x} \mid E_k)$ such that we get
 
 \begin{equation}
-p(E_k \mid \mathbf{x}) = \frac{p(E_k) \  \prod_{i=1}^3 p(x_i \mid E_k)\,}{p(\mathbf{x})}
+p(E_k \mid \mathbf{x}) = \frac{p(E_k) \  \prod_{i=1}^3 p(x_i \mid E_k)\,}{p(\mathbf{x})}.
 \end{equation}
 %In this context, the conditional independence of features means within each ethnic group having a certain first name does not influence probability of having some surnames and patronymic names   
- All terms in this equation can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
+ All terms in this equation now can be estimated from the data: the prior probability $p(E_k)$ as a proportion of $E_k$ in the data, $p(x_i \mid E_k)$ as a proportion of people with name $x_i$ in the ethnic group $E_k$ and $p(\mathbf{x})$ simply calculated such that the sum of $p(E_k \mid \mathbf{x})$ for all $k$ is one. 
 %Thus, having a name that is typical for a given ethnicity results in high probabilty
 %The Naive Bayes classifier assigns high probability to names that are 
-The Naive Bayes classifier then chooses the ethnicity with the highest posterior probability as its prediction
+The Naive Bayes classifier then chooses the ethnicity with the highest posterior probability as its prediction, that is
 \begin{equation}
-    \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^{3} p(x_i \mid E_k)
+    \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^{3} p(x_i \mid E_k).
 \end{equation}
 
 However, one potential issue is that whenever a likelihood of a certain feature is estimated to be 0 then the posterior probability is always 0 regardless of the prior  or the likelihoods of other features. For example, suppose that a person has a typical German first name but a rare surname which does not appear in the training set at all. 
@@ -138,7 +147,7 @@ Our strategy for imputing the missing arrest dates is to  predict it from the da
 Hence we use the year of process as a predictor to our model. 
 
 Nevertheless, we begin by examining the data with both dates available. 
-The histogram for number of days between arrest and process (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.  Second, the transformed data seems to be following the normal distribution except for the density at 0
+The histogram for number of days between arrest and process (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and process being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
  which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
 
  \begin{figure}[h]
@@ -161,14 +170,13 @@ In the second stage, simple log-linear regression is applied to predict only the
 \end{equation}
 We then fit the first model to the data where the exact dates of both arrest and process are available and the second model to the subset of the same  data for which $y > 0$.
 The results of both of these models provided in the table \ref{tab:date_imp_results} in the appendix. The years of process appear to be important predictors both in the first stage and even more in the second stage. 
-However, the unexplained variance is still high constituting about 76\% of the total variance in the second model. 
+However, the unexplained variance is still high making up about 76\% of the total variability in the dependent variable in the second model. 
 
 %After  these models are fitted to the data with non-missing date of arrest and year of process,
-We  proceed to apply the fitted models to the missing data to get the predicted probability of $y$  being positive and the mean value of $y$ if it is positive. For each observation with missing date of arrest, we then randomly draw from the Bernoulli distribution with the predicted probability as its parameter to obtain $\hat I_i^y$. We also draw  obtain
-The predicted probability is then used as a parameter.
+We  proceed to apply the fitted models to the missing data to get the predicted probability of $y$  being positive and the mean value of $y$ if it is positive. For each observation with missing date of arrest $X_i$, we then randomly draw from the Bernoulli distribution with  $\text{logit}^{-1} \left(X_i \hat\alpha \right)$ as its parameter to obtain $\hat I_i^y$. We also draw from the normal distribution with mean $X_i \hat\beta$ and exponentiate the result to get $\hat y_i^{\text{pos}}$. Finally, the predicted number of days is calculated simply as $\hat y_i = \hat I_i^y \cdot \hat y_i^{\text{pos}}$. 
 
 The histogram of the imputed values is provided in the figure \ref{fig:mixed_model_preds_hist} in the appendix. 
-The resulting distribution  highly resembles the distribution  in the figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the real data fairly well. 
+The resulting distribution  highly resembles the distribution  in the figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the actual data fairly well. 
 
 Another issue is that for significant number of observations we do not have the exact date of process but only year. In particular, 
 while the year of process is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of process is missing for 369 393 of them and the day for 390 174. 
@@ -178,6 +186,8 @@ The imputed months and days of process are therefore only weakly informed guesse
 
 %Once we have completed the above steps, 
 The final step is to calculate the imputed date of arrest by subtracting the predicted number of days from the date of process (i.e. we go back in time by given number of days). Since we conduct the analysis with annual observations, we ignore predicted month and day of arrests  keep only information on year. The number of arrests for each ethnicity by year (including the imputed years) is then counted for the period from 1921 to 1960 which forms our final dataset. 
+
+The 
 %involves only counting back 
 %we have the exact date of process and the predicted 
 %for the subset of the data where the date of arrest is to be imputed, 369 393 observations lack the month of the process and 390 174 miss the day out of the total 903 455 (all have year). 

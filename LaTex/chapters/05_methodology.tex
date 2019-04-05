@@ -1,20 +1,34 @@
 \subsection{Difference-in-differences}
+We employ difference-in-differences design to estimate the effect of the rise of Hitler in 1933 on repressions of Germans in the USSR. 
 Our main specification is the dynamic difference-in-differences model:
 \begin{equation}
- \log\left(1 + y_{it}\right) = \sum_{k= 1930}^{1939} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
+ \log\left(1 + y_{it}\right) = \sum_{k= 1930}^{1939} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it},
  \label{eq:dynamic_did}
 \end{equation}
 
  %+ \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}    
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$, $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise (except for 1939 which is equal to 1 if $t \geq 1939$ and zero otherwise) . The coefficients of interest are $\beta_k$. 
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise (except for 1939 which is equal to 1 if $t \geq 1939$ and zero otherwise). The coefficients of interest are $\beta_k$. 
 Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects.
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
-The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific quadratic time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation (\citealt{angrist_mostly_2009}). 
+The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific quadratic time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation \citep{angrist_mostly_2009}. 
 
- We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of interest to us).   
+ We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of great interest to us).   
 
-Our identifying assumption is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
+While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for the period from 1933 to 1939. For this reason, we also estimate conventional difference-in-differences given by the following equation:
+%The simple difference-in-differences can be expressed as
+\begin{equation}
+ \log\left(1 + y_{it}\right) =  \beta \, \text{German}_{i} \cdot \text{Treatment}_{t} +
+ \gamma \, \text{German}_{i} \cdot \text{Post}_{t} +
+ \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
+ \label{eq:simple_did}
+\end{equation}
+where the variable $\text{Treatment}_{t}$ equals 1 if $ 1933  \leq t \leq 1939 $ and zero 0 otherwise, the variable $\text{Post}_{t}$ equals 1 if $t > 1939 $ and zero 0 otherwise, and the other terms are same as in the dynamic model \ref{eq:dynamic_did}.
+The coefficient of interest is $\beta$ capturing the average effect for the period 1933-1939. The coefficient $\gamma$ captures the average effect for the post-treatment period (1940-1960).
+%However, the treatment status of some minorities changed in this period as they geopolitical relations 
+
+
+Our identifying assumption for both specifications is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables (mainly the ethnicity specific time trends). Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
 
 As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most DiD regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable. \citet[chapter 8]{angrist_mostly_2009} suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. More rigorous solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}.
 Since we have small number of groups we use the generalization of \citet{mccaffrey_bias_2002} correction to models with arbitrary sets of fixed effects by \citet{pustejovsky_small-sample_2018}.

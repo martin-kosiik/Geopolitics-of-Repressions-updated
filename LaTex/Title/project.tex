@@ -1,48 +1,73 @@
 \pagestyle{empty}
 \begin{center}
-\LARGE{Project of Bachelor Thesis}
+\LARGE{The Bachelor’s Thesis Proposal}
 %\LARGE{Master of Bachelor Thesis}
 \end{center}
 \vspace{5mm}
 \begin{tabular}{lcl}
 \large{\bf Schedule for the bachelor exam:} & & \large{\bf insert}\\
-\large{\bf Author of the bachelor thesis:} & & \large{\bf Your Name}\\
-\large{\bf Supervisor of the bachelor thesis:} & & \large{\bf Supervisor's name}
+\large{\bf Author of the bachelor thesis:} & & \large{\bf Martin Kosík}\\
+\large{\bf Supervisor of the bachelor thesis:} & & \large{\bf Julie Chytilová}
 \end{tabular}
 \\
 \\
 \\
 \begin{tabular}{lcl}
-\large{\bf Theme:} & & \large{\bf Title of you thesis}\\
- & & \large{\bf second line of the title}
+\large{\bf Theme:} & & \large{\bf The Geopolitics of Repressions}
 \end{tabular}\\
 \\
 \\
-\large{\bf Goals of the thesis:}
-\par Insert the text here
-\\
-\\
-\large{\bf Synopsis:}
+\large{\bf Research question and motivation}
+%\par
+
+\noindent
+What determines the attitude of a state toward ethnic minorities within its borders? Why are some minorities accommodated or assimilated and others are politically excluded and repressed? Furthermore, why does the position of a state toward its minorities change in time? 
+
+\citet{mylonas_politics_2013} argues that geopolitical concerns play an important role. Specifically, a state is likely to choose repression and exclusion if the ethnic minority's country of origin is seen as a geopolitical enemy. The minority is then viewed by the state as unreliable and as a potential fifth column of the foreign country. 
+
+I will test this hypothesis on the case of the German minority in the Soviet Union. In 1933, Hitler’s rise to power changed Germany from a neutral actor to an ideological and geopolitical enemy in the perspective of the Soviet Union. This enables us to estimate how the repression of Germans in the USSR changed before and after 1933 and compare it with other minorities. In particular, I plan to use the individual arrests by the Soviet secret police (NKVD) as a dependent variable and employ the difference-in-differences strategy. 
+
+\noindent  \large{\bf Contribution}
+
+\noindent Existing literature on repressions has focused mostly on their consequences and legacies (Rozenas, Schutte, and Zhukov 2017; Lupu and Peisakhin 2017; Zhukov and Talibova 2018). As far as the strategic use of repressions by the state is studied, it is usually in relation to domestic factors such as institutions and economic shocks (Davenport 2007; Greitens 2016; Blaydes 2018) with less attention being given to external forces. An exception to this is a study by Mylonas (2013) which tests his theory with data on the post-World War I Balkans. However, his cross-sectional regression might suffer from omitted variable bias and reverse causality and my approach hopefully offers cleaner identification. 
+
+My bachelor thesis can also contribute to the literature on the origins of Soviet ethnic repressions. Although many scholars argue that a perceived connection to hostile external powers has played a role \citep{martin_origins_1998, polian_against_2003}, the evidence has been mostly qualitative and anecdotal. 
+
+\noindent \large{\bf Methodology}
+
+\noindent My main source of data will be replication files from \citet{zhukov_stalins_2018} who use lists of victims of Soviet political repressions aggregated by Russian NGO Memorial. The difference-in-differences strategy will be used to estimate the impact of change German-Soviet relations caused by Hitler’s rise to power on arrests of Germans in the USSR. 
+
+However, the parallel trends assumption, which is necessary for unbiasedness of difference-in-differences, can in some cases be violated. As a robustness check, I plan to apply the synthetic control method which constructs a synthetic control group as a linear combination of untreated units (in our case ethnicities) based on matching of pre-treatment trends and time-invariant covariates %\citep{abadie_economic_2003, abadie_synthetic_2010}
+(Abadie and Gardeazabal 2003; Abadie, Diamond, and Hainmueller 2010). 
+
+\noindent \large{\bf  Outline}
 \begin{enumerate}
-\item Insert
- \item The \item Synopsis
- \item Here
+\item Introduction
+ \item Literature review 
+ \item Historical background
+ \item Data
+ \item Methodology
+ \item Results
+ \item Conclusion 
 \end{enumerate}
 \medskip
 \large{\bf References:}\\
 %example of book reference
-\lbrack 1\rbrack \hspace{1pt} J.-P. Aubin (1993): \textit{Optima
-and Equilibria},
-Springer-Verlag Berlin Heidelberg. \\
+%\bibentry{zhukov_stalins_2018}  \\
+\fullcite*{abadie_synthetic_2010} \\
+\fullcite*{abadie_economic_2003} \\
+\fullcite{blaydes_state_2018} \\
+\fullcite{davenport_state_2007} \\
+\fullcite{greitens_dictators_2016} \\
+\fullcite{lupu_legacy_2017} \\
+\fullcite{martin_origins_1998} \\
+\fullcite{lupu_legacy_2017} \\
+\fullcite{mylonas_politics_2013} \\
+\fullcite{polian_against_2003} \\
+\fullcite{rozenas_political_2017} \\
+\fullcite{zhukov_stalins_2018}\\
 %example of preprint reference
-\lbrack 2\rbrack \hspace{1pt} S. Leyffer, T. Munson (2005):
-Solving Multi-Leader-Follower
-Game, pre\-print. \\
-%example of reference from a journal
-\lbrack 3\rbrack \hspace{1pt} J. V. Outrata (2004): A note on a
-class of equilibrium problems with equilibrium constraints,
-\textit{Kybernetika} \textbf{40}, 585-594.
-\\
+%\lbrack 2\rbrack \hspace{1pt} S. Leyffer, T. Munson (2005):Solving Multi-Leader-Follower
 \vspace{15mm}\\
 In Prague on ..........\newline \\
 Signature of the supervisor \hspace{30mm} Signature of the author

@@ -4,7 +4,46 @@
 
 \documentclass{article}
 \usepackage[T1]{fontenc}
-\usepackage[round]{natbib}
+%\usepackage[round]{natbib}
+\usepackage[autostyle]{csquotes}
+
+
+
+\usepackage[
+    backend=biber,
+    style=authoryear,
+    natbib=true,
+    sortlocale=en_US,
+    url=false, 
+    doi=true,
+    eprint=false
+]{biblatex}
+\AtEveryBibitem{%
+  \clearlist{language}%
+}
+\addbibresource{bibliography.bib}
+
+\makeatletter
+% new code
+\DeclareCiteCommand*{\fullcite}
+  {\usebibmacro{prenote}}%\bibsentence
+  {\usebibmacro{citeindex}%
+    \toggletrue{cms@fullnote}%
+    \togglefalse{cms@shortnote}%
+   \usebibmacro{cite:full*}
+   \usebibmacro{cite:save}}
+  {\multicitedelim}
+  {}
+
+\newbibmacro*{cite:full*}{%
+  \printtext[bibhypertarget]{%
+    \usedriver
+      {\DeclareNameAlias{sortname}{default}\frenchspacing}
+      {\thefield{entrytype}}}}%
+
+\makeatother
+
+
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{graphicx}
 \usepackage{enumitem}
@@ -27,17 +66,19 @@
   \usepackage{makecell}
 \usepackage{multirow}
 \usepackage{setspace}
+%\usepackage{bibentry}
+
 
 
 
 
 \usepackage{url}
 \usepackage[utf8]{inputenc}
-\usepackage{csquotes}
+%\usepackage{csquotes}
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{color}
-\bibliographystyle{dcu}
+%\bibliographystyle{dcu}
 % agsm, apacite, dcu
 
 %\usepackage[a-2u]{pdfx}
@@ -54,8 +95,8 @@
 %with 30 lines times 60 characters per line (excluding space)
 
 \begin{document}
-
-%\input{LaTex/Title/title_compiler.tex}
+%\nobibliography*
+\input{LaTex/Title/title_compiler.tex}
 \selectlanguage{english}
 \title{The Geopolitics of Repressions}
 \author{Martin Kosík}
@@ -71,9 +112,9 @@
 \end{abstract}
 
 \newpage
-\pagenumbering{arabic}
  \tableofcontents
 \newpage
+\pagenumbering{arabic}
 \include{LaTex/maintext_bachelor_template} %this just pastes here the content of "maintext.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
 \include{LaTex/chapters/08_references} %this just pastes here the content of "references.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation
 \input{LaTex/chapters/09_appendix.tex} %this just pastes here the content of "appendix.tex" during LaTeX/PDF LaTeX/PDF TeXify translatation

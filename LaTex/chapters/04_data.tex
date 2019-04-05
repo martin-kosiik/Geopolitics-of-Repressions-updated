@@ -32,7 +32,6 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 
 
 After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
-
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
 With 38  minorities  and 40 time periods (from 1921 to 1960) we have 1520 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:total_arrests_by_ethnicity} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}, both in the appendix. 
 
@@ -90,11 +89,13 @@ It is important to note that the conditional independence assumption often does 
 However, our main goal is the best out-of-sample accuracy of the model's predictions. In this respect, Naive Bayes classifier have been shown to perform  well in many applications, despite its often violated assumptions \citep{domingos_optimality_1997}.
 
 \subsubsection{Adjusting for Unbalanced Prediction Accuracy}
-To reliably asses the out-of-sample performance of our model, we used 10-fold cross-validation on the training dataset. That is, the data are first randomly split into 10 groups, Then the model is fit to the data from to the data ..  
-Using this method, we get the overall 75.4\% accuracy. Nevertheless, it varies
-significantly by ethnicity. The specificity and sensitivity by ethnic group are provided in the table \ref{tab:sens_spec}. Some ethnic groups with distinctive names such as Chinese, Korean and German are classified fairly well with sensitivity higher than 75\%. 
+To reliably asses the out-of-sample performance of our model, we used 10-fold cross-validation on the data with non-missing ethnicity. That is, the data is first randomly split into 10 groups. A model is fitted to 9 group and the remaining group is used to test the model's performance. This process is then repeated 9 times  until every group has been tested. 
+Using this method, the resulting overall accuracy of our model is 78.7\%. However,  we are also interested how it varies by ethnicity.
+For this reason we calculate sensitivity and specificity for each ethnic group.\footnote{Sensitivity measures the proportion of observations in the class that are correctly identified by the model as such (i.e. number of true positives divided by all positives). Specificity measures the proportion of observations \emph{not} in the class that are correctly identified as such (i.e. number of true negatives divided by all negatives).} 
+The results, provided in the table \ref{tab:sens_spec} in the appendix, show that the sensitivity differs significantly by ethnicity. 
+Some ethnic groups with distinctive names such as Chinese or Japanese are classified  with accuracy higher than 95\%  while for other ethnicities such as Chuvash or Udmurt it is about 10\%. This severe imbalance in sensitivity and specificity  across ethnic groups could potentially cause bias in the imputations. 
 
-Thus, there are biases in our predictions. However, we can try to adjust for them. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
+Therefore we develop adjustments that try to correct for these biases in the model's predictions. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
 \begin{equation}
     P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right)  
 \end{equation}
@@ -146,7 +147,7 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 Our strategy for imputing the missing arrest dates is to  predict it from the date of process. For this reason, we model the number of days between arrest and process and fit it to a subset of the data for which both dates are known. It  is reasonable to expect that the average number of day from  arrest to process could  vary considerably throughout the years.    %FOr example
 Hence we use the year of process as a predictor to our model. 
 
-Nevertheless, we begin by examining the data with both dates available. 
+We begin by examining the data with both dates available. 
 The histogram for number of days between arrest and process (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and process being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
  which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
 
@@ -164,7 +165,7 @@ Let $y$ be the number of days between arrest of an individual and his or her pro
 \begin{equation}
 \Pr\left( I_i^y = 1 \right)  = \text{logit}^{-1} \left(X_i \alpha \right).
 \end{equation}
-In the second stage, simple log-linear regression is applied to predict only the positive values $y^{\text{pos}} = y$
+In the second stage, simple log-linear regression is applied to predict only the positive values $y^{\text{pos}}$
 \begin{equation}
 \log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
 \end{equation}
@@ -187,7 +188,7 @@ The imputed months and days of process are therefore only weakly informed guesse
 %Once we have completed the above steps, 
 The final step is to calculate the imputed date of arrest by subtracting the predicted number of days from the date of process (i.e. we go back in time by given number of days). Since we conduct the analysis with annual observations, we ignore predicted month and day of arrests  keep only information on year. The number of arrests for each ethnicity by year (including the imputed years) is then counted for the period from 1921 to 1960 which forms our final dataset. 
 
-The 
+The resulting time series of all arrests with imputed years is plotted in the figure \ref{fig:date_imputation_line} in the appendix. Arrests with imputed dates seem to follow  similar trends with the labeled data  although there is slight divergence at the beginning and end of the series and in the 1930s.
 %involves only counting back 
 %we have the exact date of process and the predicted 
 %for the subset of the data where the date of arrest is to be imputed, 369 393 observations lack the month of the process and 390 174 miss the day out of the total 903 455 (all have year). 

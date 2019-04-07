@@ -227,12 +227,15 @@ ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_
 
 plot_effects_robust_se(formula = fmla_pred_full_imp_date)+theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp.pdf"))
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf"))
 
 
 plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp.pdf"))
+ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp_full_years.pdf"))
 
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends) +theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 
 ```
 

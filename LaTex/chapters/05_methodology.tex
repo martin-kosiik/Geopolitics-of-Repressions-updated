@@ -35,7 +35,14 @@ Since we have small number of groups we use the generalization of \citet{mccaffr
 
 
 \subsection{Synthetic Control Method}
-However, the parallel trends assumption required for unbiasedness of difference-in-differences is often violated. Moreover, difference-in-differences often extrapolate data beyond the region of common support. To address these potential issues, we use the synthetic control method which relaxes some of the difference-in-differences assumptions and thus provides us with an useful robustness check. 
+%However, the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
+However, difference-in-differences makes a fairly strong assumption regarding the absence of time-varying individual-specific heterogeneity which might be unrealistic in some empirical settings.
+The synthetic control method has been increasingly used in the literature to overcome this issue. The method estimates the treatment effect by constructing a synthetic version of the treated unit  based on matching of pre-treatment variables. Unlike difference-in-differences, it allows for the presence of certain time-varying unit-specific confounders which can be captured by a factor model.
+%the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
+
+
+
+%Moreover, difference-in-differences often extrapolate data beyond the region of common support. To address these potential issues, we use the synthetic control method which relaxes some of the difference-in-differences assumptions and thus provides us with an useful robustness check. 
 % The synthetic control method has been applies to many topics. 
 % \citep{abadie_economic_2003, abadie_synthetic_2010} 
 

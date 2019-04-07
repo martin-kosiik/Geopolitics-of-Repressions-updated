@@ -10,6 +10,8 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(scales)
+library(knitr)
+library(kableExtra)
 ```
 
 ```{r}
@@ -38,6 +40,24 @@ min_by_year %>%
 
   
 ```
+
+
+```{r}
+opts_current$set(label = "descr_stats_by_ethnicity")
+min_by_year %>% 
+  mutate(label_preds = label + prediction) %>% 
+  group_by(ethnicity) %>% 
+  summarize_at(vars(label, label_preds), c("mean", "sd", "min", "max", "sum")) %>% 
+  arrange(ethnicity) %>% 
+  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests by Ethnicity, 1921-1960", linesep = "",
+        col.names = c("Ethnicity", "Mean", "St.dev.", "Min", "Max", "Total", 
+                      "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
+  add_header_above(c(" " = 1, "Only labeled data" = 5, "Labels + Ethnicity imputations" = 5)) %>% 
+  kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
+  write_file("tables/descr_stats_by_ethnicity.tex")
+
+```
+
 
 ```{r}
 mylog10_trans <- function (base = 10) 

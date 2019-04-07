@@ -74,7 +74,7 @@ min_by_year %>%
         linesep = "",
         col.names = c("Ethnicity", "Mean", "St.dev.", "Min", "Max", "Total", 
                       "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
-  add_header_above(c(" " = 1, "Labels + Arrest date imputations (no adj.)" = 5,
+  add_header_above(c(" " = 1, "Labels + Arrest date imputations" = 5,
                      "Labels + Arrest date + Ethnicity imput. (no adj.)" = 5)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
   write_file("tables/descr_stats_date_imp.tex")

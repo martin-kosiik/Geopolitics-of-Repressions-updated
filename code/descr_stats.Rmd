@@ -43,20 +43,44 @@ min_by_year %>%
 
 
 ```{r}
+column_order <- c(1, seq(from = 2, by = 2, length.out = 5), seq(from = 3, by = 2, length.out = 5))
+
 opts_current$set(label = "descr_stats_by_ethnicity")
 min_by_year %>% 
   mutate(label_preds = label + prediction) %>% 
   group_by(ethnicity) %>% 
   summarize_at(vars(label, label_preds), c("mean", "sd", "min", "max", "sum")) %>% 
+  select(!!column_order) %>% 
   arrange(ethnicity) %>% 
-  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests by Ethnicity, 1921-1960", linesep = "",
+  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 2",
+        linesep = "",
         col.names = c("Ethnicity", "Mean", "St.dev.", "Min", "Max", "Total", 
                       "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
-  add_header_above(c(" " = 1, "Only labeled data" = 5, "Labels + Ethnicity imputations" = 5)) %>% 
+  add_header_above(c(" " = 1, "Only labeled data" = 5, "Labels + Ethnicity imputations (no adj.)" = 5)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
   write_file("tables/descr_stats_by_ethnicity.tex")
 
 ```
+
+```{r}
+opts_current$set(label = "descr_stats_date_imp")
+min_by_year %>% 
+  mutate(label_preds_imp = label_imp_date + prediction_imp_date) %>% 
+  group_by(ethnicity) %>% 
+  summarize_at(vars(label_imp_date, label_preds_imp), c("mean", "sd", "min", "max", "sum")) %>% 
+  select(!!column_order) %>% 
+  arrange(ethnicity) %>% 
+  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 2",
+        linesep = "",
+        col.names = c("Ethnicity", "Mean", "St.dev.", "Min", "Max", "Total", 
+                      "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
+  add_header_above(c(" " = 1, "Labels + Arrest date imputations (no adj.)" = 5,
+                     "Labels + Arrest date + Ethnicity imput. (no adj.)" = 5)) %>% 
+  kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
+  write_file("tables/descr_stats_date_imp.tex")
+
+```
+
 
 
 ```{r}

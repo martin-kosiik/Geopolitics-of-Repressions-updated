@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
                                 as.factor(YEAR) + ethnicity + ethnicity:YEAR + ethnicity:YEAR_sq"))
 
-fmla_window_pre_treat <- as.formula("log_n ~ german:pre_treatment + german:hostility + german:pact +
+fmla_window_pre_treat_pred_full_imp_date <-
+                    as.formula("log_n_pred_full_imp_date ~ german:pre_treatment + german:hostility + german:pact +
                                     german:war +  german:post_war +  as.factor(YEAR) + 
                                     ethnicity + ethnicity:YEAR + ethnicity:YEAR_sq")
 
@@ -29,7 +30,7 @@ diff_model_window_pre_treat <- lm(fmla_window_pre_treat, data = min_by_year)
 
 
 ```{r}
-formula = fmla_window_pre_treat
+formula = fmla_window_pre_treat_pred_full_imp_date
 data = min_by_year
 level = 0.95
 vcov = "CR2"
@@ -49,8 +50,8 @@ vcov = "CR2"
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=14)) + 
   labs(x = element_blank(),
-       caption = "error bars show 95% confidence intervals \n 
-                    SE are maximum of their cluster robust and standard versions",
+       #caption = "error bars show 95% confidence intervals \n 
+        #            SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)",
        y = "Coefficient"
       # title = "Interactions of German ethnicity with specified time window dummy"
        ) + 

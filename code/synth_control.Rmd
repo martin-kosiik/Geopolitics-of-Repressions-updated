@@ -189,6 +189,12 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 }
 
+
+placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower_imp_date.pdf"))
+
+
+
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
 ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_mspe_5_lower.pdf"))
 

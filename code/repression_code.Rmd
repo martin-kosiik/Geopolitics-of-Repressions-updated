@@ -216,8 +216,9 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
   theme(axis.line = element_line(size = 1), 
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=14)) +
-  labs(x = "Year", caption = "error bars show 95% confidence intervals \n 
-                               SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
        y = "Coefficient")
 }
 
@@ -238,6 +239,7 @@ ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_
 
 plot_effects_robust_se(formula = fmla_pred_full_imp_date)+theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp.pdf"))
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf"))
 
 
 plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_text(angle = 60 , hjust = 1))

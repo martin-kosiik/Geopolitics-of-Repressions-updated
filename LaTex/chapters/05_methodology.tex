@@ -37,7 +37,9 @@ Since we have small number of groups we use the generalization of \citet{mccaffr
 \subsection{Synthetic Control Method}
 %However, the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
 However, difference-in-differences makes a fairly strong assumption regarding the absence of time-varying individual-specific heterogeneity which might be unrealistic in some empirical settings.
-The synthetic control method has been increasingly used in the literature to overcome this issue. The method estimates the treatment effect by constructing a synthetic version of the treated unit  based on matching of pre-treatment variables. Unlike difference-in-differences, it allows for the presence of certain time-varying unit-specific confounders which can be captured by a factor model.
+The synthetic control method has been increasingly applied in the economic literature to overcome this issue \citep{abadie_economic_2003, abadie_synthetic_2010, billmeier_assessing_2012, cavallo_catastrophic_2013}. The method works by constructing a synthetic version of the treated unit  based on matching of pre-treatment variables. The outcomes of synthetic control are then compared to the actual outcomes  to estimate the treatment effect.
+Unlike difference-in-differences, the synthetic control method allows for the presence of certain time-varying unit-specific confounders although only if they can be  captured by the factor model in the equation \ref{factor_model}.
+%We 
 %the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
 
 
@@ -46,16 +48,17 @@ The synthetic control method has been increasingly used in the literature to ove
 % The synthetic control method has been applies to many topics. 
 % \citep{abadie_economic_2003, abadie_synthetic_2010} 
 
-Let $Y_{it}$ be the outcome of a unit $i$ at time $t$ with $i = 1$ being the treated group.  We
-denote $D_{1t}$ as the treatment dummy, i.e. variable that equals 1 if $i = 1$ and $T > T_0$ and 0 otherwise (with $T_0$ being the start of the treatment). 
-Let be $Y_{1t}^N$ be a counterfactual outcome for the treated unit in the absence of treatment. The effect of treatment a time $t$, $\alpha_{1t}$ is assumed to be given as 
+Let $Y_{it}$ be the outcome of a unit $i$ at time $t$ with $i = 1$ being the treated group and $i \in \{ 2, \dots, J + 1 \}$ untreated units (we will also call them donor units).  We
+denote $D_{1t}$ as the treatment dummy, i.e. variable that equals 1 if $i = 1$ and $t > T_0$ and 0 otherwise (with $T_0$ being the start of the treatment). 
+Let be $Y_{1t}^N$ be a counterfactual outcome for the treated unit at time $t > T_0$ in the absence of treatment. 
+The observed outcome $Y_{it}$ is then assumed to be  sum of the counterfactual outcome $Y_{1t}^N$ and the effect of treatment at time $t$, $\alpha_{1t}$, i.e.:
 \begin{equation}
-    Y_{1t} = Y_{1t}^N + \alpha_{1t} \, D_{1t}
+    Y_{1t} = Y_{1t}^N + \alpha_{1t} \, D_{1t}.
 \end{equation}
-Furthermore, the synthetic control method assumes that $Y_{1t}^N$  can be expressed by the following factor model:
-\begin{equation}
+The synthetic control method also assumes that $Y_{1t}^N$  can be expressed by the following factor model:
+\begin{equation} \label{factor_model}
    Y_{1t}^N = \delta_t + \boldsymbol{\theta}_t \boldsymbol{Z}_i +
-   \boldsymbol{\lambda}_t \boldsymbol{\mu}_i + \epsilon_{it}
+   \boldsymbol{\lambda}_t \boldsymbol{\mu}_i + \epsilon_{it},
 \end{equation}
 where is $\delta_t$ an unknown common factor with constant factor
 loadings across units, $\boldsymbol{Z}_i$ is a
@@ -63,13 +66,58 @@ $(1 \times r)$ vector of observed time-invariant covariates (unaffected by the t
 unknown parameters, $\boldsymbol{\lambda}_t$ is a $(1 \times F)$ vector of unobserved time-varying factors, $\boldsymbol{\mu}_i$ is an $(F \times 1)$ vector of unknown factor loadings
 and $\epsilon_{it}$ is the error term with zero mean.
 
-Notice that for constant  $\boldsymbol{\lambda}_t$ for all $t$ we get the traditional  difference-in-differences model. Unlike difference-in-differences,  the synthetic control method  allows for unit-specific time trends as long as they can be captured by the factor model. 
+Notice that if $\boldsymbol{\lambda}_t$ is constant  for all $t$, we get the traditional
+difference-in-differences with time and unit-specific fixed effects. 
+The synthetic control method thus offers more general model that, in contrast to difference-in-differences, allows the unobserved confounders vary with time.
 
-The synthetic control is  constructed as a convex combination of available comparison units (in our case other minorities in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
+%Unlike difference-in-differences,  the synthetic control method  allows for unit-specific time trends as long as they can be captured by the factor model. 
+
+We then try to estimate the counterfactual outcome $Y_{1t}^N$  by constructing a synthetic control group  as a convex combination of available comparison units (in our case other ethnic groups in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
  (or more precisely, for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$). 
- More formally we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert$ where $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit and $k = r + L$ and $Y^{K_l}$ are combinations of
-pre-treatment outcomes (analogously for $X_0$). The effect of the treatment at time $t$, $\alpha_{1t}$, is then estimated as a difference between the outcome for synthetic control and the treated unit, i.e.:
-\begin{equation*}
-  \hat\alpha_{1t}  = Y_{1t} - \sum_{k = 2}^{J + 1} w_j^* Y_{kt}
-\end{equation*}
+ %The intuition be
+ 
+ 
+ More formally, we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
+  $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit,  $Y^{K_l}$ are linear combinations of
+pre-treatment outcomes, and %(analogously for $X_0$)
+  $X_0$ is a $(k \times J)$ matrix with pre-treatment characteristics of untreated units analogous to $X_1$, 
+ %$X_1$ is a vector of pre-treatment characteristics of the treated unit,
+  $V$ is  a $(k \times k)$  matrix that weights the importance of different pre-treatment predictors in the minimization problem. 
+  $V$ is usually chosen among symmetric and positive semidefinite matrices to minimize the  mean squared prediction error (MSPE) in the outcome in the pre-treatment period so that the $V$-weights would reflect the predictive power of the covariates. 
+% matching variables that are chosen to 
+ %$X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit and $k = r + L$ and $Y^{K_l}$ are combinations of
+%pre-treatment outcomes (analogously for $X_0$). 
+The effect of the treatment $\alpha_{1t}$ at time $t > T_0$ is then estimated as a difference between the outcome for the synthetic control and the treated unit, that is:
+\begin{equation}
+  \hat\alpha_{1t}  = Y_{1t} - \sum_{k = 2}^{J + 1} w_j^* Y_{kt},
+  %\qquad t \in \{T_0 + 1, \dots, T \}.
+\end{equation}
+where $w_j$ are the estimated optimal weight. 
+
+The synthetic control method, however, does not provide us with any standard errors that could indicate the uncertainty in the estimated effect.
+\citet{abadie_synthetic_2010} propose assessing significance  on randomization inference and placebo tests. Synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
+such a result would not be likely under the null hypothesis of zero treatment effect.
+%\citet{abadie_synthetic_2010} propose a procedure for obtaining Fisher exact  $p$-values based on randomization inference and placebo tests. 
+
+%Therefore if the estimated effect for the treated unit is much larger than the placebo effects, it implies that such a result would not be likely under the null hypothesis of zero treatment effect and the $p$-value would then be accordingly small. 
+
+However, \citet{abadie_synthetic_2010}  point out that placebo synthetic controls with poor pre-treatment fit do not provide good comparison for estimating rareness of large effect for a treated unit with a good  pre-treatment fit. They thus recommend excluding excluding placebo units with substantially higher pre-treatment MSPE relatively to the treated unit. 
+
+Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE is somewhat arbitrary. Better way to asses significance of results might be to compare the ratios of post/pre-treatment MSPE since
+%Using  the ratios instead of the values of $\hat\alpha$ allows us to
+%asses the significance of results reltice 
+take into account different values of pre-treatment fit between the treated unit and the placebo tests. The  $p$-values can then be calculated as 
+\begin{equation} \label{eq:p_ratio}
+ p_1   = \frac{\sum_{j = 2}^{J + 1} \mathbbm{1}\left( \text{MSPE ratio}_{j} \geq \text{MSPE ratio}_{1} \right)}{J + 1}.
+\end{equation}
+
+
+%would suggest that the results are significant since these results would be less likely if there were no treatment effect 
+%Large difference between the outcomes of synthetic control and actual data is can be indicative of large effect 
+%High deviation of synthetic control from the actual 
+% The randomization inference p-value is the proportion of times the placebo treatment effect was larger than the estimated treatment effect
+
+
+%Large gaps for arrests of Germans relative to other ethnic groups would suggest that the results are significant since these results would be less likely if there were no treatment effect . 
+
 

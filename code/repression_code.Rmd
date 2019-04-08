@@ -20,7 +20,7 @@ library(estimatr)
 library(gghighlight)
 library(lubridate)
 library(clubSandwich)
-library(cowplot)
+#library(cowplot)
 ```
 
 Import the  data
@@ -40,7 +40,18 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
   mutate(german = ifelse(ethnicity == "German", 1, 0),
          post_german = german * ifelse(YEAR >= 1933, 1, 0),
          ethnicity = as.factor(ethnicity),
-         YEAR_sq = YEAR^2) 
+         YEAR_sq = YEAR^2, 
+         pre_treatment = ifelse(YEAR >= 1930 & YEAR < 1933, 1, 0),
+         hostility = ifelse(YEAR >= 1933 & YEAR < 1939, 1, 0), 
+         pact = ifelse(YEAR >= 1939 & YEAR < 1941, 1, 0), 
+         war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
+         post_war = ifelse(YEAR >= 1945, 1, 0)) 
+
+
+min_by_year %>% 
+  group_by(YEAR) %>% 
+  summarise(pred_label = sum(label_imp_date) + sum(prediction_imp_date)) %>% 
+  View()
 
 min_by_year <- min_by_year %>% 
   filter(YEAR < 1940)

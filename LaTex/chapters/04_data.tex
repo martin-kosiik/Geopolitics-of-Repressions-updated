@@ -121,7 +121,7 @@ This equation can be expressed in matrix form as
 \end{equation}
 where $\mathbf{P}_t = \left(P_{1t}, \cdots, P_{Kt} \right)$, $\mathbf{R}_t = \left(R_{1t}, \cdots, R_{Kt} \right)$, and $\mathbf{B} = \left(b_{ij}\right)_{i = 1, \dots, K,\:j = 1, \dots, K}$.
 To express $\mathbf{R}_t$, we just  apply basic linear algebra
-\begin{equation}
+\begin{equation} \label{eq:full_matrix_adj}
 \mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t
 \end{equation}
 We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment

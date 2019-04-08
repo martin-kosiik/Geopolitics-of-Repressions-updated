@@ -1,5 +1,10 @@
 \subsection{Difference-in-differences}
-The estimated coefficients  $\beta_k$ from the specification \ref{eq:dynamic_did} are plotted in the figure \ref{fig:did_effets}. The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
+We start by presenting results for the data with imputed ethnicity (adjusted with full matrix correction from equation \ref{eq:full_matrix_adj} and date of arrest since we consider them to be the most credible. However, we also consider how the results change if do not impute or apply different adjustment further in the paper. 
+
+ The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are plotted in the figure \ref{fig:did_effets}. 
+ We can see that the coefficients are close to zero from 1930 to 1937. 
+ 
+ %The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
 
 However, the pre-1933 coefficients give us some reason to doubt the
 validity of our model. Three of them are significantly different from 0 at 5\% level and others are very close to being significant. 
@@ -11,17 +16,34 @@ difference-in-differences. To address this concern, we apply the synthetic contr
 %The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/effects/annual/point_range_robust_cr2_date_imp_full_years.pdf}
-\caption{Estimates of coefficients $\beta_k$ on the interactions of $\text{German}_{i} \cdot \text{Year}_{t}^k$}
+\caption{Estimates of $\beta_k$ from the Specification \ref{eq:dynamic_did}}
+\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.  Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
 \label{fig:did_effets}
 \end{figure}
 
+
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/effects/annual/point_range_robust_cr2_date_imp_full_years.pdf}
-\caption{Estimates of coefficients $\beta_k$ on the interactions of $\text{German}_{i} \cdot \text{Year}_{t}^k$}
-\label{fig:did_effets}
+\caption{Estimated Coefficients for Specified Time Windows from the Specification \ref{eq:simple_did} }
+\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_effets_time_window}
 \end{figure}
+
+
+
 %We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model (column (1) of table \ref{dif_table}), we included all observations in years 1923 to 1958. But the relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results (in column (2)) change only little and does not alter our previous conclusions. Second, when we omit the ethnicity specific linear time trends in column (3), we see again that the coefficients are very similar to the original model. Finally, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model (shown in column (4)) fits the data rather poorly with  $R^2$ only of 0.428 (compared to 0.890 in the logarithmic specification). 
 
 %We perform several robustness checks to asses sensitivity of the results to different specifications. First, in our main model (column (1) of table \ref{dif_table}), we included all observations in years 1923 to 1958. But the relationship between Germany and Soviet Union were somewhat more complicated after the World War II. We thus re-estimate the model with only the data from 1923 to 1945. The results (in column (2)) change only little and does not alter our previous conclusions. Second, when we omit the ethnicity specific linear time trends in column (3), we see again that the coefficients are very similar to the original model. Finally, we estimate a specification with number of arrests as a dependent variable (without logarithmic transformation). We can see that this model (shown in column (4)) fits the data rather poorly with  $R^2$ only of 0.428 (compared to 0.890 in the logarithmic specification). 
@@ -37,8 +59,8 @@ The gap between the trends for the actual German minority and its synthetic cont
 %The figure shows increase between 1937 and 1939 (the period of the Great Terror).  
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/comparison_plot.pdf}
 \caption{Comparison plot}
+\includegraphics[width=\textwidth]{plots/synthetic_control/until_pact/comparison_plot.pdf}
 \label{fig_sc_comp_plot}
 \end{figure}
 
@@ -66,13 +88,14 @@ Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whos
 
 \begin{figure}[hbtp] 
 \begin{subfigure}{\textwidth}
-\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_all.pdf}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf}
 \caption{All ethnic groups}
 \label{fig:sc_placebo_gaps_all}
 \end{subfigure}
 \begin{subfigure}{\textwidth}
-\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower.pdf}
-\caption{Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower_imp_date.pdf}
+\caption{Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germans excluded}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
 \label{fig:sc_placebo_gaps_all_5_times}
 \end{subfigure}
 \caption{Gaps between synthetic control and actual values for placebo tests}

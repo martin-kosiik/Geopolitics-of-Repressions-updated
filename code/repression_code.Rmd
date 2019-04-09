@@ -215,7 +215,8 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
   theme(axis.line = element_line(size = 1), 
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
-        text = element_text(size=14)) +
+        text = element_text(size=14),
+        axis.text.x = element_text(angle = 60, hjust = 1)) +
   labs(x = "Year", 
         #caption = "error bars show 95% confidence intervals \n 
          #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
@@ -246,6 +247,22 @@ plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_tex
 ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp.pdf"))
 
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
+
+```
+
+
+```{r}
+min_by_year %>% 
+  filter(ind_country == 1) %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date) 
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_ind_country.pdf"))
+
+
+
+ min_by_year %>% 
+  filter(ind_country == 0 | ethnicity == "German") %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date)
+ ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_not_ind_country.pdf"))
 
 ```
 

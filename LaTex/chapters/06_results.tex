@@ -2,19 +2,11 @@
 We start by presenting results for the data with imputed ethnicity (adjusted with full matrix correction from equation \ref{eq:full_matrix_adj} and date of arrest since we consider them to be the most credible. However, we also consider how the results change if do not impute or apply different adjustment further in the paper. 
 
  The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are plotted in the figure \ref{fig:did_effets}. 
- We can see that the coefficients are close to zero from 1930 to 1937. 
+ We can draw several conclusions from the results. 
+ First, the coefficients from 1933 to 1938 are not significantly different from zero which implies that hostility between Germany and the Soviet Union in this period does not seem to impact the repressions of Germans contrary to the theoretical predictions. Second, the political arrests of Germans start to rise in 1939 which is surprising given that  Molotov-Ribbentrop pact guaranteeing neutrality Germany and the USSR was signed that year. The repressions then peak  with start of the war at 1941 (although there is some slight drop from 1942 to 1944). Finally, the effects of war on the repressions appear to be highly persistent as there is no decline in the arrests after 1945. 
+ %There even
  
- %The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
-
-However, the pre-1933 coefficients give us some reason to doubt the
-validity of our model. Three of them are significantly different from 0 at 5\% level and others are very close to being significant. 
-This provide some evidence that the pre-treatment trends for German minority were not parallel with trends for other minorities. We can thus suspect that the post-treatment trends were not parallel either which
-would violate the basic identifying assumption of
-difference-in-differences. To address this concern, we apply the synthetic control method which can be valid even in the absence of  parallel trends. 
-%We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
-
-%The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
-\begin{figure}[h]
+ \begin{figure}[h]
 \centering
 \caption{Estimates of $\beta_k$ from the Specification \ref{eq:dynamic_did}}
 \includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf}
@@ -27,6 +19,34 @@ difference-in-differences. To address this concern, we apply the synthetic contr
 \label{fig:did_effets}
 \end{figure}
 
+ 
+ The results from the time window specification (equation \ref{eq:simple_did}) shown in the figure \ref{fig:did_effets_time_window} tell the same story.  The coefficients in the model imply that in the period of Molotov-Ribbentrop pact and war, the arrests of Germans were about 2\% higher than the arrest other ethnic groups. Surprisingly, the estimated effect in the post-war period is higher still at  3.6\%.
+ 
+However, the pre-1933 coefficients in the figure \ref{fig:did_effets} give us some reason to doubt the
+validity of our model. Even though they are small in size relative to the post-1939 coefficient, they are all  significantly different from 0 at 5\% level.
+%and others are very close to being significant. 
+This provide some evidence that the pre-treatment trends for German minority were not parallel with trends for other ethnic groups. We can thus suspect that the post-treatment trends were not parallel either which
+would violate the basic identifying assumption of
+difference-in-differences.
+%The deviations from parallel trends in the pre-treatment period are relatively small possibly indicating that the bias might not be as large. 
+We address this problem by applying the synthetic control method in the next section. 
+%Bearing in mind these potential problems, we proceed 
+ 
+Another potential issue is that some ethnic groups changed their treatment status in this period in various complicated ways. For example, Poland was invaded by the USSR and Germany but it took  only about month until the Polish forces were defeated. The Baltic states were annexed and incorporated into the Soviet Union in June 1940 only to be invaded by Germany year later. 
+It is difficult to decide what treatment status should we assign in these cases. 
+Moreover, given the scale and complexity of World War 2, the USSR experienced  some kind of change in geopolitical relations with almost every country in its neighborhood.  
+
+To address this issue, we exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. 
+%Bearing in mind these potential problems, we continue by considering different sets of control groups to better understand what drives the results. 
+ 
+ %The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
+
+%However, the pre-1933 coefficients give us some reason to doubt the
+%validity of our model. Three of them are significantly different from 0 at 5\% level and others are very close to being significant. 
+%This provide some evidence that the pre-treatment trends for German minority were not parallel with trends for other minorities. We can thus suspect that the post-treatment trends were not parallel either which would violate the basic identifying assumption of difference-in-differences. To address this concern, we apply the synthetic control method which can be valid even in the absence of  parallel trends. 
+%We can see that all coefficients for years 1930 to 1932 are statistically insignificant which means that the pre-treatment trends in arrests of German minority were likely parallel to the pre-treatment trends of other minorities which gives us greater  confidence in the validity of our identification strategy. 
+
+%The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
 
 
 \begin{figure}[h]
@@ -87,18 +107,18 @@ for estimating rareness of large  post-treatment gap for a treatment with a good
 Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit. The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_5_times}. The post-1933 gaps in German arrests now stand out more clearly. 
 
 \begin{figure}[hbtp] 
+\caption{Gaps between synthetic control and actual values for placebo tests}
 \begin{subfigure}{\textwidth}
-\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf}
 \caption{All ethnic groups}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf}
 \label{fig:sc_placebo_gaps_all}
 \end{subfigure}
 \begin{subfigure}{\textwidth}
-\includegraphics[width=0.9\linewidth]{plots/synthetic_control/until_pact/placebo_highlight_mspe_5_lower_imp_date.pdf}
 \caption{Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germans excluded}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower_imp_date.pdf}
 %Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
 \label{fig:sc_placebo_gaps_all_5_times}
 \end{subfigure}
-\caption{Gaps between synthetic control and actual values for placebo tests}
 \label{fig:sc_placebo_gaps}
 \end{figure}
 

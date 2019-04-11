@@ -119,6 +119,11 @@ fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date 
                          ethnicity"))
 
 
+fmla_pred_full_imp_date_lin_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+
+
 fmla_no_trends <- as.formula(paste("log_n ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity"))
@@ -234,9 +239,14 @@ ggsave(here::here("plots/effects/annual/point_range_robust_cr0.pdf"))
 plot_effects_robust_se(formula =  fmla_pred_full) #+ theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2.pdf"))
 
-plot_effects_robust_se(diff_model_no_trends)
+plot_effects_robust_se(formula =  fmla_pred_full_imp_date_no_trends)
 
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_no_trends.pdf"))
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_no_trends.pdf"))
+
+plot_effects_robust_se(data = min_by_year, formula =  fmla_pred_full_imp_date_lin_trends)
+
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_no_trends.pdf"))
+
 
 plot_effects_robust_se(formula = fmla_pred_full_imp_date)+theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp.pdf"))

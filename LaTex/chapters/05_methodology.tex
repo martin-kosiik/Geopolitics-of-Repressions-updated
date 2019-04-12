@@ -77,7 +77,7 @@ We then try to estimate the counterfactual outcome $Y_{1t}^N$  by constructing a
  %The intuition be
  
  
- More formally, we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 1, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
+ More formally, we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 2, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
   $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit,  $Y^{K_l}$ are linear combinations of
 pre-treatment outcomes, and %(analogously for $X_0$)
   $X_0$ is a $(k \times J)$ matrix with pre-treatment characteristics of untreated units analogous to $X_1$, 

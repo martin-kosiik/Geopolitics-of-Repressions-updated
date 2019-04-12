@@ -177,7 +177,7 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
         #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=12)) + 
   labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 }
 
@@ -214,13 +214,13 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
         #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=12)) + 
   labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
     scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
 }
 
 
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", exclusion_ratio = 20)
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower_imp_date.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf"))
 
 
 
@@ -229,11 +229,11 @@ ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_mspe_5_lower
 
 
 
-placebo_mspe_barplot <- function(placebo_data = sc_placebo, dep_var = dep_var){
+placebo_mspe_barplot <- function(placebo_data = sc_placebo, dep_var = dep_var, range_post = c("1933","1939")){
   
 
 mspe_ratios <-  ppratio(placebo_data, dep_var, range.pre = c("1921","1932"),
-                        range.post = c("1933","1939"), type = "mspe")
+                        range.post = range_post, type = "mspe")
 
 
 tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
@@ -243,11 +243,11 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
 }
 
 
-placebo_mspe_barplot(sc_placebo_pred_full, "log_n_pred_full")
+placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf"))
 
-placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
+placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
 
@@ -256,14 +256,6 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_rati
 
 
 ```{r}
-ggplot(sc_results, type="comparison")
-ggsave(here("plots/synthetic_control/comparison_plot.pdf"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot.pdf"))
-
-ggplot(sc_results, type="gap")
-ggsave(here("plots/synthetic_control/gap.pdf"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/gap.pdf"))
-
 timetk::tk_tbl(sc_results$combined[[dep_var]]) %>% 
   mutate(date = as_date(str_c(index,"-01-01"))) %>% 
   gather("type", dep_var, treated, synth, -date) %>% 
@@ -277,13 +269,38 @@ timetk::tk_tbl(sc_results$combined[[dep_var]]) %>%
   #      xmin = as_date("1921-01-01"), xmax = as_date("1933-01-01"),
   #      ymin = -Inf, ymax = Inf) + 
   geom_line(size = 1) +
-  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
   scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y", 
                limits = c(as_date("1921-01-01"), NA)) +
   labs(x = element_blank(), y = "log(1 + arrests)", col = "German arrests") 
 
 ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot.pdf"))
+
+
+
+timetk::tk_tbl(sc_results$combined[[dep_var]]) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("type", dep_var, treated, synth, -date) %>% 
+  mutate(type = fct_recode(type, "Synthetic" = "synth", "Actual" = "treated") %>% 
+           fct_relevel("Actual"),
+         dep_var = exp(dep_var) - 1) %>% 
+  ggplot(aes(x = date, y = dep_var, col = type)) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=12)) + 
+  #annotate("rect", fill = "grey", alpha = 0.4, 
+  #      xmin = as_date("1921-01-01"), xmax = as_date("1933-01-01"),
+  #      ymin = -Inf, ymax = Inf) + 
+  geom_line(size = 1) +
+  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
+  scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y", 
+               limits = c(as_date("1921-01-01"), NA)) +
+  labs(x = element_blank(), y = "Number of arrests", col = "German arrests") +
+  scale_y_continuous(trans = "mynaturallog" , breaks = c(0,2,10,100,1000,10000, 100000), labels = comma)
+
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot_scaled.pdf"))
+
 
 
 opts_current$set(label = "sc_weights")

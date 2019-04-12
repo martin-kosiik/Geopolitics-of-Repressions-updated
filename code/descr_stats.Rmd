@@ -92,6 +92,13 @@ mylog10_trans <- function (base = 10)
             domain = c(0, Inf))
 }
 
+mynaturallog_trans <- function (base = exp(1)) 
+{
+  trans <- function(x) log(x + 1, base)
+  inv <- function(x) base^(x) - 1 
+  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
+            domain = c(0, Inf))
+}
   
 ```
 

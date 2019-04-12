@@ -45,9 +45,9 @@ ethnicity_controls %>%
   dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct, ind_country) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Ethnic group", "Total population", "Ling. similarity to Russian", 
-                      "Urbanization rate", "Ind. country"),
+                      "Urbanization rate", "Ind. state"),
         caption = "Pre-treatment characteristics of ethnic groups in the USSR") %>%
-  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity). Independent country equals one if the ethnic group was a core group in an independent state that existed in the interwar period.",
+  footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity). Independent state equals one if the ethnic group was a core group in an independent country that existed in the interwar period.",
            threeparttable = T) %>% 
   kable_styling(latex_options = c("hold_position")) %>% 
     write_file(here::here("tables/sc_predictors.tex"))
@@ -82,13 +82,20 @@ data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "eth
 ```
 
 ```{r}
-dep_var <- "log_n_pred_full"
+dep_var <- "log_n_pred_full_imp_date"
 
 treatment.identifier <- "German"
 controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
                                  treatment.identifier)
-times.dep  <- cbind(dep_var                 = c("1921","1933"))
+times.dep  <- cbind(dep_var                 = c("1921","1932"))
+times.dep  <- cbind("log_n_pred_full_imp_date"                 = c("1921","1932"))
+
 times.pred <- cbind("pop_total"             = c("1921","1932"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+
+times.pred <- cbind("log_n_pred_full_imp_date"       = c("1921","1932"),
+                    "pop_total"             = c("1921","1932"),
                     "clad_sim"              = c("1921","1932"),
                     "urb_rate"              = c("1921","1932"))
 
@@ -99,6 +106,7 @@ agg.fns <- rep("id", ncol(times.pred))
 
 ```{r}
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
+sc_results$v
 
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
@@ -108,31 +116,53 @@ sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.id
                               times.dep, times.pred, agg.fns,
                               seed=2019, placebo = TRUE, single.v=TRUE)
 
+
+
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1933"))
 
 sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
 ```
 
 ```{r}
+mean_all <-  min_by_year %>% 
+  filter(YEAR < 1933) %>% 
+  summarize_at(c("log_n_pred_full_imp_date", "pop_total", "urb_rate_pct", "clad_sim"), mean) %>% 
+  gather(key = "variable", value = "all_groups")
+
+ethnicity_controls %>% 
+  summarize_all(mean)
+
+
+opts_current$set(label = "sc_predictor_means")
 sc_results$combined %>% 
   map(tk_tbl) %>% 
   bind_rows(.id = "variable") %>% 
-  filter(variable %in% c(dep_var,"pop_total", "clad_sim", "urb_rate")) %>% 
+  filter(variable %in% c(dep_var,"pop_total", "clad_sim", "urb_rate_pct")) %>% 
   filter(index < 1933) %>% 
- # View()
   group_by(variable) %>% 
   summarize_all(mean) %>% 
-  select(-c(index, gaps))
+  select(-c(index, gaps)) %>% 
+  left_join(mean_all, by = "variable") %>% 
+  mutate(variable = recode_factor(variable, "log_n_pred_full_imp_date" =
+                                    "Log(1 + arrests)", 
+                                  "pop_total" = "Total population",
+                                  "clad_sim" = "Ling. similarity to Russian",
+                                  "urb_rate_pct" = "Urbanization rate", .ordered = TRUE) )%>% 
+  slice(c(2, 3, 4, 1)) %>% 
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Variable", "Actual", "Synthetic", 
+                      "Mean of all 38 ethnicities"),
+        caption = "Pre-treatment Predictor Means") %>%
+  add_header_above(c(" " = 1, "German minority" = 2)) %>% 
+  footnote(general = "Log(1 + arrests) is averaged over the pre-treatment period (1921-1932). All other predictor are time-invariant. Total population and urbanization rate are taken from 1926 Soviet census.",
+           threeparttable = T) %>% 
+  kable_styling(latex_options = c("hold_position")) %>% 
+  write_file(here::here("tables/sc_predictor_means.tex"))  
+  
+  
 
- tibble(w = sc_results$w, ethnicity = names(sc_results$w)) %>% 
-   left_join(ethnicity_controls, by = "ethnicity") %>% 
-   mutate_at(vars(clad_sim, urb_rate, pop_total), ~ sc_results$w * .) %>% 
-   summarise_at(vars(clad_sim, urb_rate, pop_total), ~ sum( .))
-    
-sc_results$combined %>% 
-  keep(~ names(.) %in% c("log_n","pop_total", "clad_sim", "urb_rate"))
- 
 ```
 
 
@@ -162,7 +192,7 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_h
 
 #ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_all.pdf"))
 
-placebo_highlight_mspe <- function(placebo_data = sc_placebo, dep_var = dep_var){
+placebo_highlight_mspe <- function(placebo_data = sc_placebo, dep_var = dep_var, exclusion_ratio = 5){
   
 rmspe_placebo <- placebo_data[-length(placebo_data)] %>% 
   map("rmspe") %>% 
@@ -171,14 +201,13 @@ rmspe_placebo <- placebo_data[-length(placebo_data)] %>%
 rmspe_placebo_tibble <- tibble(ethnicity = names(rmspe_placebo), rmspe = rmspe_placebo) %>% 
   mutate(mspe = rmspe^2) %>% 
   mutate( mspe_german = mspe[ethnicity == "German"],
-         mspe_5times_higher = ifelse(5 * mspe_german < mspe, 1, 0), 
-         mspe_20times = ifelse(20 * mspe_german < mspe, 1, 0))
+         mspe_xtimes_higher = ifelse(exclusion_ratio * mspe_german < mspe, 1, 0))
 
 tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>% 
   mutate(date = as_date(str_c(index,"-01-01"))) %>% 
   gather("ethnicity", dep_var, -c(date, index)) %>% 
   left_join(rmspe_placebo_tibble, by = "ethnicity") %>% 
-  filter(!mspe_5times_higher) %>% 
+  filter(!mspe_xtimes_higher) %>% 
   ggplot(aes(date, dep_var, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
   theme_minimal() +
   theme(axis.line = element_line(size = 1), 
@@ -190,7 +219,7 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
 }
 
 
-placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
+placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower_imp_date.pdf"))
 
 
@@ -235,25 +264,26 @@ ggplot(sc_results, type="gap")
 ggsave(here("plots/synthetic_control/gap.pdf"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/gap.pdf"))
 
-timetk::tk_tbl(sc_results$combined$log_n) %>% 
-  mutate(date = as_date(index)) %>% 
-  gather("type", "log_n", treated, synth, -date) %>% 
+timetk::tk_tbl(sc_results$combined[[dep_var]]) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("type", dep_var, treated, synth, -date) %>% 
   mutate(type = fct_recode(type, "Synthetic" = "synth", "Actual" = "treated") %>% 
            fct_relevel("Actual")) %>% 
-  ggplot(aes(x = date, y = log_n, col = type)) + theme_minimal() +
+  ggplot(aes(x = date, y = dep_var, col = type)) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
         #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=12)) + 
-  annotate("rect", fill = "grey", alpha = 0.4, 
-        xmin = as_date("1921-01-01"), xmax = as_date("1933-01-01"),
-        ymin = -Inf, ymax = Inf) + 
-   geom_line(size = 1) +
-  scale_x_date(date_minor_breaks = "1 year", date_breaks = "5 year", date_labels = "%Y", 
+  #annotate("rect", fill = "grey", alpha = 0.4, 
+  #      xmin = as_date("1921-01-01"), xmax = as_date("1933-01-01"),
+  #      ymin = -Inf, ymax = Inf) + 
+  geom_line(size = 1) +
+  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
+  scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y", 
                limits = c(as_date("1921-01-01"), NA)) +
   labs(x = element_blank(), y = "log(1 + arrests)", col = "German arrests") 
 
 ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/quarterly/comparison_plot.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot.pdf"))
 
 
 opts_current$set(label = "sc_weights")
@@ -261,9 +291,9 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
   filter(Weights != 0) %>% 
   arrange(desc(Weights)) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
-        col.names = c("Ethnic group", "$W$-Weight"),
+        col.names = c("Ethnic group", "$W$-Weight"), escape = FALSE,
         caption = "Synthetic German minority weights") %>%
-  #footnote(general = "Total population and urbanization rate of the ethnic group in the USSR is taken from 1926 census. The linguistic similarity to Russian is measured by the number of common nodes in the language tree (cladistic similarity).", threeparttable = T) %>% 
+  footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))
   
   

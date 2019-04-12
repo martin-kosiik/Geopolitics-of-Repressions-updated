@@ -22,6 +22,19 @@ We start by presenting results for the data with imputed ethnicity (adjusted wit
  
  The results from the time window specification (equation \ref{eq:simple_did}) shown in the figure \ref{fig:did_effets_time_window} tell the same story.  The coefficients in the model imply that in the period of Molotov-Ribbentrop pact and war, the arrests of Germans were about 2\% higher than the arrest other ethnic groups. Surprisingly, the estimated effect in the post-war period is higher still at  3.6\%.
  
+ \begin{figure}[h]
+\centering
+\caption{Estimated Coefficients for Specified Time Windows from the Specification \ref{eq:simple_did} }
+\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_effets_time_window}
+\end{figure}
+ 
 However, the pre-1933 coefficients in the figure \ref{fig:did_effets} give us some reason to doubt the
 validity of our model. Even though they are small in size relative to the post-1939 coefficient, they are all  significantly different from 0 at 5\% level.
 %and others are very close to being significant. 
@@ -36,7 +49,10 @@ Another potential issue is that some ethnic groups changed their treatment statu
 It is difficult to decide what treatment status should we assign in these cases. 
 Moreover, given the scale and complexity of World War 2, the USSR experienced  some kind of change in geopolitical relations with almost every country in its neighborhood.  
 
-To address this issue, we exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. 
+To address this issue, we exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences are plotted in the figure \ref{fig:did_effets_no_ind_countries} in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
+
+In the section \ref{subsec:robust_checks}, we perform several additional robustness checks to further asses the sensitivity of our findings. In particular, we refit the models for different ethnicity-specific time-trends and imputation adjustments. 
+
 %Bearing in mind these potential problems, we continue by considering different sets of control groups to better understand what drives the results. 
  
  %The coefficients between the years 1933 and 1939 (when the relations between Germany and Soviet Union were hostile) mostly range  between 1 and 3 and all except one are statistically significant at 5\% level. The rise of Nazism thus based on these estimated increased the arrests of Germans by the NKVD in the USSR by about 2\%.  
@@ -49,18 +65,7 @@ To address this issue, we exclude every ethnicity which constituted a core group
 %The coefficients on all other years are insignificant as well. Only for 1934 (one year lag) is the estimate  significant at 10\% level ($p$-value of 0.08). Since this not reaches even the traditional 5\% significance threshold we are inclined to not reject the null hypothesis or at least to conclude that evidence in favor of the alternative hypothesis (more repressions of Germans due to rise of Hitler) is quite weak.  Furthermore, as we show below the alternative specifications do not increase the significance of the coefficients.
 
 
-\begin{figure}[h]
-\centering
-\caption{Estimated Coefficients for Specified Time Windows from the Specification \ref{eq:simple_did} }
-\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf}
-\begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
-\footnotesize
-\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
-\end{minipage}
-\label{fig:did_effets_time_window}
-\end{figure}
+
 
 
 
@@ -134,3 +139,7 @@ is somewhat arbitrary. Alternative way to asses significance of results may be t
 \end{figure}
 %\subsection{Generalized Synthetic Control Method}
 %\citet{xu_generalized_2017}
+
+
+\subsection{Robustness Checks} \label{subsec:robust_checks}
+First, we consider if the presence of ethnicity-specific time trends affects the results. As we explained in the methodology section, the ethnicity-specific time trends allows us. 

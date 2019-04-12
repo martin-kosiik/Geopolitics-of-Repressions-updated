@@ -37,29 +37,44 @@
 \section*{Additional Figures}
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1.2\textwidth]{plots/arrests/prediction_type_by_year.pdf}
 \caption{Number of Predicted Arrests by Ethnicity, Year, and Prediction Adjustment}
+\includegraphics[width=1.2\textwidth]{plots/arrests/prediction_type_by_year.pdf}
 \label{fig:prediction_type_by_year}
 \end{figure}
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1.2\textwidth]{plots/arrests/facet_hist.pdf}
 \caption{Histograms of Arrests by Ethnicity and Year}
+\includegraphics[width=1.2\textwidth]{plots/arrests/facet_hist.pdf}
 \label{fig:facet_by_year}
 \end{figure}
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=1.2\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
 \caption{Histogram of Imputed Number of Days between Arrest and Process}
+\includegraphics[width=1.2\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
 \label{fig:mixed_model_preds_hist}
 \end{figure}
 \begin{figure}[!h]
+\caption{Time Series of Arrests }
 \centering
 \includegraphics[width=1.2\textwidth]{plots/arrests/date_imputation_line.pdf}
-\caption{Time Series of Arrests }
 \label{fig:date_imputation_line}
+\end{figure}
+
+
+%\subsection{Difference-in-differnces Results}
+ \begin{figure}[h]
+\centering
+\caption{Estimates of $\beta_k$ from the Dynamic DiD, Only Ethnicities without Ind. State}
+\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_not_ind_country.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} Only ethnic groups without independent state are included in the control group. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. The quadratic ethnicity-specific time trends are included.  Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_effets_no_ind_countries}
 \end{figure}
 
 %\input{tables/diff_table.tex}

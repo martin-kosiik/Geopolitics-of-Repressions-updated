@@ -111,7 +111,7 @@ sc_results$v
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
 dep_var <- "log_n_pred_full"
-times.dep  <- cbind("log_n_pred_full" = c("1921","1933"))
+times.dep  <- cbind("log_n_pred_full" = c("1921","1932"))
 sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, 
                               times.dep, times.pred, agg.fns,
                               seed=2019, placebo = TRUE, single.v=TRUE)
@@ -119,7 +119,7 @@ sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.id
 
 
 dep_var <- "log_n_pred_full_imp_date"
-times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1933"))
+times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
 sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
@@ -251,6 +251,11 @@ placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
 
+
+placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
+
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf"))
+
 ```
 
 
@@ -310,7 +315,7 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Ethnic group", "$W$-Weight"), escape = FALSE,
         caption = "Synthetic German minority weights") %>%
-  footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
+ # footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))
   
   

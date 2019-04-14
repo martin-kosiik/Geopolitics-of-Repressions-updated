@@ -101,30 +101,6 @@ However up until 1955, the actual arrests of Germans are consistently higher tha
 We can infer the estimated effect size in the post-1933 period  from 
 the figure  \ref{fig:sc_placebo_gaps_all} which shows the difference between the actual arrest and their synthetic counterparts for each year (on $\log(1 + x)$ scale). 
 
-From 1933 to 1939, this gap is close to 1. For the period from 1941 to 1955, the estimated effect is higher but also more volatile oscillating between 1 and 3.  After 1955, the gap shrinks to zero. 
-The results are similar to difference-in-differences in the overall trends. Nevertheless, the estimated effects  the synthetic control  
-
-The results imply that the repressions of 
-
-We asses significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in the figure \ref{fig:sc_placebo_gaps_all}. In comparison with the placebo tests, 
-the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955. 
-
- The figure \ref{fig:sc_placebo_gaps_all} also shows that for some ethnic groups the pre-treatment gaps are large too.
- For example, the gap for Russians stays above 2.5 for the whole pre-1933 period. 
- This indicates that synthetic control of these ethnic groups does not capture the actual pre-treatment trends well. 
- %In other words, no linear combination of ethnic group cannot 
- As \citet{abadie_synthetic_2010} note, placebo synthetic controls  with poor pre-treatment fit do not provide good comparison
-%are not very helpful for
-for estimating rareness of an effect for a treated unit with a good pre-treatment fit. They thus recommend excluding excluding placebo groups with substantially higher pre-treatment mean squared prediction error  (MSPE)
-
-Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit. The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_5_times}. The post-1933 gaps in German arrests now stand out more clearly. 
-
-
-%The trends start to diverge in the second quarter of 1933 with the actual arrests of Germans holding steady but decreasing for synthetic control. 
-%The gap between the trends for the actual German minority and its synthetic control (shown in figure \ref{fig:sc_placebo_gaps_all}) keeps within the range of 1.25 to 2.5 for most of the post-1933 period. This implies that the rise of Hitler led to about  2\% increase in the arrests of Germans by the NKVD  in the period from 1933 to 1939. This is very similar to the estimates obtained using difference-in-differences. 
-%The figure shows increase between 1937 and 1939 (the period of the Great Terror).  
-
-
  \begin{figure}[h]
 \centering
 \caption{Comparison plot}
@@ -137,6 +113,37 @@ Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whos
 \end{minipage}
 \label{fig:sc_comp_plot}
 \end{figure}
+
+
+From 1933 to 1939, this gap is close to 1. For the period from 1941 to 1955, the estimated effect is higher but also more volatile oscillating between 1 and 3.  After 1955, the gap shrinks to zero. 
+The results are similar to difference-in-differences in the overall trends. Nevertheless, the estimated effects  the synthetic control  
+
+The results imply that the repressions of 
+
+%As we metioned in the section
+We estimate significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in the figure \ref{fig:sc_placebo_gaps_all}. Even in comparison with the placebo tests, 
+the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955 although for years 1933-1938 the effect for Germans seems within the standard range of the placebo gaps.
+
+However, the figure \ref{fig:sc_placebo_gaps_all} also shows that for some ethnic groups the pre-treatment gaps are large too.
+ For example, the gap for Russians stays above 2.5 for the whole pre-1933 period. 
+ This indicates that synthetic control of these ethnic groups does not capture the actual pre-treatment trends well. 
+ %In other words, no linear combination of ethnic group cannot 
+ As we explained in the subsection \ref{subsec:sc_methodology}, the placebo synthetic contros  with with substantially  worse pre-treatment then the treated unit should not be 
+used in estimating significance of the treatment effect. 
+%are not very helpful for
+%for estimating rareness of an effect for a treated unit with a good pre-treatment fit. 
+We thus  exclude the placebo ethnicities whose pre-treatment mean squared prediction error (MSPE) is 20 times higher than the same measure for German minority. Even though this is relatively lenient cutoff, it removes x ethnic groups that does not meet the criterion. 
+The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_20_times}. The post-1933 gaps in German arrests now stand out more clearly and even the gap for the years 1933-1938 now appears relatively significant.  
+%They thus recommend excluding excluding placebo groups with substantially higher pre-treatment mean squared prediction error  (MSPE)
+
+%Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit. The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_20_times}. The post-1933 gaps in German arrests now stand out more clearly. 
+
+
+%The trends start to diverge in the second quarter of 1933 with the actual arrests of Germans holding steady but decreasing for synthetic control. 
+%The gap between the trends for the actual German minority and its synthetic control (shown in figure \ref{fig:sc_placebo_gaps_all}) keeps within the range of 1.25 to 2.5 for most of the post-1933 period. This implies that the rise of Hitler led to about  2\% increase in the arrests of Germans by the NKVD  in the period from 1933 to 1939. This is very similar to the estimates obtained using difference-in-differences. 
+%The figure shows increase between 1937 and 1939 (the period of the Great Terror).  
+
+
 
 
 %\subsubsection{Inference}
@@ -165,27 +172,41 @@ Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whos
 \caption{Ethnic groups with pre-treatment MSPE higher than 20 times the MSPE of Germans excluded}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf}
 %Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
-\label{fig:sc_placebo_gaps_all_5_times}
+\label{fig:sc_placebo_gaps_all_20_times}
 \end{subfigure}
 \label{fig:sc_placebo_gaps}
 \end{figure}
 
-Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE for the exclusion of poorly fit placebo tests
-is somewhat arbitrary. Alternative way to asses significance of the results may be to compare the ratios of  post/pre-treatment MSPE.  The values of these ratios for all ethnic groups are displayed in the figure \ref{fig:sc_mspe_ratios} for the whole post-treatment period. The MSPE ratio for the German minority is by far the highest. The probability of German minority having the highest ratio of all under the null hypothesis of zero treatment effect is 1/38 ($\approx 0.026$). 
+Nevertheless, our preferred approach for assessing uncertainty in results that avoids  choice of any arbitrary level of the pre-treatment MSPE cutoff for the exclusion of poorly fit  placebos
+is to compare the ratios of  post/pre-treatment MSPE. 
+The values of these ratios for all ethnic groups are displayed in the figure \ref{fig:sc_mspe_ratios_all} for the whole post-treatment period. The MSPE ratio for the German minority is by far the highest. The probability of German minority having the highest ratio of all under the null hypothesis of zero treatment effect is 1/38 ($\approx 0.026$). 
+In the figure \ref{fig:sc_mspe_ratios_until_1939}, we also provided the MSPE ratios  with the post-treatment MSPE calculated only for the years 
+1933-1939  to estimate the significance just for this period. Although the gap between  MSPE ratio for German minority and other ethnic groups shrunk somewhat, the German MSPE ratios stays the highest and therefore we again get the  $p$-value of 1/38. 
+These results contradict our inferences from difference-in-differences  where we could not reject the hypothesis of zero treatment effect for the period from 1933 to 1939. 
 
 
+\begin{figure}[hbtp] 
+\caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
+\begin{subfigure}{\textwidth}
+\caption{The whole post-treatment period in the numerator (1933-1960)}
+\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf}
+\label{fig:sc_mspe_ratios_all}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Only the period from 1933 to 1939 in the numerator}
+\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_mspe_ratios_until_1939}
+\end{subfigure}
+\label{fig:sc_mspe_ratios}
+\end{figure}
 
 
 %This is shown in  the figure \ref{fig_sc_mspe_hist}
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf}
-\caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
-\label{fig:sc_mspe_ratios}
-\end{figure}
-%\subsection{Generalized Synthetic Control Method}
-%\citet{xu_generalized_2017}
 
 
-\subsection{Robustness Checks} \label{subsec:robust_checks}
+\section{Robustness Checks} \label{subsec:robust_checks}
+\subsection{Difference-in-differences}
 First, we consider if the presence of ethnicity-specific time trends affects the results. As we explained in the methodology section, the ethnicity-specific time trends allows us. 
+
+\subsection{Synthetic Control Method}

@@ -8,6 +8,9 @@
 
 \newpage
 \section*{Appendix}
+Every table and graph in this thesis, the R code that generated them, and the Latex source code of this manuscript are available in the GitHub repository of this project at \url{https://github.com/martin-kosiik/Geopolitics-of-Repressions}.
+%To reproduce the analysis, you will need to download the 
+If you have any troubles with replications or any other questions, please email me at \href{mailto:martin.kosiik@gmail.com}{martin.kosiik@gmail.com}.
 \addcontentsline{toc}{section}{Appendix}
 
 \section*{Additional Tables}
@@ -79,3 +82,42 @@
 
 %\input{tables/diff_table.tex}
 %\thispagestyle{empty}
+
+\begin{figure}[hbtp] 
+\caption{Gaps between synthetic control and actual values for placebo tests}
+\begin{subfigure}{\textwidth}
+\caption{All ethnic groups}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf}
+\label{fig:sc_placebo_gaps_all}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Ethnic groups with pre-treatment MSPE higher than 20 times the MSPE of Germans excluded}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date_robustnss.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_placebo_gaps_all_20_times}
+\end{subfigure}
+\label{fig:sc_placebo_gaps}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} The predictors are the mean of $\log\left(1 + \text{arrests}\right)$ in the pre-treatment period, total population of the ethnic group in the USSR and its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian.  Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. 
+\end{minipage}
+\end{figure}
+
+
+\begin{figure}[hbtp] 
+\caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
+\begin{subfigure}{\textwidth}
+\caption{The whole post-treatment period in the numerator (1933-1960)}
+\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf}
+\label{fig:sc_mspe_ratios_all}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Only the period from 1933 to 1939 in the numerator}
+\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_mspe_ratios_until_1939}
+\end{subfigure}
+\label{fig:sc_mspe_ratios}
+\end{figure}

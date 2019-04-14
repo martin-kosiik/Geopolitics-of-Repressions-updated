@@ -211,9 +211,17 @@ First, we consider if the presence of ethnicity-specific time trends affects the
 
 \subsection{Synthetic Control Method}
  We construct a synthetic control  using mean of the outcome in the pre-1933 period instead of including outcome for every year as we did in our baseline model. This increases the importance of the time-invariant covariates (population, urbanization rate, and linguistic similarity) that are also included as predictors.
- 
-The balance of  
-
 \input{tables/sc_predictor_means_robustness.tex}
 
+Recall that the predictors weights $V$ are chosen to minimize pre-treatment MSPE. We can thus infer from the calculated  weights $V$ (provided in the table \ref{tab:sc_predictor_means_robustness})  that neither urbanization rate nor linguistic similarity to Russian are good predictors of pre-1933 repressions. 
+Total population seems to be the most powerful predictor
+
+
 \input{tables/sc_weights_robustness.tex}
+
+
+\begin{figure}
+\caption{Gaps between synthetic control and actual values for placebo tests}
+\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf}
+\label{fig:sc_placebo_gaps_all_robustnes}
+\end{figure}

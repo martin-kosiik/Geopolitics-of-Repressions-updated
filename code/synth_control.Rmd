@@ -198,10 +198,10 @@ sc_results_mean$combined %>%
                                   "clad_sim" = "Ling. similarity to Russian",
                                   "urb_rate_pct" = "Urbanization rate", .ordered = TRUE) )%>% 
   slice(c(2, 3, 4, 1)) %>% 
-  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+  kable("latex", booktabs = T, digits = c(2, 2, 2, 3), linesep = "", format.args = list(big.mark = " "),
         col.names = c("Variable", "Actual", "Synthetic", 
                       "Mean of all ethnicities", "$V$ weights"), 
-        caption = "Pre-treatment Predictor Means") %>%
+        caption = "Pre-treatment Predictor Means", escape = TRUE) %>%
   add_header_above(c(" " = 1, "German minority" = 2)) %>% 
   footnote(general = "Log(1 + arrests) is averaged over the pre-treatment period (1921-1932). All other predictor are time-invariant. Total population and urbanization rate are taken from 1926 Soviet census.",
            threeparttable = T) %>% 
@@ -303,7 +303,7 @@ placebo_mspe_barplot(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_da
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf"))
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939_robustness.pdf"))
 
 ```
 

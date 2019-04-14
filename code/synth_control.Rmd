@@ -132,7 +132,7 @@ sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifie
 
 sc_results_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
-sc_results_mean$v
+ sc_results_mean$v
 ```
 
 ```{r}
@@ -170,6 +170,17 @@ sc_results$combined %>%
            threeparttable = T) %>% 
   kable_styling(latex_options = c("hold_position")) %>% 
   write_file(here::here("tables/sc_predictor_means.tex"))  
+
+v_weights <-  as_tibble(sc_results_mean$v, rownames = "variable") %>% 
+  mutate(variable = str_sub(variable, end = -16),
+         variable =  ifelse(variable == "urb_rate", "urb_rate_pct", variable)) %>% 
+  dplyr::select(variable, v_weight = max.order)
+
+
+mean_all <- mean_all %>% 
+  left_join(v_weights, by = "variable")
+  
+
   
 opts_current$set(label = "sc_predictor_means_robustness")
 sc_results_mean$combined %>% 
@@ -189,12 +200,12 @@ sc_results_mean$combined %>%
   slice(c(2, 3, 4, 1)) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Variable", "Actual", "Synthetic", 
-                      "Mean of all 38 ethnicities"),
+                      "Mean of all ethnicities", "$V$ weights"), 
         caption = "Pre-treatment Predictor Means") %>%
   add_header_above(c(" " = 1, "German minority" = 2)) %>% 
   footnote(general = "Log(1 + arrests) is averaged over the pre-treatment period (1921-1932). All other predictor are time-invariant. Total population and urbanization rate are taken from 1926 Soviet census.",
            threeparttable = T) %>% 
-  kable_styling(latex_options = c("hold_position")) %>% 
+  kable_styling(latex_options = c("hold_position"), font_size = 10) %>% 
   write_file(here::here("tables/sc_predictor_means_robustness.tex"))  
 
 ```

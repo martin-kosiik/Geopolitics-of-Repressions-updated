@@ -18,10 +18,25 @@ The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific qua
 While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for the period from 1933 to 1939. For this reason, we also estimate conventional difference-in-differences given by the following equation:
 %The simple difference-in-differences can be expressed as
 \begin{equation}
- \log\left(1 + y_{it}\right) =  \beta \, \text{German}_{i} \cdot \text{Treatment}_{t} +
+\begin{aligned}
+ \log\left(1 + y_{it}\right) = 
+ \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \: +
+  \alpha \, \text{German}_{i} \cdot \text{PreTreat}_{t}  +  \\ % &\quad
+ \beta \, \text{German}_{i} \cdot \text{Hostility}_{t} +
+ \gamma \, \text{German}_{i} \cdot \text{Pact}_{t} + \\
+ \gamma \, \text{German}_{i} \cdot \text{War}_{t} +
+ \delta \, \text{German}_{i} \cdot \text{PostWar}_{t}  + u_{it}
+ \label{eq:simple_did}
+ \end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{split}
+ \log\left(1 + y_{it}\right) =  \beta \, \text{German}_{i} \cdot  \mathbbm{1}\left(1933 \leq t \leq 1938 \right) +
  \gamma \, \text{German}_{i} \cdot \text{Post}_{t} +
  \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
  \label{eq:simple_did}
+ \end{split}
 \end{equation}
 where the variable $\text{Treatment}_{t}$ equals 1 if $ 1933  \leq t \leq 1939 $ and zero 0 otherwise, the variable $\text{Post}_{t}$ equals 1 if $t > 1939 $ and zero 0 otherwise, and the other terms are same as in the dynamic model \ref{eq:dynamic_did}.
 The coefficient of interest is $\beta$ capturing the average effect for the period 1933-1939. The coefficient $\gamma$ captures the average effect for the post-treatment period (1940-1960).
@@ -77,7 +92,7 @@ We then try to estimate the counterfactual outcome $Y_{1t}^N$  by constructing a
  %The intuition be
  
  
- More formally, we choose weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 2, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
+ More formally, we choose a vector of weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 2, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
   $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit,  $Y^{K_l}$ are linear combinations of
 pre-treatment outcomes, and %(analogously for $X_0$)
   $X_0$ is a $(k \times J)$ matrix with pre-treatment characteristics of untreated units analogous to $X_1$, 
@@ -94,7 +109,7 @@ The effect of the treatment $\alpha_{1t}$ at time $t > T_0$ is then estimated as
 \end{equation}
 where $w_j$ are the estimated optimal weight. 
 
-The synthetic control method, however, does not provide us with any standard errors that could indicate the uncertainty in the estimated effect.
+The synthetic control method, however, does not provide us with any standard errors that could measure the uncertainty in the estimated effect.
 \citet{abadie_synthetic_2010} propose assessing significance  on randomization inference and placebo tests. Synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
 such a result would not be likely under the null hypothesis of zero treatment effect.
 %\citet{abadie_synthetic_2010} propose a procedure for obtaining Fisher exact  $p$-values based on randomization inference and placebo tests. 

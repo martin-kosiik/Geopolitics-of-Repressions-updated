@@ -35,7 +35,7 @@ After imputations of ethnicity and the date of arrest had been applied,  we crea
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
 With 38  minorities  and 40 time periods (from 1921 to 1960) we have 1520 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:total_arrests_by_ethnicity} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}, both in the appendix. 
 
-In addition to data on repressions, we also obtained some information on some characteristics of the  ethnic groups in our dataset. 
+In addition to data on repressions, we also obtained some information on some characteristics of the  ethnic groups in our dataset that we will use as covariates in the synthetic control method. 
 Specifically, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{It is available online at \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree and it has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 

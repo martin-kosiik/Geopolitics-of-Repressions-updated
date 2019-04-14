@@ -11,9 +11,9 @@
 
 \usepackage[
     backend=biber,
-    style=authoryear,
+    style=apa,
     natbib=true,
-    sortlocale=en_US,
+   % sortlocale=en_US,
     url=false, 
     doi=true,
     eprint=false,
@@ -23,6 +23,8 @@
     maxbibnames=99,
     uniquelist=false
 ]{biblatex}
+\DeclareLanguageMapping{english}{english-apa}
+
 \AtEveryBibitem{%
   \clearlist{language}%
 }
@@ -30,21 +32,7 @@
 
 \makeatletter
 % new code
-\DeclareCiteCommand*{\fullcite}
-  {\usebibmacro{prenote}}%\bibsentence
-  {\usebibmacro{citeindex}%
-    \toggletrue{cms@fullnote}%
-    \togglefalse{cms@shortnote}%
-   \usebibmacro{cite:full*}
-   \usebibmacro{cite:save}}
-  {\multicitedelim}
-  {}
 
-\newbibmacro*{cite:full*}{%
-  \printtext[bibhypertarget]{%
-    \usedriver
-      {\DeclareNameAlias{sortname}{default}\frenchspacing}
-      {\thefield{entrytype}}}}%
 
 \makeatother
 

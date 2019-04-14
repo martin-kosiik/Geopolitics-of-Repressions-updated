@@ -19,7 +19,6 @@ library(kableExtra)
 library(knitr)
 library(gghighlight)
 library(timetk)
-
 ```
 
 ```{r}
@@ -71,8 +70,6 @@ min_by_year <- min_by_year %>%
 
 ```
 
-
-
 ## MSCMT implementation
 ### Annual observations 
 ```{r}
@@ -123,6 +120,19 @@ times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
 sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
+
+agg.fns <- rep("mean", ncol(times.pred))                       
+dep_var <- "log_n_pred_full_imp_date"
+times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
+
+sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+
+
+
+sc_results_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
+
+sc_results_mean$v
 ```
 
 ```{r}
@@ -161,7 +171,31 @@ sc_results$combined %>%
   kable_styling(latex_options = c("hold_position")) %>% 
   write_file(here::here("tables/sc_predictor_means.tex"))  
   
-  
+opts_current$set(label = "sc_predictor_means_robustness")
+sc_results_mean$combined %>% 
+  map(tk_tbl) %>% 
+  bind_rows(.id = "variable") %>% 
+  filter(variable %in% c(dep_var,"pop_total", "clad_sim", "urb_rate_pct")) %>% 
+  filter(index < 1933) %>% 
+  group_by(variable) %>% 
+  summarize_all(mean) %>% 
+  select(-c(index, gaps)) %>% 
+  left_join(mean_all, by = "variable") %>% 
+  mutate(variable = recode_factor(variable, "log_n_pred_full_imp_date" =
+                                    "Log(1 + arrests)", 
+                                  "pop_total" = "Total population",
+                                  "clad_sim" = "Ling. similarity to Russian",
+                                  "urb_rate_pct" = "Urbanization rate", .ordered = TRUE) )%>% 
+  slice(c(2, 3, 4, 1)) %>% 
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Variable", "Actual", "Synthetic", 
+                      "Mean of all 38 ethnicities"),
+        caption = "Pre-treatment Predictor Means") %>%
+  add_header_above(c(" " = 1, "German minority" = 2)) %>% 
+  footnote(general = "Log(1 + arrests) is averaged over the pre-treatment period (1921-1932). All other predictor are time-invariant. Total population and urbanization rate are taken from 1926 Soviet census.",
+           threeparttable = T) %>% 
+  kable_styling(latex_options = c("hold_position")) %>% 
+  write_file(here::here("tables/sc_predictor_means_robustness.tex"))  
 
 ```
 
@@ -182,12 +216,13 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
 }
 
 placebo_highlight_all(sc_placebo_pred_full, "log_n_pred_full")
-
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
 
 placebo_highlight_all(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
-
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf"))
+
+placebo_highlight_all(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date")
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf"))
 
 
 #ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_all.pdf"))
@@ -222,6 +257,9 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf"))
 
+placebo_highlight_mspe(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", exclusion_ratio = 20)
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date_robustnss.pdf"))
+
 
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
@@ -243,21 +281,20 @@ tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
 }
 
 
-placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
-
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios.pdf"))
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
-
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
 
-
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
-
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf"))
 
-```
+placebo_mspe_barplot(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf"))
 
+placebo_mspe_barplot(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
+ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf"))
+
+```
 
 
 ```{r}
@@ -317,120 +354,16 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
         caption = "Synthetic German minority weights") %>%
  # footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights.tex"))
+ 
+
+opts_current$set(label = "sc_weights")
+tibble(ethnicity = names(sc_results_mean$w), Weights = sc_results_mean$w) %>% 
+  filter(Weights != 0) %>% 
+  arrange(desc(Weights)) %>% 
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Ethnic group", "$W$-Weight"), escape = FALSE,
+        caption = "Synthetic German minority weights") %>%
+ # footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
+    write_file(here::here("tables/sc_weights_robustness.tex")) 
   
-  
 ```
-placebo
-```{r}
-sc_placebo <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
-
-ggplot(sc_placebo, exclude.ratio=5, ratio.type="rmspe")
-ggsave(here("plots/synthetic_control/placebo_gaps.pdf"))
-ggplot(sc_placebo, exclude.ratio=100, ratio.type="mspe", type = "p.value", limits=c("1933-01-01", "1939-11-01"), 
-       alternative= "two.sided")
-ggsave(here("plots/synthetic_control/placebo_p_values.pdf"))
-
-
-tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
-  mutate(date = as_date(index)) %>% 
-  gather("ethnicity", "log_n", -c(date, index)) %>% 
-  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
-  theme_minimal() +
-  theme(axis.line = element_line(size = 1), 
-        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + 
-  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
-    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
-
-
-ggsave(here("plots/synthetic_control/placebo_highlight_all.pdf"))
-ggsave(here("plots/synthetic_control/ethnicity_imputation/quarterly/placebo_highlight_all.pdf"))
-
-
-did(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
-    range.post = c("1933Q2","1939Q3"), exclude.ratio= 100, alternative="two.sided")
-
-rmspe_placebo <- sc_placebo[-length(sc_placebo)] %>% 
-  map("rmspe") %>% 
-  map_dbl(1) 
-
-rmspe_placebo_tibble <- tibble(ethnicity = names(rmspe_placebo), rmspe = rmspe_placebo) %>% 
-  mutate(mspe = rmspe^2) %>% 
-  mutate( mspe_german = mspe[ethnicity == "German"],
-         mspe_5times_higher = ifelse(5 * mspe_german < mspe, 1, 0), 
-         mspe_20times = ifelse(20 * mspe_german < mspe, 1, 0))
-
-tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
-  mutate(date = as_date(index)) %>% 
-  gather("ethnicity", "log_n", -c(date, index)) %>% 
-  left_join(rmspe_placebo_tibble, by = "ethnicity") %>% 
-  filter(!mspe_5times_higher) %>% 
-  ggplot(aes(date, log_n, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
-  theme_minimal() +
-  theme(axis.line = element_line(size = 1), 
-        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + 
-  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330301), col = "black", linetype = "dashed", size = 1)+
-    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
-
-
-ggsave(here("plots/synthetic_control/placebo_highlight_mspe_5_lower.pdf"))
-ggsave(here("plots/synthetic_control/ethnicity_imputation/quarterly/placebo_highlight_mspe_5_lower.pdf"))
-
-
-tk_tbl(sc_placebo$placebo$log_n$gaps) %>% 
-  filter(index <= "1933Q1") %>% 
-  gather("ethnicity", "log_n", -index) %>% 
-  #select(-index) %>% 
-  group_by(ethnicity) %>% 
-  summarise(mspe = sqrt(mean(log_n^2)))
-
-mspe_ratios <-  ppratio(sc_placebo, "log_n", range.pre = c("1921Q1","1933Q1"),
-                        range.post = c("1933Q2","1939Q3"), type = "mspe")
-
-tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>% 
-  mutate(German = as.factor(ifelse(ethnicity == "German", "German", "Other"))) %>% 
-  ggplot(aes(x = mspe_ratios, fill = German)) + geom_histogram() + theme_bw() +
-  labs(x = "MSPE ratio",
-      # title = "Ratios of post to pre-treatment period mean squared prediction error",
-       fill = "Ethnic group")
-
-ggsave(here::here("plots/synthetic_control/mspe_histogram.pdf"))
-
-tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
-  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios)) %>% 
-  ggplot(aes(x = ethnicity, y = mspe_ratios))+ geom_col() + coord_flip() + theme_minimal() +
-  labs(x = element_blank(), y = "MSPE ratio")
-
-ggsave(here::here("plots/synthetic_control/mspe_ratios.pdf"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/quarterly/mspe_ratios.pdf"))
-
-str(last(sc_placebo))
-
-str(sc_placebo)
-```
-
-
-
-
-```{r}
-panelView(log_n ~ post_german  , data = min_by_q,  index = c("ethnicity","t")) 
-
-
-out <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE, 
-              index = c("ethnicity","t"), force = "two-way", se = TRUE, CV = TRUE, r=c(0,5),
-              inference = "parametric", nboots = 5000) 
-
-out_mc <- gsynth(log_n ~ post_german , data = min_by_q, parallel = FALSE, estimator = "mc",
-              index = c("ethnicity","t"), force = "two-way", se = TRUE, CV = TRUE, r=c(0,5),
-              inference = "parametric", nboots = 5000) 
-
-plot(out, theme.bw = TRUE)
-plot(out, type = "raw", theme.bw = TRUE)
-plot(out, type = "ct", raw = "none", shade.post = FALSE, theme.bw = TRUE)
-plot(out, type = "counterfactual", raw = "all", shade.post = FALSE, theme.bw = TRUE)
-
-```
-

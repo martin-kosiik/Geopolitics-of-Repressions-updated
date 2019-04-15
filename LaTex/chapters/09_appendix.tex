@@ -88,18 +88,16 @@ If you have any troubles with replications or any other questions, please email 
 \begin{subfigure}{\textwidth}
 \caption{All ethnic groups}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf}
-\label{fig:sc_placebo_gaps_all}
+\label{fig:sc_placebo_gaps_all_robutness}
 \end{subfigure}
 \begin{subfigure}{\textwidth}
 \caption{Ethnic groups with pre-treatment MSPE higher than 20 times the MSPE of Germans excluded}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date_robustnss.pdf}
 %Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
-\label{fig:sc_placebo_gaps_all_20_times}
+\label{fig:sc_placebo_gaps_all_20_times_robustness}
 \end{subfigure}
-\label{fig:sc_placebo_gaps}
+\label{fig:sc_placebo_gaps_robustness}
 \begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
 \footnotesize
 \emph{Notes:} The predictors are the mean of $\log\left(1 + \text{arrests}\right)$ in the pre-treatment period, total population of the ethnic group in the USSR and its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian.  Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. 
 \end{minipage}
@@ -111,13 +109,18 @@ If you have any troubles with replications or any other questions, please email 
 \begin{subfigure}{\textwidth}
 \caption{The whole post-treatment period in the numerator (1933-1960)}
 \includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf}
-\label{fig:sc_mspe_ratios_all}
+\label{fig:sc_mspe_ratios_all_robustness}
 \end{subfigure}
 \begin{subfigure}{\textwidth}
 \caption{Only the period from 1933 to 1939 in the numerator}
-\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf}
+\includegraphics[width=\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939_robustness.pdf}
 %Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
-\label{fig:sc_mspe_ratios_until_1939}
+\label{fig:sc_mspe_ratios_until_1939_robustness}
 \end{subfigure}
-\label{fig:sc_mspe_ratios}
+\label{fig:sc_mspe_ratios_robustness}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} The same as for the figure \ref{fig:sc_placebo_gaps_robustness}.
+\end{minipage}
 \end{figure}
+

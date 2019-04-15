@@ -169,7 +169,7 @@ The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_20_times}
 \label{fig:sc_placebo_gaps_all}
 \end{subfigure}
 \begin{subfigure}{\textwidth}
-\caption{Ethnic groups with pre-treatment MSPE higher than 20 times the MSPE of Germans excluded}
+\caption{Ethnicities with pre-treatment MSPE higher than 20 times the MSPE of Germans excluded}
 \includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf}
 %Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
 \label{fig:sc_placebo_gaps_all_20_times}
@@ -214,14 +214,15 @@ First, we consider if the presence of ethnicity-specific time trends affects the
 \input{tables/sc_predictor_means_robustness.tex}
 
 Recall that the predictors weights $V$ are chosen to minimize pre-treatment MSPE. We can thus infer from the calculated  weights $V$ (provided in the table \ref{tab:sc_predictor_means_robustness})  that neither urbanization rate nor linguistic similarity to Russian are good predictors of pre-1933 repressions. 
-Total population seems to be the most powerful predictor
-
+%Total population seems to be the most powerful predictor.
+Therefore the weights of ethnic groups in the synthetic control are chosen to mainly match the German minority on population and the mean of $\log\left(1 + \text{arrests}\right)$. 
+ The calculated  weights  are shown in the table \ref{tab:sc_weights_robustness}. We see that Tatar and Polish minorities are now contributing with the largest share to the synthetic control. 
 
 \input{tables/sc_weights_robustness.tex}
 
-
-\begin{figure}
-\caption{Gaps between synthetic control and actual values for placebo tests}
-\includegraphics[width=0.9\linewidth]{plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf}
-\label{fig:sc_placebo_gaps_all_robustnes}
-\end{figure}
+When we compare the gaps between synthetic control and actual value (figure \ref{fig:sc_placebo_gaps_robustness}) with our baseline model, we notice three main differences. First, pre-treatment fit for Germany is substantially worse which is the the cost
+assigning greater importance to other covariates by  using only the pre-treatment mean of the outcome. Second, the gap for the years 1933-1939 is slightly smaller. Finally, there is large drop in the estimated effect in the year 1944. This most likely a consequence of the sharp increase in repressions of Tatar in 1944 following the deportations of Crimean Tatar. 
+%contributing to the 
+Nonetheless, both our baseline model and its robustness check otherwise follow very similar trends.
+The $p$-value of the effect for the whole period 1933-1960  is again 1/38 ($\approx 0.026$). However if we consider only the time window of  1933-1939, the 
+$p$-value increases to 1/19 ($\approx 0.105$). The MSPE ratios for all ethnic groups based on which the $p$-values were calculated are provided in the figure \ref{fig:sc_mspe_ratios_robustness}.

@@ -132,7 +132,6 @@ sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifie
 
 sc_results_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
- sc_results_mean$v
 ```
 
 ```{r}
@@ -367,7 +366,7 @@ tibble(ethnicity = names(sc_results$w), Weights = sc_results$w) %>%
     write_file(here::here("tables/sc_weights.tex"))
  
 
-opts_current$set(label = "sc_weights")
+opts_current$set(label = "sc_weights_robustness")
 tibble(ethnicity = names(sc_results_mean$w), Weights = sc_results_mean$w) %>% 
   filter(Weights != 0) %>% 
   arrange(desc(Weights)) %>% 

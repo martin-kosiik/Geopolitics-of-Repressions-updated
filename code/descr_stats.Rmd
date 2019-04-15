@@ -129,8 +129,8 @@ min_by_year %>%
   ggplot(aes(x = n)) + geom_histogram(col = "white") + theme_bw()+
   facet_wrap(~ key) + 
   scale_x_continuous(trans = "mylog10" , breaks = c(0,2,10,100,1000,10000))+
-  labs(x = "Number arrests of each ethnic group for a given year",
-       caption = expression("Values on x-axis are plotted on the"~log[10](1 + x)~"scale.")
+  labs(x = "Number arrests of each ethnic group for a given year"
+       #caption = expression("Values on x-axis are plotted on the"~log[10](1 + x)~"scale.")
        ) + 
   theme(#axis.line = element_line(size = 1), 
        # panel.grid.major.x = element_blank(), 

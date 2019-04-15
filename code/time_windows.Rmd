@@ -9,6 +9,8 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(estimatr)
+library(clubSandwich)
 ```
 
 ł
@@ -66,8 +68,8 @@ vcov = "CR2"
       # title = "Interactions of German ethnicity with specified time window dummy"
        ) + 
   scale_x_discrete(labels = c("Pre-tretment \n (1930 to 1932)",
-                              'Hostility without war \n (1933 to 1938)',
-                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)',
+                              'Hostility without war \n (1933 to 1939)',
+                              'Pact \n (1940)', 'War \n (1941 to 1945)',
                               "Post-war \n (from 1945)"))
 
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf"))
@@ -130,8 +132,8 @@ map(trends_formulas, ~ fit_robust_model(formula = ., estimatr = 0)) %>%
       # title = "Interactions of German ethnicity with specified time window dummy"
        ) + 
   scale_x_discrete(labels = c("Pre-tretment \n (1930 to 1932)",
-                              'Hostility without war \n (1933 to 1938)',
-                              'Pact \n (1939 to 1940)', 'War \n (1941 to 1945)',
+                              'Hostility without war \n (1933 to 1939)',
+                              'Pact \n (1940)', 'War \n (1941 to 1945)',
                               "Post-war \n (from 1945)"))
 
 ```
@@ -140,17 +142,21 @@ map(trends_formulas, ~ fit_robust_model(formula = ., estimatr = 0)) %>%
 
 ```{r}
 
+summary(lm(fmla_pred_full_imp_date, min_by_year))
+summary(lm(fmla_pred_full_imp_date_lin_trends, min_by_year))
+
 
 trends_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pred_full_imp_date_lin_trends,
                                  fmla_pred_full_imp_date_no_trends)
 
 ## Position dodge
-map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", estimatr = 0)) %>% 
+map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", estimatr = 1)) %>% 
   bind_rows(.id = "id") %>% 
-  mutate(nice_labs = str_replace(term,"german:year_","")) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 
   mutate(trends = recode_factor(id, "1" = "Quadratic", "2" = "Linear", "3" = "None")) %>% 
   ggplot( aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1, col = trends))+ 
-  geom_pointrange(position = position_dodge2(width = 0.4))+  geom_hline(yintercept= 0) + theme_minimal() + 
+  geom_pointrange(position = position_dodge2(width = 0.45))+  geom_hline(yintercept= 0) + theme_minimal() + 
   theme(axis.line = element_line(size = 1), 
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
         text = element_text(size=14),
@@ -160,6 +166,20 @@ map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", es
         #caption = "error bars show 95% confidence intervals \n 
          #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
        y = "Coefficient", col = "Ethnicity-specific time trends")
-  ```
 
+ggsave(here::here("plots/effects/robustness_checks/trends_comp_pred_full_imp_date_cr2.pdf"))
+```
+
+
+
+```{r}
+min_by_year %>% 
+  mutate(number_pred_imp_date = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
+  dplyr::select(ethnicity, YEAR, number_pred_imp_date) %>% 
+  View()
+
+min_by_year %>% 
+  count(ethnicity)
+
+```
 

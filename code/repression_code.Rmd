@@ -42,19 +42,10 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          ethnicity = as.factor(ethnicity),
          YEAR_sq = YEAR^2, 
          pre_treatment = ifelse(YEAR >= 1930 & YEAR < 1933, 1, 0),
-         hostility = ifelse(YEAR >= 1933 & YEAR < 1939, 1, 0), 
-         pact = ifelse(YEAR >= 1939 & YEAR < 1941, 1, 0), 
+         hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
+         pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
          war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
          post_war = ifelse(YEAR >= 1945, 1, 0)) 
-
-
-min_by_year %>% 
-  group_by(YEAR) %>% 
-  summarise(pred_label = sum(label_imp_date) + sum(prediction_imp_date)) %>% 
-  View()
-
-min_by_year <- min_by_year %>% 
-  filter(YEAR < 1940)
 
 
 ```
@@ -63,8 +54,9 @@ min_by_year <- min_by_year %>%
 
 
 ```{r}
-years <- 1930:1958
+years <- 1930:1960
 years <- 1930:1939
+years <- 1930:1959
 
 year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
                                                     as.numeric(min_by_year$YEAR >= .)} else {
@@ -85,8 +77,24 @@ min_by_year <- bind_cols(min_by_year, ethnicity_dummies)
 
 ```
 
-
 We create the formulas and fit the models
+
+```{r}
+fmla_pred_full_imp_date_lin_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+
+fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+
+
+fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity"))
+```
+
+
 ```{r}
 fmla <- as.formula(paste("log_n ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
@@ -111,7 +119,7 @@ fmla_pred_full <- as.formula(paste("log_n_pred_full ~ ",
 
 fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
 
 
 fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
@@ -215,7 +223,8 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
   as_tibble(rownames = "term") %>% 
   filter(str_detect(term, "german:")) %>% 
   rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
-  mutate(nice_labs = str_replace(term,"german:year_","")) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""), 
+         nice_labs = ifelse(as.numeric(nice_labs)== max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs))%>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
   theme(axis.line = element_line(size = 1), 
@@ -439,42 +448,5 @@ ggplot2::ggsave(here::here("plots/effects/ethnicity_imputation/annual/by_trends_
 
 ```
 
-```{r}
-min_by_year %>% 
-  filter(YEAR < 1940, ethnicity %in% c("German", "Russian")) %>% 
-  estimatr::lm_robust(formula = fmla_no_trends_pred_full) %>% 
-  estimatr::tidy() %>% 
-  filter(str_detect(term, "post_german")) %>% 
-  rename(SE = std.error) -> d1
-
-min_by_year %>% 
-  filter(YEAR < 1940, ind_country == 1) %>% 
-  fit_simple_did(data= ., formula = fmla_no_trends_pred_full)-> d2
-
-min_by_year %>% 
-  filter(YEAR < 1940, ind_country == 0 | ethnicity == "German") %>% 
-  fit_simple_did (data= .,formula = fmla_no_trends_pred_full) -> d3
-
-min_by_year %>% 
-  filter(YEAR < 1940) %>% 
-  mutate(post_german =  ifelse(YEAR >= 1933 & ethnicity != "Russian", 1, 0)) %>% 
-  fit_simple_did(data= ., formula = fmla_no_trends_pred_full) -> d4
-
-min_by_year %>% 
-  filter(YEAR < 1940, ind_country == 1 | ethnicity == "Russian") %>% 
-  mutate(post_german =  ifelse(YEAR >= 1933 & ind_country == 1, 1, 0)) %>% 
-  fit_simple_did(data= ., formula = fmla_no_trends_pred_full) -> d5
-
-bind_rows(d1, d2, d3, d4, d5) %>% 
-  mutate(term = c("German vs. Russian", "German vs. Ethn. with ind. countries", 
-                  "German vs. Ethn. without ind. countries", 
-                  "Minorities vs. Russian", "Ind. countries vs. Russian")) %>% 
-  ggplot(aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high)) + geom_pointrange() + 
-  coord_flip() + expand_limits(y = 0) + labs(x = element_blank(), y = "Coefficient") + 
-  theme(axis.ticks.y = element_blank())  
-
-ggplot2::ggsave(here::here("plots/effects/ethnicity_imputation/annual/comparison.pdf"))
-
-```
 
 

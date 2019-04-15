@@ -150,7 +150,7 @@ trends_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pred_full_imp_dat
                                  fmla_pred_full_imp_date_no_trends)
 
 ## Position dodge
-map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", estimatr = 1)) %>% 
+map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
   bind_rows(.id = "id") %>% 
   mutate(nice_labs = str_replace(term,"german:year_",""),
          nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 
@@ -170,6 +170,45 @@ map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", es
 ggsave(here::here("plots/effects/robustness_checks/trends_comp_pred_full_imp_date_cr2.pdf"))
 ```
 
+
+```{r}
+fmla_pred_imp_date <- as.formula(paste("log_n_pred_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+
+fmla_pars_pred_imp_date <- as.formula(paste("log_n_pred_pars_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+```
+
+```{r}
+pred_adj_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pars_pred_imp_date,
+                                 fmla_pred_imp_date)
+
+## Position dodge
+map(pred_adj_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
+  bind_rows(.id = "id") %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 
+  mutate(trends = recode_factor(id, "1" = "Full matrix", "2" = "Parsimonious", "3" = "None")) %>% 
+  ggplot( aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1, col = trends))+ 
+  geom_pointrange(position = position_dodge2(width = 0.45))+  geom_hline(yintercept= 0) + theme_minimal() + 
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=14),
+        legend.position = "bottom", 
+        axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+       y = "Coefficient", col = "Ethnicity imputaiton adjustment")
+
+ggsave(here::here("plots/effects/robustness_checks/pred_adj_comp_pred_full_imp_date_cr2.pdf"))
+
+```
 
 
 ```{r}

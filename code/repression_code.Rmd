@@ -35,7 +35,9 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          log_n_pred_full = log(1 + label + pred_adj_full_scaled),
          log_n_pred = log(1 + label + prediction),
          log_n_imp_date = log(1 + label_imp_date),
-         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         log_n_pred_pars_imp_date = log(1 + label_imp_date + pred_adj_scaled_imp_date),
+         log_n_pred_imp_date = log(1 + label_imp_date + prediction_imp_date)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(german = ifelse(ethnicity == "German", 1, 0),
          post_german = german * ifelse(YEAR >= 1933, 1, 0),

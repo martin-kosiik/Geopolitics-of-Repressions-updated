@@ -80,6 +80,33 @@ If you have any troubles with replications or any other questions, please email 
 \label{fig:did_effets_no_ind_countries}
 \end{figure}
 
+ \begin{figure}[h]
+\centering
+\caption{Comparison of  Ethnicity-specific Time Trends for DiD}
+\includegraphics[width=\textwidth]{plots/effects/robustness_checks/trends_comp_pred_full_imp_date_cr2.pdf}
+\begin{minipage}{\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations.  Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_robustness_time_trends}
+\end{figure}
+
+ \begin{figure}[h]
+\centering
+\caption{Comparison of  Ethnicity Imputation Adjustments for DiD}
+\includegraphics[width=\textwidth]{plots/effects/robustness_checks/pred_adj_comp_pred_full_imp_date_cr2.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.   Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_robustness_pred_adj}
+\end{figure}
+
+
 %\input{tables/diff_table.tex}
 %\thispagestyle{empty}
 

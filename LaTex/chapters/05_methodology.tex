@@ -1,5 +1,5 @@
 \subsection{Difference-in-differences}
-We employ difference-in-differences design to estimate the effect of the rise of Hitler in 1933 on repressions of Germans in the USSR. 
+We employ difference-in-differences design to estimate the effect of the changing geopolitical relations on repressions of Germans in the USSR. 
 Our main specification is the dynamic difference-in-differences model:
 \begin{equation}
  \log\left(1 + y_{it}\right) = \sum_{k= 1930}^{1959} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it},
@@ -11,35 +11,30 @@ Our main specification is the dynamic difference-in-differences model:
 where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise (except for 1939 which is equal to 1 if $t \geq 1959$ and zero otherwise). The coefficients of interest are $\beta_k$. 
 Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects.
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
-The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity specific quadratic time trends. The inclusion of this term should not significantly  change the coefficients, unless the results are driven by spurious correlation \citep{angrist_mostly_2009}. 
+The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity-specific quadratic time trends. 
+They allow for a certain  deviation from the parallel trends if it can be described by a quadratic function. 
+If the inclusion of these terms does not  significantly  change the coefficients, it would suggest that our results are not driven by spurious correlation \citep{angrist_mostly_2009}.
 
  We apply logarithmic transformation on $y_{it}$ since it better fits the data (more in the results below).  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of great interest to us).   
 
-While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for the period from 1933 to 1939. For this reason, we also estimate conventional difference-in-differences given by the following equation:
+While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for different phases of the German-Soviet relations. For this reason, we also estimate a difference-in-differences model given by the following equation:
 %The simple difference-in-differences can be expressed as
 \begin{equation}
 \begin{aligned}
  \log\left(1 + y_{it}\right) = 
  \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \: +
-  \alpha \, \text{German}_{i} \cdot \text{PreTreat}_{t}  +  \\ % &\quad
- \beta \, \text{German}_{i} \cdot \text{Hostility}_{t} +
- \gamma \, \text{German}_{i} \cdot \text{Pact}_{t} + \\
- \gamma \, \text{German}_{i} \cdot \text{War}_{t} +
- \delta \, \text{German}_{i} \cdot \text{PostWar}_{t}  + u_{it}
+  \alpha \, \text{German}_{i} \cdot \text{PreTreat}_{t}   \\ % &\quad
+  + \beta \, \text{German}_{i} \cdot \text{Hostility}_{t} +
+ \gamma \, \text{German}_{i} \cdot \text{Pact}_{t}  \\
+ + \delta \, \text{German}_{i} \cdot \text{War}_{t} +
+ \eta \, \text{German}_{i} \cdot \text{PostWar}_{t}  + u_{it}
  \label{eq:simple_did}
  \end{aligned}
 \end{equation}
 
-\begin{equation}
-\begin{split}
- \log\left(1 + y_{it}\right) =  \beta \, \text{German}_{i} \cdot  \mathbbm{1}\left(1933 \leq t \leq 1938 \right) +
- \gamma \, \text{German}_{i} \cdot \text{Post}_{t} +
- \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
- \label{eq:simple_did}
- \end{split}
-\end{equation}
-where the variable $\text{Treatment}_{t}$ equals 1 if $ 1933  \leq t \leq 1939 $ and zero 0 otherwise, the variable $\text{Post}_{t}$ equals 1 if $t > 1939 $ and zero 0 otherwise, and the other terms are same as in the dynamic model \ref{eq:dynamic_did}.
-The coefficient of interest is $\beta$ capturing the average effect for the period 1933-1939. The coefficient $\gamma$ captures the average effect for the post-treatment period (1940-1960).
+
+where the variables $\text{PreTreat}_{t}$, $\text{Hostility}_{t}$, $\text{Pact}_{t}$, $\text{War}_{t}$, and $\text{PostWar}_{t}$  are dummies that equal 1 if the year $t$ is within the given period. We define  $\text{PreTreat}_{t}$ to be from 1930 to 1932, $\text{Hostility}_{t}$ from 1933 to 1939, $\text{Pact}_{t}$ in 1940, $\text{War}_{t}$ from 1941 to 1944, and $\text{PostWar}_{t}$ from 1944 onwards.\footnote{We determined the phases based on what fraction of a given year was in the phase. Therefore even though the  World War 2  ended in Europe in May 1945, we  classify the year 1945 as being in the post-war period since that was true for greater fraction of the year. Similar logic applies to year 1939 as well. }
+All other terms are defined exactly the same as in the dynamic model in equation \ref{eq:dynamic_did}.
 %However, the treatment status of some minorities changed in this period as they geopolitical relations 
 
 
@@ -104,13 +99,13 @@ pre-treatment outcomes, and %(analogously for $X_0$)
 %pre-treatment outcomes (analogously for $X_0$). 
 The effect of the treatment $\alpha_{1t}$ at time $t > T_0$ is then estimated as a difference between the outcome for the synthetic control and the treated unit, that is:
 \begin{equation}
-  \hat\alpha_{1t}  = Y_{1t} - \sum_{k = 2}^{J + 1} w_j^* Y_{kt},
+  \hat\alpha_{1t}  = Y_{1t} - \sum_{j = 2}^{J + 1} w_j^* Y_{jt},
   %\qquad t \in \{T_0 + 1, \dots, T \}.
 \end{equation}
-where $w_j$ are the estimated optimal weight. 
+where $w^*_j$ are the estimated optimal weights. 
 
-The synthetic control method, however, does not provide us with any standard errors that could measure the uncertainty in the estimated effect.
-\citet{abadie_synthetic_2010} propose assessing significance  on randomization inference and placebo tests. Synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
+The synthetic control method, however, does not provide us with any standard errors that could measure the uncertainty in the estimates.
+\citet{abadie_synthetic_2010} propose assessing significance  using  placebo tests and randomization inference. Synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
 such a result would not be likely under the null hypothesis of zero treatment effect.
 %\citet{abadie_synthetic_2010} propose a procedure for obtaining Fisher exact  $p$-values based on randomization inference and placebo tests. 
 
@@ -118,14 +113,20 @@ such a result would not be likely under the null hypothesis of zero treatment ef
 
 However, \citet{abadie_synthetic_2010}  point out that placebo synthetic controls with poor pre-treatment fit do not provide good comparison for estimating rareness of large effect for a treated unit with a good  pre-treatment fit. They thus recommend excluding excluding placebo units with substantially higher pre-treatment MSPE relatively to the treated unit. 
 
-Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE is somewhat arbitrary. Better way to asses significance of results might be to compare the ratios of post/pre-treatment MSPE since
+Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE is somewhat arbitrary. Better way to asses significance of results might be to compare the ratios of post/pre-treatment MSPE
+%\footnote{More formally, the MSPE ratio is defined as $\text{MSPE ratio_j} = \sum_{t = T_0 + 1}^{T} Y_{jt} -  \hat{ Y_{jt}^N}$ } since
 %Using  the ratios instead of the values of $\hat\alpha$ allows us to
 %asses the significance of results reltice 
-take into account different values of pre-treatment fit between the treated unit and the placebo tests. The  $p$-values can then be calculated as 
+take into account different values of pre-treatment fit between the treated unit and the placebo tests. First, the  MSPE ratio for unit $j$ is defined as
+\begin{equation} \label{eq:mspe_ratio}
+\text{MSPE ratio}_j = \frac{\sum_{t = T_0 + 1}^{T} \left( Y_{jt} -  \hat Y_{jt}^N\right)^2}{\sum_{t = 1}^{T_0} \left( Y_{jt} -  \hat Y_{jt}^N\right)^2} 
+\end{equation}
+where $\hat Y_{jt}^N$ is estimated synthetic control for unit $j$ at time $t$. 
+The  $p$-values can then be calculated as 
 \begin{equation} \label{eq:p_ratio}
  p_1   = \frac{\sum_{j = 2}^{J + 1} \mathbbm{1}\left( \text{MSPE ratio}_{j} \geq \text{MSPE ratio}_{1} \right)}{J + 1}.
 \end{equation}
-
+where $\mathbbm{1}$ is an indicator function that equals 1 if the equation in its argument is true and 0 otherwise.  
 
 %would suggest that the results are significant since these results would be less likely if there were no treatment effect 
 %Large difference between the outcomes of synthetic control and actual data is can be indicative of large effect 

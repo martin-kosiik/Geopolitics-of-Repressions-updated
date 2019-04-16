@@ -78,11 +78,11 @@ In the section \ref{subsec:robust_checks}, we perform several additional robustn
 We implemented the synthetic control method in R  using the MSCMT package \citep{becker_fast_2018}.
 Our outcome variable is again $\log\left(1 + \text{arrests}\right)$.
 As in the difference-in-difference, we include all 38 ethnic groups and we impute missing date of arrest and ethnicity (which we adjust using the full-matrix correction).
-In our baseline model, the  outcomes for all pre-treatment years (1921-1933)  were included  as predictors. 
+In our baseline model, the  outcomes for all pre-treatment years (1921-1932)  were included  as predictors. 
 This approach has been widely used in the literature \citep{billmeier_assessing_2013, cavallo_catastrophic_2013, bohn_did_2014} and in contrast to other methods (such as using only mean of pre-treatment outcomes) it  has the advantage  of reducing opportunities of specification search  \citep{ferman_cherry_2018}. 
 We also include three time-invariant covariates that might potentially be predictive of post-1933 repressions: total population of the ethnic group in the USSR, its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian. 
 However, including all pre-treatment outcomes as predictors  renders  other  covariates unimportant in the optimization procedure \citep{kaul_synthetic_2018}. On the other hand, \citet{botosaru_role_nodate} argue that if there is a long set of pre-treatment outcomes (which is our case) then a perfect balance on covariates should not be required.
-Since there is no clear consensus in the literature, we show the synthetic control method with mean of the pre-treatment outcome as predictor in section \ref{subsec:robust_checks} as a robustness check in addition to our baseline specification with  all pre-treatment outcomes as predictors that we present below. 
+Since there is no clear consensus in the literature, we apply both methods and show the synthetic control method with mean of the pre-treatment outcome as predictor in section \ref{subsec:robust_checks} as a robustness check in addition to our baseline specification with  all pre-treatment outcomes as predictors that we present below. 
 
 % Taken together, our results show that, while there may be advantages in balancing on covariates to construct the SC estimator, a perfect balance on covariates should not be required for the SC method, as long as there is a perfect balance on a long set of pre-treatment outcomes. O
 
@@ -115,10 +115,8 @@ the figure  \ref{fig:sc_placebo_gaps_all} which shows the difference between the
 \end{figure}
 
 
-From 1933 to 1939, this gap is close to 1. For the period from 1941 to 1955, the estimated effect is higher but also more volatile oscillating between 1 and 3.  After 1955, the gap shrinks to zero. 
-The results are similar to difference-in-differences in the overall trends. Nevertheless, the estimated effects  the synthetic control  
-
-The results imply that the repressions of 
+From 1933 to 1939, this gap is close to 1. For the period from 1941 to 1955, the estimated effect is higher but also more volatile oscillating between 1 and 3 corresponding to 1 to 3\% increase in arrests of Germans in that period.  After 1955, the gap shrinks to zero. 
+The results are similar to difference-in-differences in the overall trends. Nevertheless, the estimated effects by the  the synthetic control  are slightly smaller than the their difference-in-differences equivalents.  
 
 %As we metioned in the section
 We estimate significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in the figure \ref{fig:sc_placebo_gaps_all}. Even in comparison with the placebo tests, 
@@ -207,21 +205,27 @@ These results contradict our inferences from difference-in-differences  where we
 
 \section{Robustness Checks} \label{subsec:robust_checks}
 \subsection{Difference-in-differences}
-First, we consider if the presence of ethnicity-specific time trends affects the results. As we explained in the methodology section, the ethnicity-specific time trends allows us. 
+First, we consider if the presence of ethnicity-specific time trends affects the results.
+%As we explained in the methodology section, 
+% the ethnicity-specific time trends allows us. 
+The estimates regressions with quadratic (default), linear, and no time trends are  plotted in the figure \ref{fig:did_robustness_time_trends} in the appendix. The coefficients for the model with no ethnicity-specific time trends are somewhat lower for the baseline model and the estimates for linear time trends are lower still. Nonetheless, the main general pattern is preserved in all specifications.
 
+Second, we test the sensitivity of results to different adjustments of ethnicity imputation. 
+As we explain in the subsection \ref{subsubsec:pred_adj}, the adjustments were applied in order to correct for the unbalanced accuracy in prediction of our Naive Bayes classifier across ethnic groups. The results from fitting our default specification to data with different adjustments are shown in the figure \ref{fig:did_robustness_pred_adj}.
+We see that the estimates for the full matrix (used by default) and the parsimonious adjustment are virtually the same. When no adjustment is applied, the coefficients even get slightly larger. 
 \subsection{Synthetic Control Method}
  We construct a synthetic control  using mean of the outcome in the pre-1933 period instead of including outcome for every year as we did in our baseline model. This increases the importance of the time-invariant covariates (population, urbanization rate, and linguistic similarity) that are also included as predictors.
 \input{tables/sc_predictor_means_robustness.tex}
 
 Recall that the predictors weights $V$ are chosen to minimize pre-treatment MSPE. We can thus infer from the calculated  weights $V$ (provided in the table \ref{tab:sc_predictor_means_robustness})  that neither urbanization rate nor linguistic similarity to Russian are good predictors of pre-1933 repressions. 
 %Total population seems to be the most powerful predictor.
-Therefore the weights of ethnic groups in the synthetic control are chosen to mainly match the German minority on population and the mean of $\log\left(1 + \text{arrests}\right)$. 
- The calculated  weights  are shown in the table \ref{tab:sc_weights_robustness}. We see that Tatar and Polish minorities are now contributing with the largest share to the synthetic control. 
+Therefore the $W$-weights of ethnic groups in the synthetic control are chosen to mainly match the German minority on population and the mean of $\log\left(1 + \text{arrests}\right)$. 
+ The calculated $W$-weights  are shown in the table \ref{tab:sc_weights_robustness}. We see that Tatar and Polish minorities are now contributing with the largest share to the synthetic control. 
 
 \input{tables/sc_weights_robustness.tex}
 
 When we compare the gaps between synthetic control and actual value (figure \ref{fig:sc_placebo_gaps_robustness}) with our baseline model, we notice three main differences. First, pre-treatment fit for Germany is substantially worse which is the the cost
-assigning greater importance to other covariates by  using only the pre-treatment mean of the outcome. Second, the gap for the years 1933-1939 is slightly smaller. Finally, there is large drop in the estimated effect in the year 1944. This most likely a consequence of the sharp increase in repressions of Tatar in 1944 following the deportations of Crimean Tatar. 
+assigning greater importance to other covariates by  using only the pre-treatment mean of the outcome. Second, the gap for the years 1933-1939 is slightly smaller. Finally, there is large drop in the estimated effect in the year 1944. This most likely a consequence of the sharp increase in repressions of Tatars in 1944 following their mass deportations from Crimea that year. 
 %contributing to the 
 Nonetheless, both our baseline model and its robustness check otherwise follow very similar trends.
 The $p$-value of the effect for the whole period 1933-1960  is again 1/38 ($\approx 0.026$). However if we consider only the time window of  1933-1939, the 

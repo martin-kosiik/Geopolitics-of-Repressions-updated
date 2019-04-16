@@ -11,7 +11,7 @@
 
 \usepackage[
     backend=biber,
-    style=apa,
+    style=authoryear,
     natbib=true,
    % sortlocale=en_US,
     url=false, 
@@ -23,12 +23,13 @@
     maxbibnames=99,
     uniquelist=false
 ]{biblatex}
-\DeclareLanguageMapping{english}{english-apa}
+%\DeclareLanguageMapping{english}{english-apa}
 
 \AtEveryBibitem{%
   \clearlist{language}%
 }
 \addbibresource{bibliography.bib}
+
 
 \makeatletter
 % new code

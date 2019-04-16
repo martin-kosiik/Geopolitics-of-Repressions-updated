@@ -25,6 +25,16 @@
     We use difference-in-differences strategy on data on political arrests by Soviet secret police to test how rise of Hitler affected the repressions of the Germans within the USSR. This is motivated by larger question of understanding how geopolitical considerations influence the attitude of a state towards minorities within its borders. 
 \end{abstract}
 
+
+\begin{equation}
+\begin{split}
+ \log\left(1 + y_{it}\right) =  \beta \, \text{German}_{i} \cdot  \mathbbm{1}\left(1933 \leq t \leq 1938 \right) +
+ \gamma \, \text{German}_{i} \cdot \text{Post}_{t} +
+ \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it}
+ \label{eq:simple_did}
+ \end{split}
+\end{equation}
+
 \section{Introduction}
 What determines the attitude of a state toward ethnic minorities within its borders? Why are some minorities accommodated or assimilated and others are politically excluded and repressed? Furthermore,  Why the position of a state toward its minorities changes in time? For example Soviet Union largely accommodated its minorities by in 1920s but it heavily repressed them in campaigns of mass terror 10 years later. 
 

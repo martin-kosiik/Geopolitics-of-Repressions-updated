@@ -31,7 +31,7 @@ memorial_lists <- memorial_lists[, no_date := ifelse(process_date == "None" & ar
 memorial_lists <- memorial_lists %>% 
   separate(arest_date, sep = "\\.", into = c("DAY", "MONTH", "YEAR"), remove = FALSE) %>% 
   separate(process_date, sep = "\\.", into = c("DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"), remove = FALSE) %>%
-  mutate_at(vars("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
+  mutate_at(c("DAY", "MONTH", "YEAR", "DAY_PROCESS", "MONTH_PROCESS", "YEAR_PROCESS"),
              funs(as.numeric(ifelse(. %in% c("None", "_"), NA, .))))
 
 month_freq <- memorial_lists %>% 
@@ -41,7 +41,7 @@ month_freq <- memorial_lists %>%
   summarise(month_freq = n()/n[1]) %>% 
   pull(month_freq)
 
-set.seed(2019)
+set.seed(201904)
 
 some_date <-  memorial_lists %>% 
   filter(no_date == 0) %>% 
@@ -103,7 +103,7 @@ both_dates <- some_date %>%
          date_process = parse_date_time(process_date, "dmy")) %>% 
   filter(!(is.na(date_arrest) | is.na(date_process))) %>% 
   mutate(diff_days = interval(date_arrest, date_process) / ddays(1)) %>% 
-  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961) %>% 
+  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1965) %>% 
   filter(diff_days >= 0)
   
 

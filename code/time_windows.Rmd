@@ -13,7 +13,7 @@ library(estimatr)
 library(clubSandwich)
 ```
 
-ł
+
 ```{r}
 fmla_window <- as.formula(paste("log_n ~ german:hostility + german:pact + german:war +  german:post_war +
                                 as.factor(YEAR) + ethnicity + ethnicity:YEAR + ethnicity:YEAR_sq"))
@@ -69,7 +69,7 @@ vcov = "CR2"
        ) + 
   scale_x_discrete(labels = c("Pre-tretment \n (1930 to 1932)",
                               'Hostility without war \n (1933 to 1939)',
-                              'Pact \n (1940)', 'War \n (1941 to 1945)',
+                              'Pact \n (1940)', 'War \n (1941 to 1944)',
                               "Post-war \n (from 1945)"))
 
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf"))
@@ -150,7 +150,7 @@ trends_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pred_full_imp_dat
                                  fmla_pred_full_imp_date_no_trends)
 
 ## Position dodge
-map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
+map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", estimatr = 1)) %>% 
   bind_rows(.id = "id") %>% 
   mutate(nice_labs = str_replace(term,"german:year_",""),
          nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 

@@ -16,7 +16,6 @@ library(here)
 library(lubridate)
 library(klaR)
 library(caret)
-library(pryr)
 library(bnlearn)
 library(bnclassify)
 Sys.setlocale("LC_CTYPE", "russian") 
@@ -27,10 +26,24 @@ library(kableExtra)
 
 ```{r}
 memorial_lists %>% 
-  #filter()
-  count(memory_book_url, sort = T)
+  count(criminal_article, sort = T) %>% 
+  mutate(kulak = str_detect(criminal_article, "кулаки")) %>% 
+  View()
+
+kulaks <- memorial_lists %>% 
+  filter(criminal_article %in% c("кулаки (Постановление СНК и ЦИК СССР от 1.02.1930)", 
+                                 "как кулаки", "Кулаки"))
+head(memorial_lists)
+
+kulaks %>% 
+  count(YEAR_PROCESS) %>% 
+  View()
+
+kulaks <- memorial_lists %>% 
+  filter(str_detect(criminal_article, pattern =  fixed("Кулак", ignore_case = TRUE)))
+
 memorial_lists %>% 
-  filter(surname == "None") %>% 
+  count(rehabilitation_reason, sort = T) %>% 
   View()
 
 ```
@@ -40,8 +53,9 @@ missing arrest date but non-missing process date: 903506
 ```{r}
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", nrows = 20, sep="\t")
 names(memorial_lists)
-selected_vars <- c("person_id", "nation", "surname", "name", "previous_repression",
-                   "next_repression", "rehabilitation_reason", "memory_book", "memory_book_url")
+selected_vars <- c("person_id", "nation", "arest_date", "process_date","rehabilitation_reason",
+                   "criminal_case", "criminal_article", "sentence", "rehabilitation_date",
+                   "memory_book", "memory_book_url")
 selected_vars <- c("person_id", "nation", "arest_date", "process_date", "surname", "name")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="", na.strings = "None")
@@ -60,7 +74,15 @@ memorial_lists <- memorial_lists[, no_date_of_arrest := ifelse(arest_date == "No
 memorial_lists <- memorial_lists[, no_date_of_process := ifelse(process_date == "None", 1, 0)]
 
 
-translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
+translations <- read_excel(here::here("data/ethnicity_translations.xlsx")) %>% 
+  mutate(ethnicity = ifelse(ethnicity == "Uyghur", NA, ethnicity))
+  
+
+translations %>% 
+  group_by(ethnicity) %>% 
+  summarise(sum = sum(n)) %>% 
+  arrange(desc(sum)) %>% 
+  View()
 
 opts_current$set(label = "missingness_of_ethnicity_and_date")
 memorial_lists %>% 
@@ -169,7 +191,8 @@ selected_vars <- c("person_id", "nation", "surname", "name", "patronimic")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="", stringsAsFactors = TRUE)
 
-translations <- read_excel(here::here("data/ethnicity_translations.xlsx"))
+translations <- read_excel(here::here("data/ethnicity_translations.xlsx")) %>% 
+  mutate(ethnicity = ifelse(ethnicity == "Uyghur", NA, ethnicity))
 
 ```
 
@@ -193,6 +216,34 @@ data_labeled$ethnicity <- droplevels(data_labeled$ethnicity)
 data_labeled <- data_labeled %>% 
   dplyr::select(ethnicity, surname, name , patronimic)
 ```
+
+```{r}
+data_labeled <- droplevels.data.frame(data_labeled)
+
+rand <-  sample(1:2, size = nrow(data_labeled), replace = TRUE)
+train_set <- data_labeled[rand == 1,]
+
+
+
+nb_model <- naive.bayes(train_set, "ethnicity")
+pred = predict(nb_model, data_labeled, prob = TRUE)
+head(t(attr(pred, "prob")))
+
+pred_probs <- as_tibble(t(attr(pred, "prob")))
+
+pred_probs %>% 
+  gather(key = "ethnicity", value = "probabilty") %>% 
+  ggplot(aes(x = probabilty)) + geom_histogram() + facet_wrap(~ ethnicity)
+
+pred_probs %>% 
+  ggplot(aes(x = Bashkir)) + geom_histogram()
+
+ confusionMatrix(pred, data_labeled$ethnicity)
+
+?t
+pred
+```
+
 
 
 ```{r}

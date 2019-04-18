@@ -32,8 +32,11 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 
 %When we consider only the data with non-missing
 %The original Memorial data has 
-There are more than 100 different ethnicities in the Memorial data. However, for many of these ethnic groups
-many of them are represented by less than  
+%There are more than 100 different ethnicities in the Memorial data. However, for many of these ethnic groups
+%many of them are represented by less than  
+
+%Chechen 953
+%Uyghur 851
 
 After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
@@ -99,11 +102,11 @@ Some ethnic groups with distinctive names such as Chinese or Japanese are classi
 
 Therefore we develop adjustments that try to correct for these biases in the model's predictions. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
 \begin{equation}
-    P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right)  
+    P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right).  
 \end{equation}
 We are interested in $R_{it}$ but we only directly observe $P_{it}$ and $N_t$. However using simple algebra, $R_{it}$ can be expressed as
 \begin{equation} \label{eq:pars_adj}
- R_{it} = \frac{P_{it} - N_t  \left(1 - \beta_i \right)}{\alpha_i + \beta_i - 1}
+ R_{it} = \frac{P_{it} - N_t  \left(1 - \beta_i \right)}{\alpha_i + \beta_i - 1}.
 \end{equation}
 We will refer to this method of correcting predictions as parsimonious adjustment.  The parameters $\alpha_i$ and $\beta_i$ are not known to us but we can use their estimates from the cross-validation on the training data. This assumes that the these parameters do not differ significantly for the training and test data. But this might not be the case. 
 Suppose, for example, that Armenians are often misclassified as Chechens and that the number of Armenians in the data with missing ethnicity  is disproportionately higher than in the data with information on ethnicity. 
@@ -115,16 +118,16 @@ First for all ethnic groups $i$ and $j$, we define the misclassification rate $b
 Notice that for $i = j$, the misclassification rate is simply prediction accuracy for ethnicity $i$.
 It follows from the definition of the terms that predicted number of arrests for ethnic group $i$ at time $t$,  $P_{it}$, is equal to 
 \begin{equation}
-P_{it}  = \sum_{j = 1}^{K} b_{ij} R_{jt} \qquad i = 1, \dots, K
+P_{it}  = \sum_{j = 1}^{K} b_{ij} R_{jt} \qquad i = 1, \dots, K.
 \end{equation}
 This equation can be expressed in matrix form as
 \begin{equation}
- \mathbf{P}_t = \mathbf{B} \cdot \mathbf{R}_t 
+ \mathbf{P}_t = \mathbf{B} \cdot \mathbf{R}_t,
 \end{equation}
 where $\mathbf{P}_t = \left(P_{1t}, \cdots, P_{Kt} \right)$, $\mathbf{R}_t = \left(R_{1t}, \cdots, R_{Kt} \right)$, and $\mathbf{B} = \left(b_{ij}\right)_{i = 1, \dots, K,\:j = 1, \dots, K}$.
 To express $\mathbf{R}_t$, we just  apply basic linear algebra
 \begin{equation} \label{eq:full_matrix_adj}
-\mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t
+\mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t.
 \end{equation}
 We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
 makes only somewhat weaker assumption that the train and test set misclassification rates are not significantly different. 

@@ -81,7 +81,7 @@ As in the difference-in-difference, we include all 38 ethnic groups and we imput
 In our baseline model, the  outcomes for all pre-treatment years (1921-1932)  were included  as predictors. 
 This approach has been widely used in the literature \citep{billmeier_assessing_2013, cavallo_catastrophic_2013, bohn_did_2014} and in contrast to other methods (such as using only mean of pre-treatment outcomes) it  has the advantage  of reducing opportunities of specification search  \citep{ferman_cherry_2018}. 
 We also include three time-invariant covariates that might potentially be predictive of post-1933 repressions: total population of the ethnic group in the USSR, its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian. 
-However, including all pre-treatment outcomes as predictors  renders  other  covariates unimportant in the optimization procedure \citep{kaul_synthetic_2018}. On the other hand, \citet{botosaru_role_nodate} argue that if there is a long set of pre-treatment outcomes (which is our case) then a perfect balance on covariates should not be required.
+However, including all pre-treatment outcomes as predictors  renders  other  covariates unimportant in the optimization procedure \citep{kaul_synthetic_2018}. On the other hand, \citet{botosaru_role_2019} argue that if there is a long set of pre-treatment outcomes (which is our case) then a perfect balance on covariates should not be required.
 Since there is no clear consensus in the literature, we apply both methods and show the synthetic control method with mean of the pre-treatment outcome as predictor in section \ref{subsec:robust_checks} as a robustness check in addition to our baseline specification with  all pre-treatment outcomes as predictors that we present below. 
 
 % Taken together, our results show that, while there may be advantages in balancing on covariates to construct the SC estimator, a perfect balance on covariates should not be required for the SC method, as long as there is a perfect balance on a long set of pre-treatment outcomes. O
@@ -205,6 +205,15 @@ These results contradict our inferences from difference-in-differences  where we
 
 \section{Robustness Checks} \label{subsec:robust_checks}
 \subsection{Difference-in-differences}
+
+Our results have shown rise of arrests of Germans during and after the war. 
+However, the question is if these people were arrested for aiding the invading German army or only based on their ethnicity. 
+%We  try to answer this by restricting  our analysis to only rehabilitated individuals. 
+Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Political Repression} specified  that individuals who joined the German army\footnote{Later amendments expanded the restriction to anyone who aided the Wehrmacht. }  were not eligible for rehabilitation , we can filter out the cases of direct 
+cooperation by restricting  our analysis to only rehabilitated victims \citep{frierson_russias_2014}. 
+In the Memorial database, there  are x individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those x observations. The results are plotted in the figure y. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
+%this is a consequence of h
+
 First, we consider if the presence of ethnicity-specific time trends affects the results.
 %As we explained in the methodology section, 
 % the ethnicity-specific time trends allows us. 

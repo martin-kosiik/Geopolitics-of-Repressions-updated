@@ -12,8 +12,20 @@ Every table and graph in this thesis, the R code that generated them, and the La
 %To reproduce the analysis, you will need to download the 
 If you have any troubles with replications or any other questions, please email me at \href{mailto:martin.kosiik@gmail.com}{martin.kosiik@gmail.com}.
 \addcontentsline{toc}{section}{Appendix}
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
 
-\section*{Additional Tables}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
+
+\subsection{International Relations Controls}
+Here we provide the table where we classify major changes in relation 
+
+\input{tables/geopol_relations.tex}
+
+
+
+\subsection*{Additional Tables}
 {\setstretch{1.0}
 \input{tables/total_arrests_tab.tex}
 \newpage
@@ -37,7 +49,7 @@ If you have any troubles with replications or any other questions, please email 
 \input{tables/sc_predictors.tex}
 \newpage
 }
-\section*{Additional Figures}
+\subsection*{Additional Figures}
 \begin{figure}[!h]
 \centering
 \caption{Number of Predicted Arrests by Ethnicity, Year, and Prediction Adjustment}

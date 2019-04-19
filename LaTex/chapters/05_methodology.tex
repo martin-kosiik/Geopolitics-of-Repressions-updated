@@ -2,15 +2,18 @@
 We employ difference-in-differences design to estimate the effect of the changing geopolitical relations on repressions of Germans in the USSR. 
 Our main specification is the dynamic difference-in-differences model:
 \begin{equation}
- \log\left(1 + y_{it}\right) = \sum_{k= 1930}^{1959} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k + \lambda_t + a_i +  E_i \cdot t \:  + E_i \cdot t^2 \:    + u_{it},
+ \log\left(1 + y_{it}\right) = \sum_{k= 1922}^{1960} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k +  \lambda_t + a_i +  \text{Relations}_{it}   + u_{it},
  \label{eq:dynamic_did}
 \end{equation}
-
+%+  E_i \cdot t \:  + E_i \cdot t^2 \: 
  %+ \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}    
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise (except for 1939 which is equal to 1 if $t \geq 1959$ and zero otherwise). The coefficients of interest are $\beta_k$. 
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise.
+%(except for 1939 which is equal to 1 if $t \geq 1959$ and zero otherwise). The coefficients of interest are $\beta_k$. 
 Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects.
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
+The time-varying vector $\text{Relations}_{it}$ is set a of dummy variables that capture other major changes in relations of a state with core group $i$ with the USSR during this period. 
+The list of these changes is provided in appendix in the table \ref{tab:sc_weights_robustness}.
 The $ E_i \cdot t$ and $ E_i \cdot t^2$  term capture the ethnicity-specific quadratic time trends. 
 They allow for a certain  deviation from the parallel trends if it can be described by a quadratic function. 
 If the inclusion of these terms does not  significantly  change the coefficients, it would suggest that our results are not driven by spurious correlation \citep{angrist_mostly_2009}.

@@ -5,7 +5,7 @@
 \documentclass{article}
 \usepackage[T1]{fontenc}
 %\usepackage[round]{natbib}
-\usepackage[autostyle]{csquotes}
+%\usepackage[autostyle]{csquotes}
 
 
 
@@ -13,10 +13,12 @@
     backend=biber,
     style=authoryear,
     natbib=true,
+    firstinits=true, % render first and middle names as initials
    % sortlocale=en_US,
     url=false, 
     doi=true,
     eprint=false,
+    dashed=false, % re-print recurring author names in bibliography
     issn=false,
     isbn=false,
     maxcitenames=2,
@@ -24,6 +26,34 @@
     uniquelist=false
 ]{biblatex}
 %\DeclareLanguageMapping{english}{english-apa}
+
+\renewcommand*{\bibinitdelim}{}
+
+\usepackage{xpatch}
+\xapptobibmacro{date+extrayear}{\nopunct}{}{}
+
+% Use single quotes around titles:
+\usepackage[british]{babel}
+\usepackage[autostyle]{csquotes}
+
+\DeclareNameAlias{author}{last-first}
+\renewcommand*{\mkbibnamefirst}[1]{{\let~\,#1}} % insert thin spaces between author initials
+\renewcommand*{\nameyeardelim}{\addcomma\addspace} % insert a comma between author and year in-text citations
+\renewcommand*{\newunitpunct}{\addcomma\addspace} % comma as separator in bibliography, not full stop
+\setlength\bibitemsep{1.5\itemsep} % increase spacing between entries in bibliography
+\renewbibmacro{in:}{} % remove 'in:' preceding article title
+
+% Place volume number within parentheses:
+\renewbibmacro*{volume+number+eid}{
+    \printfield{volume}
+    \setunit*{\addnbspace}% NEW (optional); there's also \addnbthinspace
+    \printfield{number}
+    \setunit{\addcomma\space}
+    \printfield{eid}}
+\DeclareFieldFormat[article]{number}{\mkbibparens{#1}}
+
+
+
 
 \AtEveryBibitem{%
   \clearlist{language}%
@@ -70,7 +100,7 @@
 \usepackage{url}
 \usepackage[utf8]{inputenc}
 %\usepackage{csquotes}
-\usepackage[english]{babel}
+%\usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{color}
 %\bibliographystyle{dcu}

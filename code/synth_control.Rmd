@@ -31,7 +31,8 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          log_n_pred_full = log(1 + label + pred_adj_full_scaled),
          log_n_pred = log(1 + label + prediction),
          log_n_imp_date = log(1 + label_imp_date),
-         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(german = ifelse(ethnicity == "German", 1, 0),
          post_german = german * ifelse(YEAR >= 1933, 1, 0)) 
@@ -376,4 +377,81 @@ tibble(ethnicity = names(sc_results_mean$w), Weights = sc_results_mean$w) %>%
  # footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
     write_file(here::here("tables/sc_weights_robustness.tex")) 
   
+opts_current$set(label = "sc_weights_robustness")
+make_w_weights_table <- function(sc_data, table_title = "Synthetic German minority weights",
+                                 file_name = "tables/sc_weights_robustness.tex"){
+tibble(ethnicity = names(sc_data$w), Weights = sc_data$w) %>% 
+  filter(Weights != 0) %>% 
+  arrange(desc(Weights)) %>% 
+  kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
+        col.names = c("Ethnic group", "$W$-Weight"), escape = FALSE,
+        caption =  table_title) %>%
+ # footnote(general = "Ethnicity and date of arrest were imputed. Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.", threeparttable = T) %>% 
+    write_file(here::here(file_name)) 
+}
+```
+
+### Robustness checks
+Only rehabilitated individuals
+```{r}
+dep_var <- "log_n_pred_full_imp_date_rehab"
+times.dep  <- cbind("log_n_pred_full_imp_date_rehab" = c("1921","1932"))
+
+sc_placebo_rehabs <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+sc_results_rehabs <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier,
+                                                  times.dep, times.pred, agg.fns, seed=2019,  single.v=TRUE)
+
+
+placebo_highlight_all(sc_placebo_rehabs, "log_n_pred_full_imp_date_rehab")
+ggsave(here::here("plots/final/placebo_highlight_all_rehabs.pdf"))
+
+  
+opts_current$set(label = "sc_weights_rehabs")
+make_w_weights_table(sc_data = sc_results_rehabs, 
+                     table_title = "Synthetic German minority weights, Only rehabilitated individuals",
+                                 file_name = "tables/sc_weights_rehabs.tex")
+
+placebo_mspe_barplot(sc_placebo_rehabs, 
+                     "log_n_pred_full_imp_date_rehab", range_post = c("1933", "1960"))
+ggsave(here::here("plots/final/mspe_ratios_rehabs.pdf"))
+
+placebo_mspe_barplot(sc_placebo_rehabs, 
+                     "log_n_pred_full_imp_date_rehab", range_post = c("1933", "1939"))
+ggsave(here::here("plots/final/mspe_ratios_rehabs_until_1939.pdf"))
+```
+
+Only ethnicites without independent state
+```{r}
+ethnicities_without_ind_state <- ethnicity_controls %>% 
+  filter(ind_country != 1) %>% 
+  pull(ethnicity)
+  
+controls.identifier  <- setdiff(ethnicities_without_ind_state,
+                                 treatment.identifier)
+dep_var <- "log_n_pred_full_imp_date"
+times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
+
+sc_placebo_ethnicities_without_ind_state <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+sc_results_ethnicities_without_ind_state <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier,
+                                                  times.dep, times.pred, agg.fns, seed=2019,  single.v=TRUE)
+
+
+placebo_highlight_all(sc_placebo_ethnicities_without_ind_state, "log_n_pred_full_imp_date")
+ggsave(here::here("plots/final/placebo_highlight_all_ethnicities_without_ind_state.pdf"))
+
+  
+opts_current$set(label = "sc_weights_without_ind_state")
+make_w_weights_table(sc_data = sc_results_ethnicities_without_ind_state, 
+                     table_title = "Synthetic German minority weights, Only ethnicities without ind. state",
+                                 file_name = "tables/sc_weights_without_ind_state.tex")
+
+placebo_mspe_barplot(sc_placebo_ethnicities_without_ind_state, 
+                     "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
+ggsave(here::here("plots/final/mspe_ratios_ethnicities_without_ind_state.pdf"))
+
+placebo_mspe_barplot(sc_placebo_ethnicities_without_ind_state, 
+                     "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
+ggsave(here::here("plots/final/mspe_ratios_ethnicities_without_ind_state_until_1939.pdf"))
 ```

@@ -5,7 +5,7 @@ Vast  majority records in the database are individual arrests under  Article 58.
 This means that the victims of other repressive activities of the Soviet state such mass forced migration, counter-insurgency operations of the Red Army during Russian Civil War or famines are mostly excluded. Therefore our research focuses on one  particular type of repression (individual arrests by the NKVD). 
 
 Nevertheless, even if we restrict ourselves to the individual arrests, the Memorial database is still not complete.
-At the time of our access to the database, the databes contained 2.7 million records which is approximately 70\% of 3.8 million people convicted under Article 58 between 1921 and 1953.
+At the time of our access to the database, the databes contained 2.7 million records which is approximately 70\% of estimated 3.8 million people convicted under Article 58 between 1921 and 1953 \citep{zhukov_stalins_2018}.
 
 %\footnote{In particular, we downloaded the data from the replications file archive of the journal available  from \url{https://www.prio.org/JPR/Datasets/}} who use  the Victims of Political Terror archive  collected by a Russian NGO Memorial.
 %individual arrests by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and  in many cases additional information such as ethnicity, occupation and party membership. 
@@ -21,10 +21,10 @@ Missing data presents another major challenge.
 \input{tables/missing_data_count.tex}
 
 Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity.\footnote{
-We consider a date missing only if not even year of arrest is available. Many observations have information on year of arrest even though the exact month or day are missing. We do not categorize these observation as having missing date of arrest since our fundamental unit of analysis is a year and thus month and day are not of high interest to us. The same applies to the date of process.} 
-One solution, albeit only partial, might be to use the date of process (trial)   to extrapolate the missing date of arrest where the trail date is available.
-As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of process. 
-Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of process are known. 
+We consider a date missing only if not even year of arrest is available. Many observations have information on year of arrest even though the exact month or day are missing. We do not categorize these observation as having missing date of arrest since our fundamental unit of analysis is a year and thus month and day are not of high interest to us. The same applies to the date of trial.} 
+One solution, albeit only partial, might be to use the date of trial    to extrapolate the missing date of arrest where the trial date is available.
+As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of trial. 
+Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of trail are known. 
 %Unfortunately, not much can be done address this problem. 
 %The table \ref{tab:missing_date_of_arrest_process} shows for this 
 \input{tables/missing_date_of_arrest_process.tex}
@@ -32,7 +32,13 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 
 %When we consider only the data with non-missing
 %The original Memorial data has 
-%There are more than 100 different ethnicities in the Memorial data. However, for many of these ethnic groups
+There are more than 100 different ethnicities in the Memorial data. 
+However, in many cases there are no more than hundred of people in the whole database that belong to a given ethnic groups. 
+%Furthermore, in a f
+%Moreover, it appears that 
+%This would present problem for the  imputation of missing ethnicity since our model would not have enough data to train on. 
+Therefore we decided to limit ourselves only to ethnic groups with at least 900 individuals in the Memorial database. 
+This leaves us with 38 ethnic groups. 
 %many of them are represented by less than  
 
 %Chechen 953
@@ -40,12 +46,12 @@ Total number of arrests used for our analysis would therefore increase from 1 05
 
 After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
-With 38  ethnic groups  and 40 time periods (from 1921 to 1960) we have 1520 observations in total. Total number of arrests for each ethnicity is provided in the table \ref{tab:total_arrests_by_ethnicity} and the plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}, both in the appendix. 
+With 38  ethnic groups  and 40 time periods (from 1921 to 1960), we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in the table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
 
 In addition to data on repressions, we also obtained some information on some characteristics of the  ethnic groups in our dataset that we will use as covariates in the synthetic control method. 
 In particular, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{It is available online at \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree. It has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
-%For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both 
+%For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both
 The full data are provided in the table \ref{tab:sc_predictors} in the appendix.
 
 
@@ -149,24 +155,29 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 %confusion matrix provided in the table \ref{tab:conf_matrix_count} in the appendix. The confusion matrix is defined as 
 
 \subsection{Imputing Missing Date of Arrest} \label{subsec:imputing_missing_date}
-Our strategy for imputing the missing arrest dates is to  predict it from the date of process. For this reason, we model the number of days between arrest and process and fit it to a subset of the data for which both dates are known. It  is reasonable to expect that the average number of day from  arrest to process could  vary considerably throughout the years.    %FOr example
-Hence we use the year of process as a predictor to our model. 
+Our strategy for imputing the missing arrest dates is to  predict it from the date of trial. For this reason, we model the number of days between arrest and trial and fit it to a subset of the data for which both dates are known. It  is reasonable to expect that the average number of day from  arrest to trial could  vary considerably throughout the years.    %FOr example
+Hence we use the year of trial as a predictor to our model. 
 
 We begin by examining the data with both dates available. 
-The histogram for number of days between arrest and process (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and process being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
+The histogram for number of days between arrest and trial (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and trial being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
  which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
 
  \begin{figure}[h]
 \centering
+\caption{Histogram for Number of Days between Arrest and Trial}
 \includegraphics[width=\textwidth]{plots/imputing_arrest_date/simple_lm_hist.pdf}
-\caption{Histogram for Number of Days between Arrest and Process (shown on $\log(1 + x)$ scale)}
 \label{fig:simple_lm_hist}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} The x-axis is shown on  $\log(1 + x)$ scale.
+\end{minipage}
+
 \end{figure}
 
 To address this problem, we model the zero and positive values separately in a two-stage process 
 %by first predicting if a the number of days is zero and then fitting log-normal regression to the positive date. 
 using a method described in \citet[p. 537-538]{gelman_data_2006}. 
-Let $y$ be the number of days between arrest of an individual and his or her process and $X$ be set of dummy variables indicating the year of process. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
+Let $y$ be the number of days between arrest of an individual and his or her trial and $X$ be set of dummy variables indicating the year of trial. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
 \begin{equation}
 \Pr\left( I_i^y = 1 \right)  = \text{logit}^{-1} \left(X_i \alpha \right).
 \end{equation}
@@ -174,8 +185,8 @@ In the second stage, simple log-linear regression is applied to predict only the
 \begin{equation}
 \log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
 \end{equation}
-We then fit the first model to the data where the exact dates of both arrest and process are available and the second model to the subset of the same  data for which $y > 0$.
-The results of both of these models provided in the table \ref{tab:date_imp_results} in the appendix. The years of process appear to be important predictors both in the first stage and even more in the second stage. 
+We then fit the first model to the data where the exact dates of both arrest and trial are available and the second model to the subset of the same  data for which $y > 0$.
+The results of both of these models are provided in the table \ref{tab:date_imp_results} in the appendix. The years of trial appear to be important predictors both in the first stage and even more in the second stage. 
 However, the unexplained variance is still high making up about 76\% of the total variability in the dependent variable in the second model. 
 
 %After  these models are fitted to the data with non-missing date of arrest and year of process,
@@ -184,11 +195,11 @@ We  proceed to apply the fitted models to the missing data to get the predicted 
 The histogram of the imputed values is provided in the figure \ref{fig:mixed_model_preds_hist} in the appendix. 
 The resulting distribution  highly resembles the distribution  in the figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the actual data fairly well. 
 
-Another issue is that for significant number of observations we do not have the exact date of process but only year. In particular, 
-while the year of process is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of process is missing for 369 393 of them and the day for 390 174. 
-To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of process in the non-missing data between the years 1921 to 1960. 
-Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability. 
-The imputed months and days of process are therefore only weakly informed guesses, nevertheless they enable us to proceed in the analysis. 
+Nevertheless,  one issue is that for significant number of observations we do not have the exact date of trial but only year. In particular, 
+while the year of trial is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of trial is missing for 369 393 of them and the day for 390 174. 
+To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of trial in the non-missing data between the years 1921 to 1960. 
+Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability.\footnote{Every date, however, has to be consistent with the calendar. This means that for January we take a sample of numbers from 1 to 31, for February from 1 to 28 and so on. } 
+The imputed months and days of the trials are therefore only weakly informed guesses, nevertheless they enable us to carry on with the analysis. 
 
 %Once we have completed the above steps, 
 The final step is to calculate the imputed date of arrest by subtracting the predicted number of days from the date of process (i.e. we go back in time by given number of days). Since we conduct the analysis with annual observations, we ignore predicted month and day of arrests  keep only information on year. The number of arrests for each ethnicity by year (including the imputed years) is then counted for the period from 1921 to 1960 which forms our final dataset. 

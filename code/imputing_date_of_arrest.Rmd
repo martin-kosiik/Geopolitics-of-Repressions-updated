@@ -114,7 +114,7 @@ summary(lm.ifpos)
 
 var_labels <- names(glm.sign$coefficients) %>% 
   #str_subset("german:post_") %>% 
-  str_replace_all("as.factor\\(YEAR_PROCESS\\)", "Year of Process - ")
+  str_replace_all("as.factor\\(YEAR_PROCESS\\)", "Year of Trial - ")
 
 stargazer(glm.sign, lm.ifpos, 
           omit.stat = c("ser", "f"), label = "tab:date_imp_results", font.size = "small", no.space = T, 

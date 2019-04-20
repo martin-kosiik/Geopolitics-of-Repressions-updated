@@ -319,6 +319,11 @@ plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
 ```{r}
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol)
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, vcov = "CR0")
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr0.pdf"))
+
+
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_lin_trends_geopol)
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_geopol)
 

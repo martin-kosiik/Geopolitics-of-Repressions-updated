@@ -149,11 +149,16 @@ summary(lm(fmla_pred_full_imp_date_lin_trends, min_by_year))
 trends_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pred_full_imp_date_lin_trends,
                                  fmla_pred_full_imp_date_no_trends)
 
+trends_formulas_full_years_geopol <- c(fmla_pred_full_imp_date_geopol, fmla_pred_full_imp_date_lin_trends_geopol,
+                                       fmla_pred_full_imp_date_no_trends_geopol)
+
+
 ## Position dodge
-map(trends_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR0", estimatr = 1)) %>% 
+map(trends_formulas_full_years_geopol, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
   bind_rows(.id = "id") %>% 
-  mutate(nice_labs = str_replace(term,"german:year_",""),
-         nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_","")
+   #      ,nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)
+         ) %>% 
   mutate(trends = recode_factor(id, "1" = "Quadratic", "2" = "Linear", "3" = "None")) %>% 
   ggplot( aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1, col = trends))+ 
   geom_pointrange(position = position_dodge2(width = 0.45))+  geom_hline(yintercept= 0) + theme_minimal() + 
@@ -172,6 +177,22 @@ ggsave(here::here("plots/effects/robustness_checks/trends_comp_pred_full_imp_dat
 
 
 ```{r}
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pars_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_pars_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+```
+
+```{r}
 fmla_pred_imp_date <- as.formula(paste("log_n_pred_imp_date ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
@@ -182,17 +203,24 @@ fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ",
 fmla_pars_pred_imp_date <- as.formula(paste("log_n_pred_pars_imp_date ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
                          ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+
 ```
+
 
 ```{r}
 pred_adj_formulas_full_years <-  c(fmla_pred_full_imp_date, fmla_pars_pred_imp_date,
                                  fmla_pred_imp_date)
 
+pred_adj_formulas_full_years_geopol <- c(fmla_pred_full_imp_date_no_trends_geopol,
+                                       fmla_pars_pred_imp_date_no_trends_geopol,
+                                       fmla_pred_imp_date_no_trends_geopol)
+
 ## Position dodge
-map(pred_adj_formulas_full_years, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
+map(pred_adj_formulas_full_years_geopol, ~ fit_robust_model(formula = ., vcov = "CR2", estimatr = 0)) %>% 
   bind_rows(.id = "id") %>% 
-  mutate(nice_labs = str_replace(term,"german:year_",""),
-         nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_","")
+         #,nice_labs = ifelse(as.numeric(nice_labs) == max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)
+         ) %>% 
   mutate(trends = recode_factor(id, "1" = "Full matrix", "2" = "Parsimonious", "3" = "None")) %>% 
   ggplot( aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1, col = trends))+ 
   geom_pointrange(position = position_dodge2(width = 0.45))+  geom_hline(yintercept= 0) + theme_minimal() + 

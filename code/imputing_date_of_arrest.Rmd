@@ -18,7 +18,6 @@ library(scales)
 library(stargazer)
 ```
 
-Checkout GLMMadaptive 
 ```{r}
 selected_vars <- c("person_id", "arest_date", "process_date")
 memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
@@ -41,7 +40,7 @@ month_freq <- memorial_lists %>%
   summarise(month_freq = n()/n[1]) %>% 
   pull(month_freq)
 
-set.seed(201904)
+set.seed(2019)
 
 some_date <-  memorial_lists %>% 
   filter(no_date == 0) %>% 
@@ -67,32 +66,6 @@ some_date <-  memorial_lists %>%
                                                      MONTH_PROCESS_freq_imp == 2 ~
                                                        base::sample(1:28, size = 1, prob = rep(1/28, 28))),
                                            DAY_PROCESS))
-  
-memorial_lists %>% 
-  filter(!is.na(YEAR_PROCESS)) %>% 
-  filter(no_date == 0) %>% 
-  filter(arest_date == "None") %>% 
-  group_by(na.month = is.na(MONTH_PROCESS)) %>% 
-  count()
-
-memorial_lists %>% 
-  filter(!is.na(YEAR_PROCESS)) %>% 
-  filter(no_date == 0) %>% 
-  filter(arest_date == "None") %>% 
-  group_by(na.day = is.na(DAY_PROCESS)) %>% 
-  count()
-
-missing_month_not_year <-  memorial_lists %>% 
-  filter(is.na(MONTH_PROCESS) & !is.na(YEAR_PROCESS)) %>% 
-  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961)
-  
-
-non_missing_process_mon_year <- memorial_lists %>% 
-  filter(!is.na(MONTH_PROCESS) & !is.na(YEAR_PROCESS)) %>%
-  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961) %>% 
-  mutate(MONTH_PROCESS =as.factor(MONTH_PROCESS),
-         YEAR_PROCESS =as.factor(YEAR_PROCESS)) %>% 
-  dplyr::select(MONTH_PROCESS, YEAR_PROCESS)
 
 
 
@@ -174,7 +147,7 @@ missing_date_of_arrest <- missing_date_of_arrest %>%
 
 
 simple_imp <- some_date %>% 
-  left_join(missing_date_of_arrest  %>% select(person_id, diff_day_imp), by = "person_id") %>% 
+  left_join(missing_date_of_arrest  %>% dplyr::select(person_id, diff_day_imp), by = "person_id") %>% 
   mutate(date_process_simple_imp = as_date(str_c(YEAR_PROCESS, MONTH_PROCESS_simple_imp, DAY_PROCESS_simple_imp,
                                          sep = "-")),
          date_arrest_simple_imp = date_process_simple_imp - days(diff_day_imp),
@@ -185,7 +158,7 @@ simple_imp <- some_date %>%
          YEAR = ifelse(!is.na(year_arrest_simple_imp), year_arrest_simple_imp, YEAR)) 
 
 complex_imp <- some_date %>% 
-  left_join(missing_date_of_arrest %>% select(person_id, diff_day_imp_complex), by = "person_id") %>% 
+  left_join(missing_date_of_arrest %>% dplyr::select(person_id, diff_day_imp_complex), by = "person_id") %>% 
   mutate(date_process_freq_imp = as_date(str_c(YEAR_PROCESS, MONTH_PROCESS_freq_imp, DAY_PROCESS_simple_imp,
                                          sep = "-")),
          date_arrest_complex_imp = date_process_freq_imp - days(diff_day_imp_complex),
@@ -221,7 +194,7 @@ missing_date_of_arrest %>%
   mutate(log_day = log(1 + diff_day_imp_complex)) %>% 
   ggplot(aes(x = diff_day_imp_complex)) + geom_histogram(aes(y=..density..),col = "white") + theme_minimal()+
   scale_x_continuous(trans = "mylog10", breaks = c(0,2,10,100,1000,10000))+
-  labs(x = "Number of days between arrest and process dates") + 
+  labs(x = "Number of days between arrest and trail") + 
   theme(axis.line = element_line(size = 1), 
        # panel.grid.major.x = element_blank(), 
         panel.grid.minor.x = element_blank(), 
@@ -237,10 +210,10 @@ both_dates %>%
   ggplot(aes(x = diff_days)) + geom_histogram(aes(y=..density..), col = "white") + 
     #geom_density(aes(y=..density.., position="stack"), col = "red") +
     stat_function(fun = function(x, mean, sd) dnorm(log10(x + 1) , mean, sd), 
-                  args = list(mean = lm_model$coefficients[1], sd = summary(lm_model)$sigma), 
+                  args = list(mean = lm_model_simple$coefficients[1], sd = summary(lm_model_simple)$sigma), 
                   col = "blue", size=1.5) + 
   scale_x_continuous(trans = "mylog10", breaks = c(0,2,10,100,1000,10000)) +
-  theme_minimal() + labs(x = "Number of days between arrest and process dates") +
+  theme_minimal() + labs(x = "Number of days between arrest and trial") +
   theme(axis.line = element_line(size = 1), 
        # panel.grid.major.x = element_blank(), 
         panel.grid.minor.x = element_blank(), 
@@ -318,16 +291,5 @@ both_dates %>%
   theme_minimal()
 
 zip_function(150)
-
-both_dates %>% 
-  filter(abs(diff_days) < 5000) %>% 
-  filter(diff_days >= 0) %>% 
-  ggplot(aes(x = diff_days)) + geom_histogram(col = "white") + theme_bw() + scale_x_log10()
-
-ggsave(here::here("plots/diff_days_hist.pdf"))
-
-head(both_dates)
-
-head(both_dates$diff_days)
-```
+)```
 

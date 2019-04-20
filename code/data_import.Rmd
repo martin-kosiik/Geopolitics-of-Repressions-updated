@@ -26,26 +26,14 @@ library(kableExtra)
 
 ```{r}
 memorial_lists %>% 
-  count(criminal_article, sort = T) %>% 
-  mutate(kulak = str_detect(criminal_article, "кулаки")) %>% 
+  mutate(no_rehab = ifelse(rehabilitation_date == "None", 1, 0)) %>% 
+  count(no_rehab, no_date, sort = T) %>% 
   View()
 
-kulaks <- memorial_lists %>% 
-  filter(criminal_article %in% c("кулаки (Постановление СНК и ЦИК СССР от 1.02.1930)", 
-                                 "как кулаки", "Кулаки"))
-head(memorial_lists)
-
-kulaks %>% 
-  count(YEAR_PROCESS) %>% 
-  View()
-
-kulaks <- memorial_lists %>% 
-  filter(str_detect(criminal_article, pattern =  fixed("Кулак", ignore_case = TRUE)))
 
 memorial_lists %>% 
-  count(rehabilitation_reason, sort = T) %>% 
-  View()
-
+  mutate(no_rehab = ifelse(rehabilitation_date == "None", 1, 0)) %>% 
+  count(no_rehab, sort = T) 
 ```
 missing arrest date: 1 650 941
 non-missing arrest date: 1 053 658
@@ -90,10 +78,10 @@ memorial_lists %>%
   mutate(no_date = recode_factor(no_date, `1` = "Missing",  `0` = "Present"),
          no_ethnicity = recode_factor(no_ethnicity, `1` = "Missing", `0` = "Present")) %>% 
   spread(key = no_date, value = n) %>% 
-    kable("latex", booktabs = T, caption = "Missingness of Ethnicity and Dates of Arrest and Process",
+    kable("latex", booktabs = T, caption = "Missingness of Ethnicity and Dates of Arrest and Trial",
           linesep = "",
         col.names = c("Ethnicity", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Date of Arrest or Process" = 2)) %>% 
+  add_header_above(c(" " = 1, "Date of Arrest or Trial" = 2)) %>% 
   #kable_styling(font_size = 8) %>% 
   write_file("tables/missingness_of_ethnicity_and_date.tex")
 
@@ -103,8 +91,8 @@ memorial_lists %>%
   mutate(no_date_of_arrest = recode_factor(no_date_of_arrest, `1` = "Missing",  `0` = "Present"),
          no_date_of_process = recode_factor(no_date_of_process, `1` = "Missing", `0` = "Present")) %>% 
   spread(key = no_date_of_arrest, value = n) %>% 
-  kable("latex", booktabs = T, caption = "Missing Dates of Arrest and Process", linesep = "",
-        col.names = c("Date of Process", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
+  kable("latex", booktabs = T, caption = "Missing Dates of Arrest and Trial", linesep = "",
+        col.names = c("Date of Trial", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
   add_header_above(c(" " = 1, "Date of Arrest" = 2)) %>% 
   #kable_styling(font_size = 8) %>% 
   write_file("tables/missing_date_of_arrest_process.tex")
@@ -127,7 +115,7 @@ memorial_lists %>%
   gather(key = "Variable", value = "missing_count") %>% 
   mutate(missing_pct = missing_count/n_of_obs * 100,
          Variable = recode_factor(Variable, "nation" = "Ethnicity","arest_date" = "Date of Arrest", 
-                       "process_date" =  "Date of Process", "name" = "First Name", "surname" = "Surname")) %>% 
+                       "process_date" =  "Date of Trial", "name" = "First Name", "surname" = "Surname")) %>% 
   kable("latex", booktabs = T, caption = "Missing Data by Variable", linesep = "", digits = 2,
         col.names = c("Variable", "Number of Missing Obs.", "Percent of Missing Obs."),
         format.args = list(big.mark = " ")) %>% 

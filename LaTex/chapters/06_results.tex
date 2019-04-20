@@ -9,10 +9,12 @@ We start by presenting results for the data with imputed ethnicity (adjusted wit
  \begin{figure}[h]
 \centering
 \caption{Estimates of $\beta_k$ from the Specification \ref{eq:dynamic_did}}
-\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf}
+\includegraphics[width=\textwidth]{plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf}
 \begin{minipage}{0.92\textwidth}
 \footnotesize
-\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.  Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. 
+There are no ethnicity-specific time trends. 
+Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
 \label{fig:did_effets}
 \end{figure}
@@ -41,13 +43,18 @@ would violate the basic identifying assumption of
 difference-in-differences.
 %The deviations from parallel trends in the pre-treatment period are relatively small possibly indicating that the bias might not be as large. 
 We address this problem by applying the synthetic control method in the next section. 
+%Nevertheless, the  deviations of pre-1933 from zero are small which coulf 
 %Bearing in mind these potential problems, we proceed 
  
-Another potential issue is that some ethnic groups changed their treatment status in this period in various complicated ways. For example, Poland was invaded by the USSR and Germany but it took  only about month until the Polish forces were defeated. The Baltic states were annexed and incorporated into the Soviet Union in June 1940 only to be invaded by Germany year later. 
-It is difficult to decide what treatment status should we assign in these cases. 
-Moreover, given the scale and complexity of World War 2, the USSR experienced  some kind of change in geopolitical relations with almost every country in its neighborhood.  
+Another potential issue is that some ethnic groups changed their treatment status in this period in various complicated ways. 
+We tried to control for this by including a set of dummy variables  that capture the most important changes in geopolitical relations (more on their definition in appendix). 
+However, these dummy variables might miss  more subtle changes in relations with the USSR. As a robustness check, we therefore exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences are plotted in the figure \ref{fig:did_effets_no_ind_countries} in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
 
-To address this issue, we exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences are plotted in the figure \ref{fig:did_effets_no_ind_countries} in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
+%For example, Poland was invaded by the USSR and Germany but it took  only about month until the Polish forces were defeated. The Baltic states were annexed and incorporated into the Soviet Union in June 1940 only to be invaded by Germany year later. 
+%It is difficult to decide what treatment status should we assign in these cases. 
+%Moreover, given the scale and complexity of World War 2, the USSR experienced  some kind of change in geopolitical relations with almost every country in its neighborhood.  
+
+%To address this issue, we exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences are plotted in the figure \ref{fig:did_effets_no_ind_countries} in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
 
 In the section \ref{subsec:robust_checks}, we perform several additional robustness checks to further asses the sensitivity of our findings. In particular, we refit the models for different ethnicity-specific time-trends and imputation adjustments. 
 
@@ -207,9 +214,9 @@ These results contradict our inferences from difference-in-differences  where we
 Our results have shown rise of arrests of Germans during and after the war. 
 However, the question is if these people were arrested for aiding the invading German army or only based on their ethnicity. 
 %We  try to answer this by restricting  our analysis to only rehabilitated individuals. 
-Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Political Repression} specified  that individuals who joined the German army\footnote{Later amendments expanded the restriction to anyone who aided the Wehrmacht. }  were not eligible for rehabilitation , we can filter out the cases of direct 
+Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Political Repression} specified  that individuals who joined the German army\footnote{Subsequent amendments expanded the restriction to anyone who aided the German army. }  were not eligible for rehabilitation, we can filter out the cases of direct 
 cooperation by restricting  our analysis to only rehabilitated victims \citep{frierson_russias_2014}. 
-In the Memorial database, there  are 1257796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are plotted in the figure y. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
+In the Memorial database, there  are 1 257 796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are plotted in the figure \ref{fig:did_effects_rehabs}. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
 %this is a consequence of h
 
 Second, we consider if the presence of ethnicity-specific time trends affects the results.

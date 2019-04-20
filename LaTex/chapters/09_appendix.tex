@@ -63,42 +63,46 @@ Nonetheless, this table provides only very coarse classification of changes in g
 \newpage
 
 \input{tables/sc_predictors.tex}
+
 \newpage
 \input{tables/sc_weights_without_ind_state.tex}
+
 \input{tables/sc_weights_rehabs.tex}
-\newpage
 }
+\newpage
+\FloatBarrier
 \subsection*{Additional Figures}
-\begin{figure}[h]
+
+\begin{figure}[H]
 \centering
 \caption{Number of Predicted Arrests by Ethnicity, Year, and Prediction Adjustment}
 \includegraphics[width=1.2\textwidth]{plots/arrests/prediction_type_by_year.pdf}
 \label{fig:prediction_type_by_year}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \caption{Histograms of Arrests by Ethnicity and Year}
 \includegraphics[width=1.2\textwidth]{plots/arrests/facet_hist.pdf}
 \label{fig:facet_by_year}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \caption{Histogram of Imputed Number of Days between Arrest and Process}
-\includegraphics[width=1.2\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
+\includegraphics[width=1\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
 \label{fig:mixed_model_preds_hist}
 \end{figure}
-\begin{figure}[h]
+\begin{figure}[H]
 \caption{Time Series of Arrests }
 \centering
-\includegraphics[width=1.2\textwidth]{plots/arrests/date_imputation_line.pdf}
+\includegraphics[width=\textwidth]{plots/arrests/date_imputation_line.pdf}
 \label{fig:date_imputation_line}
 \end{figure}
 
 
 %\subsection{Difference-in-differnces Results}
- \begin{figure}[h]
+ \begin{figure}[H]
 \centering
 \caption{Dynamic DiD, Only Ethnicities without Independent State}
 \includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_not_ind_country.pdf}
@@ -106,26 +110,24 @@ Nonetheless, this table provides only very coarse classification of changes in g
 %\includegraphics[width=\linewidth]{Gaus.pdf}
 %\rule{\linewidth}{10em}
 \footnotesize
-\emph{Notes:} Only ethnic groups without independent state are included in the control group. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. The quadratic ethnicity-specific time trends are included.  Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\emph{Notes:} Only ethnic groups without independent state are included in the control group. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. The quadratic ethnicity-specific time trends are included.  Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
 \label{fig:did_effets_no_ind_countries}
 \end{figure}
 
- \begin{figure}[h]
+ \begin{figure}[H]
 \centering
 \caption{Dynamic DiD, Only Rehabilitated Individuals}
 \includegraphics[width=\textwidth]{plots/final/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf}
 \begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
 \footnotesize
 \emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. Controls for major changes in relations with the USSR are included.
 Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
-\label{fig:did_effets_no_ind_countries}
+\label{fig:did_effects_rehabs}
 \end{figure}
 
- \begin{figure}[h]
+ \begin{figure}[H]
 \centering
 \caption{Comparison of  Ethnicity-specific Time Trends for DiD}
 \includegraphics[width=\textwidth]{plots/effects/robustness_checks/trends_comp_pred_full_imp_date_cr2.pdf}
@@ -138,7 +140,7 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 \label{fig:did_robustness_time_trends}
 \end{figure}
 
- \begin{figure}[h]
+ \begin{figure}[H]
 \centering
 \caption{Comparison of  Ethnicity Imputation Adjustments for DiD}
 \includegraphics[width=\textwidth]{plots/effects/robustness_checks/pred_adj_comp_pred_full_imp_date_cr2.pdf}
@@ -155,7 +157,7 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 %\input{tables/diff_table.tex}
 %\thispagestyle{empty}
 
-\begin{figure}[hbtp] 
+\begin{figure}[H] 
 \caption{Gaps between synthetic control and actual values for placebo tests}
 \begin{subfigure}{\textwidth}
 \caption{All ethnic groups}
@@ -176,7 +178,7 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 \end{figure}
 
 
-\begin{figure}[hbtp] 
+\begin{figure}[H] 
 \caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
 \begin{subfigure}{\textwidth}
 \caption{The whole post-treatment period in the numerator (1933-1960)}
@@ -198,7 +200,7 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 
 
 
-\begin{figure}[hbtp] 
+\begin{figure}[H] 
 \caption{Gaps between synthetic control and actual values for placebo tests}
 \begin{subfigure}{\textwidth}
 \caption{Only ethnicities without independent state}
@@ -221,7 +223,7 @@ Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied o
 \end{minipage}
 \end{figure}
 
-\begin{figure}[hbtp] 
+\begin{figure}[H] 
 \caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
 \begin{subfigure}{\textwidth}
 \caption{Only ethnicities without independent state}

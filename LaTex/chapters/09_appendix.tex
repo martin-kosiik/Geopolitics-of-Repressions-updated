@@ -64,29 +64,32 @@ Nonetheless, this table provides only very coarse classification of changes in g
 
 \input{tables/sc_predictors.tex}
 \newpage
+\input{tables/sc_weights_without_ind_state.tex}
+\input{tables/sc_weights_rehabs.tex}
+\newpage
 }
 \subsection*{Additional Figures}
-\begin{figure}[!h]
+\begin{figure}[h]
 \centering
 \caption{Number of Predicted Arrests by Ethnicity, Year, and Prediction Adjustment}
 \includegraphics[width=1.2\textwidth]{plots/arrests/prediction_type_by_year.pdf}
 \label{fig:prediction_type_by_year}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h]
 \centering
 \caption{Histograms of Arrests by Ethnicity and Year}
 \includegraphics[width=1.2\textwidth]{plots/arrests/facet_hist.pdf}
 \label{fig:facet_by_year}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h]
 \centering
 \caption{Histogram of Imputed Number of Days between Arrest and Process}
 \includegraphics[width=1.2\textwidth]{plots/imputing_arrest_date/mixed_model_preds_hist.pdf}
 \label{fig:mixed_model_preds_hist}
 \end{figure}
-\begin{figure}[!h]
+\begin{figure}[h]
 \caption{Time Series of Arrests }
 \centering
 \includegraphics[width=1.2\textwidth]{plots/arrests/date_imputation_line.pdf}
@@ -193,3 +196,47 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 \end{minipage}
 \end{figure}
 
+
+
+\begin{figure}[hbtp] 
+\caption{Gaps between synthetic control and actual values for placebo tests}
+\begin{subfigure}{\textwidth}
+\caption{Only ethnicities without independent state}
+\includegraphics[width=0.9\linewidth]{plots/final/placebo_highlight_all_ethnicities_without_ind_state.pdf}
+\label{fig:sc_placebo_gaps_all_without_ind_state}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Only rehabilitated individuals}
+\includegraphics[width=0.9\linewidth]{plots/final/placebo_highlight_all_rehabs.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_placebo_gaps_all_rehabs}
+\end{subfigure}
+\label{fig:sc_placebo_gaps_more_rob_checks}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} 
+All pre-treatment outcomes were used as predictors. 
+%The predictors are the mean of $\log\left(1 + \text{arrests}\right)$ in the pre-treatment period, total population of the ethnic group in the USSR and its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian.
+Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations.
+\end{minipage}
+\end{figure}
+
+\begin{figure}[hbtp] 
+\caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
+\begin{subfigure}{\textwidth}
+\caption{Only ethnicities without independent state}
+\includegraphics[width=\linewidth]{plots/final/mspe_ratios_ethnicities_without_ind_state.pdf}
+\label{fig:sc_mspe_ratios_without_ind_state}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Only rehabilitated individuals}
+\includegraphics[width=\linewidth]{plots/final/mspe_ratios_rehabs.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_mspe_ratios_rehabs}
+\end{subfigure}
+\label{fig:sc_mspe_ratios_more_rob_checks}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} The whole post-treatment period in the numerator (1933-1960) for both figures.  Otherwise same as for the figure \ref{fig:sc_placebo_gaps_more_rob_checks}.
+\end{minipage}
+\end{figure}

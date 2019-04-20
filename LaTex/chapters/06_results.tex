@@ -11,8 +11,6 @@ We start by presenting results for the data with imputed ethnicity (adjusted wit
 \caption{Estimates of $\beta_k$ from the Specification \ref{eq:dynamic_did}}
 \includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf}
 \begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
 \footnotesize
 \emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included.  Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
@@ -211,15 +209,15 @@ However, the question is if these people were arrested for aiding the invading G
 %We  try to answer this by restricting  our analysis to only rehabilitated individuals. 
 Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Political Repression} specified  that individuals who joined the German army\footnote{Later amendments expanded the restriction to anyone who aided the Wehrmacht. }  were not eligible for rehabilitation , we can filter out the cases of direct 
 cooperation by restricting  our analysis to only rehabilitated victims \citep{frierson_russias_2014}. 
-In the Memorial database, there  are x individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those x observations. The results are plotted in the figure y. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
+In the Memorial database, there  are 1257796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are plotted in the figure y. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
 %this is a consequence of h
 
-First, we consider if the presence of ethnicity-specific time trends affects the results.
+Second, we consider if the presence of ethnicity-specific time trends affects the results.
 %As we explained in the methodology section, 
 % the ethnicity-specific time trends allows us. 
 The estimates regressions with quadratic (default), linear, and no time trends are  plotted in the figure \ref{fig:did_robustness_time_trends} in the appendix. The coefficients for the model with no ethnicity-specific time trends are somewhat lower for the baseline model and the estimates for linear time trends are lower still. Nonetheless, the main general pattern is preserved in all specifications.
 
-Second, we test the sensitivity of results to different adjustments of ethnicity imputation. 
+Third, we test the sensitivity of results to different adjustments of ethnicity imputation. 
 As we explain in the subsection \ref{subsubsec:pred_adj}, the adjustments were applied in order to correct for the unbalanced accuracy in prediction of our Naive Bayes classifier across ethnic groups. The results from fitting our default specification to data with different adjustments are shown in the figure \ref{fig:did_robustness_pred_adj}.
 We see that the estimates for the full matrix (used by default) and the parsimonious adjustment are virtually the same. When no adjustment is applied, the coefficients even get slightly larger. 
 \subsection{Synthetic Control Method}
@@ -239,5 +237,14 @@ assigning greater importance to other covariates by  using only the pre-treatmen
 Nonetheless, both our baseline model and its robustness check otherwise follow very similar trends.
 The $p$-value of the effect for the whole period 1933-1960  is again 1/38 ($\approx 0.026$). However if we consider only the time window of  1933-1939, the 
 $p$-value increases to 1/19 ($\approx 0.105$). The MSPE ratios for all ethnic groups based on which the $p$-values were calculated are provided in the figure \ref{fig:sc_mspe_ratios_robustness}.
+
+Furthermore, we apply our baseline  synthetic control specification (with all pre-treatment outcomes as predictors) but only limiting ourselves to ethnic groups without independent state (e.g. Armenians, Kazakhs, etc.). The resulting synthetic control is weighted average of repressions of Tatars, Koreans , Ukrainians, and Jews as shown in the table \ref{tab:sc_weights_without_ind_state}. The estimated effects shown in the figure \ref{fig:sc_placebo_gaps_all_without_ind_state} are  similar to the baseline specification. Nonetheless, the pre-treatment fit is slightly worse. As a consequence, German minority has only the second highest MSPE ratio (taken for he whole post-1933 period) as shown in the figure \ref{fig:sc_mspe_ratios_without_ind_state} and thus the corresponding $p$-value is 2/28 ($\approx 0.074$).
+
+Finally, we apply again the same baseline synthetic control method but only to data with rehabilitated individuals. The estimated $W$-weights are provided in the table \ref{tab:sc_weights_rehabs}. The trends in the gaps between the actual and synthetic repressions (plotted in the figure  \ref{fig:sc_placebo_gaps_all_rehabs}) are broadly consistent with  our previous estimates. 
+The German MSPE for the whole post-treatment period is the highest of all (provided in the figure \ref{fig:sc_mspe_ratios_rehabs}) and therefore the implied $p$-value is again  1/38 ($\approx 0.026$).
+%are agian consistent with our previous 
+
+%\input{tables/sc_weights_without_ind_state.tex}
+%\input{tables/sc_weights_rehabs.tex}
 
 %\section{Limitations}

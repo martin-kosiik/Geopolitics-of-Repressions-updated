@@ -1,11 +1,26 @@
 \subsection{Difference-in-differences}
-We start by presenting results for the data with imputed ethnicity (adjusted with full matrix correction from equation \ref{eq:full_matrix_adj} and date of arrest since we consider them to be the most credible. However, we also consider how the results change if do not impute or apply different adjustment further in the paper. 
+%In our main specification, we 
+We first present results from our preferred specification \ref{eq:dynamic_did} with geopolitical controls and no ethnicity-specific time trends. 
+We imputed missing ethnicity and date of arrest as described in the section \ref{sec:missing_data}.  Full matrix adjustment from equation \ref{eq:full_matrix_adj}) was applied to the ethnicity imputations. 
+%We start by presenting results for the data with imputed ethnicity (adjusted with full matrix correction from equation \ref{eq:full_matrix_adj} and date of arrest since we consider them to be the most credible. However, we also consider how the results change if do not impute or apply different adjustment further in the paper. 
 
- The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are plotted in the figure \ref{fig:did_effets}. 
+ The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are plotted in the figure \ref{fig:did_effets}. Recall that our dependent variable  is $\log\left(1 + \text{arrests}_{it}\right)$ and therefore we can interpret the coefficients  $\beta_k$  as percentage change in arrests.
  We can draw several conclusions from the results. 
- First, the coefficients from 1933 to 1938 are not significantly different from zero which implies that hostility between Germany and the Soviet Union in this period does not seem to impact the repressions of Germans contrary to the theoretical predictions. Second, the political arrests of Germans start to rise in 1939 which is surprising given that  Molotov-Ribbentrop pact guaranteeing neutrality Germany and the USSR was signed that year. The repressions then peak  with start of the war at 1941 (although there is some slight drop from 1942 to 1944). Finally, the effects of war on the repressions appear to be highly persistent as there is no decline in the arrests after 1945. 
- %There even
- 
+ First, the coefficients from 1933 to 1938 are all smaller than 1 and most of them are not significantly different from zero which implies that hostility between Germany and the Soviet Union in this period does not seem to impact the repressions of Germans contrary to the theoretical predictions. Second, the political arrests of Germans start to rise in 1939 which is surprising given that  Molotov-Ribbentrop pact guaranteeing neutrality Germany and the USSR was signed that year. The repressions then peak  in 1940 and 1941  at 4\%
+  followed by sharp drop in years 1942-1944 to approximately 1.5\%. 
+  %We have to be cautious when interpreting those 
+  However,  we have to be careful when interpreting those coefficients. 
+ Since the Soviet Union was at that period at war and initially lost large amounts of territory, it is plausible that the arrests of Germans  declined simply because there were fewer Germans on the territory controlled by the Soviets. 
+ %(although there is some slight drop from 1942 to 1944). 
+ In any case,  the impact of war on the repressions appear to be highly persistent as 
+  the estimated effect stays high at around 2 to 3\% even after 1945.
+Finally,  starting from 1955, the coefficients rapidly fall to zero. 
+This period coincides with the partial relaxation of repressions and censorship following the death of Stalin in 1953 and the subsequent  rise of power of Khrushchev. 
+This is reflected in our data where the number of arrested Germans in a given year after 1954 does not exceed 50 compared to hundreds of arrests in the preceding years.  
+
+
+ %there tion is no decline in the arrests after 1945. 
+ %The coefficients in the model imply that in the period of Molotov-Ribbentrop pact and war, the arrests of Germans were about 2\% higher than the arrest other ethnic groups. Surprisingly, the estimated effect in the post-war period is higher still at  3.6\%.
  \begin{figure}[h]
 \centering
 \caption{Estimates of $\beta_k$ from the Specification \ref{eq:dynamic_did}}
@@ -20,20 +35,18 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 \end{figure}
 
  
- The results from the time window specification (equation \ref{eq:simple_did}) shown in the figure \ref{fig:did_effets_time_window} tell the same story.  The coefficients in the model imply that in the period of Molotov-Ribbentrop pact and war, the arrests of Germans were about 2\% higher than the arrest other ethnic groups. Surprisingly, the estimated effect in the post-war period is higher still at  3.6\%.
+% The results from the time window specification (equation \ref{eq:simple_did}) shown in the figure \ref{fig:did_effets_time_window} tell the same story.  
  
- \begin{figure}[h]
-\centering
-\caption{Estimated Coefficients for Specified Time Windows from the Specification \ref{eq:simple_did}}
-\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf}
-\begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
-\footnotesize
-\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
-\end{minipage}
-\label{fig:did_effets_time_window}
-\end{figure}
+% \begin{figure}[h]
+%\centering
+%\caption{Estimated Coefficients for Specified Time Windows from the Specification \ref{eq:simple_did}}
+%\includegraphics[width=\textwidth]{plots/effects/ethnicity_imputation/annual/time_window_pre_treatment_date_imp.pdf}
+%\begin{minipage}{0.92\textwidth}
+%\footnotesize
+%\emph{Notes:} Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. All 38 ethnic groups are included. Standard errors are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+%\end{minipage}
+%\label{fig:did_effets_time_window}
+%\end{figure}
  
 However, the pre-1933 coefficients in the figure \ref{fig:did_effets} give us some reason to doubt the
 validity of our model. Even though they are small in size relative to the post-1939 coefficient, they are all  significantly different from 0 at 5\% level.

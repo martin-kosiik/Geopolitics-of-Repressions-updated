@@ -48,10 +48,9 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
          pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
          war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
-         post_war = ifelse(YEAR >= 1945, 1, 0)) #%>%  filter(YEAR < 1956)
-
-
+         post_war = ifelse(YEAR >= 1945, 1, 0)) 
 ```
+
 
 ```{r}
 min_by_year <- min_by_year %>% 
@@ -76,8 +75,6 @@ min_by_year <- min_by_year %>%
 
 
 ```{r}
-years <- 1930:1960
-years <- 1930:1939
 years <- 1922:1960
 
 year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
@@ -361,8 +358,8 @@ ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_ful
 
  min_by_year %>% 
   filter(ind_country == 0 | ethnicity == "German") %>% 
-  plot_effects_robust_se(formula = fmla_pred_full_imp_date)
- ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_not_ind_country.pdf"))
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
+ ggsave(here::here("plots/final/pr_cr2_date_imp_full_years_no_trends_not_ind_country.pdf"))
 
 ```
 

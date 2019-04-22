@@ -140,6 +140,7 @@ makes only somewhat weaker assumption that the train and test set misclassificat
 %On the other hand, it might be noisier
 % lower bias, higher variance
 
+One issue that we encountered when applying these adjustments was that some values of $\mathbf{R}_t$ were negative. Thus, we replaced all negative values with zero. Finally, we scaled all  the values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer. 
 
 % Jeste se zmin o scalovani
 

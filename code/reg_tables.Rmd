@@ -60,9 +60,16 @@ no_ind_ethn_robust_se <- robust_se(no_ind_ethn_model, data = no_ind_ethn_data)
 ```{r}
 var_labels <- str_c("$",names(default_model$coefficients)) %>% 
   str_subset("german:year_") %>% 
-  str_replace_all("t", "t\\\\") %>% 
+  #str_replace_all("t", "t\\\\") %>% 
+  str_replace_all("\\_", "-") %>% 
   str_replace(":", "*") %>% 
   str_c("$")
+
+var_labels <- names(default_model$coefficients) %>% 
+  str_subset("german:year_") %>% 
+  #str_replace_all("t", "t\\\\") %>% 
+  str_replace_all("\\_", "-") %>% 
+  str_replace(":", "*")
 
 cluster.boot(diff_model, cluster = min_by_year$ethnicity)
 
@@ -76,14 +83,19 @@ diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_yea
 
 
 stargazer(default_model, no_ind_ethn_model, rehabs_model, 
-          keep = "german:year_+", omit.stat = c("ser", "f"), label = "dif_table",
+          keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table",
           se = list(default_robust_se, no_ind_ethn_robust_se, rehabs_robust_se), 
           covariate.labels = var_labels, title = "Difference-in-differences results",
+          dep.var.labels.include = FALSE, single.row = T, header = F,
+          font.size = "small", no.space = T, 
          # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
-          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
-                           c("Ethnicity dummies", "Yes", "Yes", "Yes"),
-                           c("Ethnicity time trends", "Yes", "Yes", "No")),
-          column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"))%>%
+          add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
+                           #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity-spec. time trends", "No", "No", "No"),
+                           c("Only rehabil. ind.", "No", "No", "Yes"),
+                           c("Eth. with ind. state excluded", "No", "Yes", "No")),
+          column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
+          table.placement = "!h")%>%
   cat(sep = '\n', file = here::here("tables/diff_table.tex"))
 ```
 
@@ -98,4 +110,14 @@ stargazer(diff_model, diff_model_restr,diff_model_no_log,
                            c("Ethnicity dummies", "Yes", "Yes", "Yes")),
           column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
  cat(sep = '\n', file = here("tables/diff_table.tex"))
+
+
+
+stargazer(glm.sign, lm.ifpos, 
+          omit.stat = c("ser", "f"), label = "tab:date_imp_results", font.size = "small", no.space = T, 
+          table.placement = "!h", single.row = T, header = F,
+          covariate.labels = var_labels, title = "Arrest Date Imputation - Model Results",
+          dep.var.labels = c("$I^y$", "$log(y^{\\text{pos}})$")) %>% 
+ cat(sep = '\n', file = here::here("tables/date_imp_results.tex"))
+
 ```

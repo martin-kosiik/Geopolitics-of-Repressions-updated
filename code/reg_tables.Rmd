@@ -1,0 +1,101 @@
+---
+title: "Regression tables"
+author: "Martin Kosík"
+date: "21 dubna 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stargazer)
+```
+
+```{r}
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_no_trends_geopol_rehab <- as.formula(paste("log_n_pred_full_imp_date_rehab ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity"))
+```
+
+
+```{r}
+default_model <-  lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year)
+rehabs_model <-  lm(fmla_pred_full_imp_date_no_trends_geopol_rehab, data = min_by_year)
+no_ind_ethn_data <- min_by_year %>% 
+  filter(ind_country == 0 | ethnicity == "German") 
+
+no_ind_ethn_model <-  lm(data = no_ind_ethn_data, formula = fmla_pred_full_imp_date_no_trends)
+
+
+robust_se <-  function(model,  vcov = "CR2",  level = 0.95, data = min_by_year){
+  model %>% 
+  conf_int(vcov = vcov,  level = level,
+          cluster = data$ethnicity,  test = "Satterthwaite") %>% 
+    pull(SE)
+}
+
+default_robust_se <- robust_se(default_model)
+rehabs_robust_se <- robust_se(rehabs_model)
+no_ind_ethn_robust_se <- robust_se(no_ind_ethn_model, data = no_ind_ethn_data)
+
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+var_labels <- str_c("$",names(default_model$coefficients)) %>% 
+  str_subset("german:year_") %>% 
+  str_replace_all("t", "t\\\\") %>% 
+  str_replace(":", "*") %>% 
+  str_c("$")
+
+cluster.boot(diff_model, cluster = min_by_year$ethnicity)
+
+diff_model_robust <- commarobust(diff_model, clusters = min_by_year$ethnicity, se_type = "CR2")
+
+summary(diff_model_robust)
+
+diff_model_restr_robust <- commarobust(diff_model_restr,
+                                       clusters = filter(min_by_year, YEAR <= 1945)$ethnicity, se_type = "stata")
+diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_year$ethnicity, se_type = "stata")
+
+
+stargazer(default_model, no_ind_ethn_model, rehabs_model, 
+          keep = "german:year_+", omit.stat = c("ser", "f"), label = "dif_table",
+          se = list(default_robust_se, no_ind_ethn_robust_se, rehabs_robust_se), 
+          covariate.labels = var_labels, title = "Difference-in-differences results",
+         # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity time trends", "Yes", "Yes", "No")),
+          column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"))%>%
+  cat(sep = '\n', file = here::here("tables/diff_table.tex"))
+```
+
+```{r}
+stargazer(diff_model, diff_model_restr,diff_model_no_log,
+          se = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust),
+          p = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust, stat = "p.value"),
+          keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
+          covariate.labels = var_labels, title = "Difference-in-differences results",
+          dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity dummies", "Yes", "Yes", "Yes")),
+          column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
+ cat(sep = '\n', file = here("tables/diff_table.tex"))
+```

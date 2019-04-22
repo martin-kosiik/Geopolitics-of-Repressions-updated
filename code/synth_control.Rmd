@@ -55,22 +55,6 @@ ethnicity_controls %>%
 
 ```
 
-
-```{r}
-min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
-  filter(ethnicity != "Russian") %>% 
-  mutate(log_n = log(1 + label + pred_adj_full_scaled)) %>% 
-  dplyr::select(-c(pred_adj_full, total_pred_by_date, total_pred_adj, total_pred_adj_full,
-                   total_pred, Sensitivity, Specificity)) %>% 
-  left_join(ethnicity_controls, by = "ethnicity") %>% 
-  mutate(post_german = german * ifelse(YEAR >= 1933, 1, 0)) 
-
-min_by_year <- min_by_year %>% 
-  filter(YEAR < 1940)
-
-
-```
-
 ## MSCMT implementation
 ### Annual observations 
 ```{r}

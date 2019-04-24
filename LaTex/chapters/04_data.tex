@@ -5,7 +5,9 @@ Vast  majority records in the database are individual arrests under  Article 58.
 This means that the victims of other repressive activities of the Soviet state such mass forced migration, counter-insurgency operations of the Red Army during Russian Civil War or famines are mostly excluded. Therefore our research focuses on one  particular type of repression (individual arrests by the NKVD). 
 
 Nevertheless, even if we restrict ourselves to the individual arrests, the Memorial database is still not complete.
-At the time of our access to the database, the databes contained 2.7 million records which is approximately 70\% of estimated 3.8 million people convicted under Article 58 between 1921 and 1953 \citep{zhukov_stalins_2018}.
+According to some estimates
+
+At the time of our access to the database, the database contained 2.7 million records which is approximately 70\% of estimated 3.8 million people convicted under Article 58 between 1921 and 1953 \citep{zhukov_stalins_2018}.
 
 %\footnote{In particular, we downloaded the data from the replications file archive of the journal available  from \url{https://www.prio.org/JPR/Datasets/}} who use  the Victims of Political Terror archive  collected by a Russian NGO Memorial.
 %individual arrests by the Soviet secret police (NKVD) between  the years 1921 and 1959 with names of each person, date of arrest, the place of birth for all observations and  in many cases additional information such as ethnicity, occupation and party membership. 
@@ -17,7 +19,7 @@ At the time of our access to the database, the databes contained 2.7 million rec
 %\subsection{Missing Data Analysis}
 Missing data presents another major challenge. 
 %Another major issue with the data is frequent  
- Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the 1 197 373 with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
+ Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and a first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the \mbox{1 197 373} observations with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
 \input{tables/missing_data_count.tex}
 
 Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity.\footnote{
@@ -25,7 +27,7 @@ We consider a date missing only if not even year of arrest is available. Many ob
 One solution, albeit only partial, might be to use the date of trial    to extrapolate the missing date of arrest where the trial date is available.
 As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of trial. 
 Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of trail are known. 
-%Unfortunately, not much can be done address this problem. 
+Unfortunately, not much can be done address this problem.
 %The table \ref{tab:missing_date_of_arrest_process} shows for this 
 \input{tables/missing_date_of_arrest_process.tex}
 %\input{tables/missingness_of_ethnicity_and_date.tex}

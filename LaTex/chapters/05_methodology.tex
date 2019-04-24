@@ -10,7 +10,7 @@ Our main specification is the dynamic difference-in-differences model:
 
 where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise.
 %(except for 1939 which is equal to 1 if $t \geq 1959$ and zero otherwise). The coefficients of interest are $\beta_k$. 
-Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects.
+Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects. The only omitted year is 1921 which thus serves as a baseline against which other coefficients are compared. 
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
 The time-varying vector $\text{Relations}_{it}$ is set a of dummy variables that capture other major changes in relations of a state with core group $i$ with the USSR during this period. The list of these changes is provided in appendix in the table \ref{tab:sc_weights_robustness}.
 

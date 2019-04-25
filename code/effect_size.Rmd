@@ -1,0 +1,231 @@
+---
+title: "estimating effects"
+author: "Martin Kosík"
+date: "23 dubna 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+no_log_pred_full_imp_date_no_trends_geopol <- as.formula(paste("n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+```
+
+```{r}
+years_from_1933 <- 1933:1960
+years_from_1927 <- 1927:1960
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1933 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1933, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1927, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+```
+
+
+```{r}
+totals <- min_by_year %>% 
+  filter(ethnicity == "German") %>% 
+  mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
+  dplyr::select(YEAR, total_repression)
+
+totals %>% 
+  filter(YEAR > 1932) %>% 
+  summarise(total = sum(total_repression))
+
+arrests_in_year <- function(base_year = 1921){
+  totals %>% 
+  filter(YEAR == base_year) %>% 
+  pull(total_repression)
+}
+
+arrests_in_year()
+
+effects_data <- lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year) %>% 
+  broom::tidy() %>% 
+  filter(str_detect(term, "german:year")) %>% 
+  mutate(nice_labs = as.numeric(str_replace(term, "german:year_", ""))) %>% 
+  left_join(totals, by = c("nice_labs"  = "YEAR")) %>% 
+  mutate(effect_pct_change = 100 * (exp(estimate) - 1),
+         effect_count = total_repression * (estimate/100),
+         effect_count_rounded = round(effect_count)) 
+
+
+no_log_pred_full_imp_date_no_trends_geopol
+
+summary(lm_robust(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year, 
+                          clusters = min_by_year$ethnicity, se_type = "CR2"))
+
+pct_effects <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year, base_year = 1921){
+  lm_robust(formula, data = data, 
+                          clusters = data$ethnicity, se_type = "CR2") %>% 
+  estimatr::tidy() %>% 
+  filter(str_detect(term, "german:year")) %>% 
+  mutate(nice_labs = as.numeric(str_replace(term, "german:year_", ""))) %>% 
+  left_join(totals, by = c("nice_labs"  = "YEAR")) %>% 
+  mutate(effect_pct_change_naive = 100 * (exp(estimate) - 1),
+         effect_pct_change = 100 * (exp(estimate - (1/2) * std.error^2) - 1),
+         effect_pct_change_var = 100^2 * exp(2 * estimate) * (exp(std.error^2) - exp(-2 * std.error^2)),
+         effect_pct_change_se = sqrt(effect_pct_change_var),
+         effect_pct_change_ci_lower = effect_pct_change - qt(0.975, df = round(df)) * effect_pct_change_se,
+         effect_pct_change_ci_upper = effect_pct_change + qt(0.975, df = round(df)) * effect_pct_change_se,
+         effect_count = arrests_in_year(base_year = base_year) * (effect_pct_change/100),
+         effect_count_rounded = round(effect_count),
+         effect_count_lower = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_lower/100),
+         effect_count_rounded_lower = round(effect_count_lower),
+         effect_count_upper = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_upper/100),
+         effect_count_rounded_upper = round(effect_count_upper)) 
+}
+
+
+pct_effects_time_window <- function(formula = fmla_window_pre_treat_pred_full_imp_date_no_trends_geopol, 
+                                    data = min_by_year, base_year = 1921){
+  lm_robust(formula, data = data, 
+                          clusters = data$ethnicity, se_type = "CR2") %>% 
+  estimatr::tidy() %>% 
+  filter(str_detect(term, "german:")) %>% 
+ # mutate(nice_labs = as.numeric(str_replace(term, "german:", ""))) %>% 
+  mutate(effect_pct_change_naive = 100 * (exp(estimate) - 1),
+         effect_pct_change = 100 * (exp(estimate - (1/2) * std.error^2) - 1),
+         effect_pct_change_var = 100^2 * exp(2 * estimate) * (exp(std.error^2) - exp(-2 * std.error^2)),
+         effect_pct_change_se = sqrt(effect_pct_change_var),
+         effect_pct_change_ci_lower = effect_pct_change - qt(0.975, df = round(df)) * effect_pct_change_se,
+         effect_pct_change_ci_upper = effect_pct_change + qt(0.975, df = round(df)) * effect_pct_change_se,
+         effect_count = arrests_in_year(base_year = base_year) * (effect_pct_change/100),
+         effect_count_rounded = round(effect_count),
+         effect_count_lower = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_lower/100),
+         effect_count_rounded_lower = round(effect_count_lower),
+         effect_count_upper = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_upper/100),
+         effect_count_rounded_upper = round(effect_count_upper)) 
+}
+
+pct_effects_time_window()
+
+
+pct_effects() %>% 
+  View()
+
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol_from_1933, base_year = 1932) %>% 
+  View()
+
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
+  total_effects()
+
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
+  total_effects(year_til = 1954)
+
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
+  total_effects(year_from = 1932, year_til = 1954)
+
+
+total_effects <- function(data, year_from = 1932, year_til = 1961){
+  data %>% 
+    filter(nice_labs > year_from, nice_labs < year_til) %>% 
+    summarize_at(c("effect_count", "effect_count_lower", "effect_count_rounded_upper"), sum) %>% 
+    as_tibble()
+}
+```
+
+## Synthetic control method
+```{r}
+tk_tbl(sc_placebo_pred_full_imp_date$placebo[[dep_var]]$gaps) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("ethnicity", dep_var, -c(date, index)) %>% 
+  filter(ethnicity == "German") %>% 
+  mutate(repressions_count = exp(dep_var) - 1, 
+         repressions_count_round = round(repressions_count)) %>% 
+  View()
+```
+
+```{r}
+tk_tbl(sc_placebo_pred_full_imp_date$placebo[["n_pred_full_imp_date"]]$gaps) %>% 
+  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
+  gather("ethnicity", n_pred_full_imp_date, -c(date, index)) %>% 
+  filter(ethnicity == "German") %>% 
+  mutate(n_pred_full_imp_date_round = round(n_pred_full_imp_date)) %>% 
+  View()
+```
+
+```{r}
+names(sc_placebo_pred_full_imp_date)
+synth_data <- sc_placebo_pred_full_imp_date$German$data.synth[["n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+treat_data <- sc_placebo_pred_full_imp_date$German$data.treat[["n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+treat_data %>% 
+  left_join(synth_data, by = "index", suffix = c("_treat", "_synth")) %>% 
+  mutate(effect_count = round(value_treat- value_synth)) %>% 
+  View()
+
+placebo_highlight_all(sc_placebo_pred_full_imp_date, "n_pred_full_imp_date")
+
+
+```
+
+```{r}
+synth_data <- sc_placebo_pred_full_imp_date$German$data.synth[["log_n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+treat_data <- sc_placebo_pred_full_imp_date$German$data.treat[["log_n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+effects_data <- treat_data %>% 
+  left_join(synth_data, by = "index", suffix = c("_treat", "_synth")) %>% 
+  mutate(count_synth = exp(value_synth) - 1,
+         count_treat = exp(value_treat) - 1,
+         effect_count = round(count_treat- count_synth),
+         effect_log = value_treat - value_synth) 
+
+
+total_effects_synth <- function(data, year_from = 1932, year_til = 1961){
+  data %>% 
+    filter(index > year_from, index < year_til) %>% 
+    summarize_at(c("effect_count", "count_synth", "count_treat"), sum) %>% 
+    as_tibble()
+}
+
+total_effects_synth(effects_data)
+
+```
+
+```{r}
+dep_var <- "n_pred_full_imp_date"
+times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
+
+sc_placebo_pred_full_imp_date_no_log <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+
+placebo_highlight_all(sc_placebo_pred_full_imp_date_no_log, "n_pred_full_imp_date")
+
+
+synth_data <- sc_placebo_pred_full_imp_date_no_log$German$data.synth[["n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+treat_data <- sc_placebo_pred_full_imp_date_no_log$German$data.treat[["n_pred_full_imp_date"]] %>% 
+  tk_tbl() 
+
+effects_data_no_log <- treat_data %>% 
+  left_join(synth_data, by = "index", suffix = c("_treat", "_synth")) %>% 
+  mutate(count_synth = value_synth,
+         count_treat = value_treat,
+         effect_count = round(count_treat- count_synth)) 
+
+total_effects_synth(effects_data_no_log)
+
+```
+

@@ -251,6 +251,14 @@ The estimates regressions with quadratic , linear, and no time (default) trends 
 Third, we test the sensitivity of results to different adjustments of ethnicity imputation. 
 As we explain in the subsection \ref{subsubsec:pred_adj}, the adjustments were applied in order to correct for the unbalanced accuracy in prediction of our Naive Bayes classifier across ethnic groups. The results from fitting our default specification to data with different adjustments are shown in the figure \ref{fig:did_robustness_pred_adj}.
 We see that the estimates for the full matrix (used by default) and the parsimonious adjustment are virtually the same. When no adjustment is applied, the coefficients even get slightly larger. 
+
+%Forth, we omit different sets of interactions of the  year and German dummy variables to change the baseline against which the estimated coefficients are compared. In all previous specifications the only omitted year was 1921. In figure \ref{}
+
+Finally, we also consider different type of standard errors. 
+So far we have only used the cluster-robust estimator by \citet{pustejovsky_small-sample_2018} for the reasons explained in the subsection \ref{subsec:methodology_did}. 
+This estimator uses biased reduced linearlizations
+Alternative method for estimation of standard errors  in case of serial correlation and small number of clusters is to use number of clusters as a degrees of freedom. 
+%As we mentioned in the subsection \ref{subsec:methodology_did}, our default 
 \subsection{Synthetic Control Method}
  We construct a synthetic control  using mean of the outcome in the pre-1933 period instead of including outcome for every year as we did in our baseline model. This increases the importance of the time-invariant covariates (population, urbanization rate, and linguistic similarity) that are also included as predictors.
 \input{tables/sc_predictor_means_robustness.tex}

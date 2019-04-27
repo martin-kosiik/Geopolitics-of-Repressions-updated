@@ -14,12 +14,23 @@ Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
 The time-varying vector $\text{Relations}_{it}$ is set a of dummy variables that capture other major changes in relations of a state with core group $i$ with the USSR during this period. The list of these changes is provided in appendix in the table \ref{tab:sc_weights_robustness}.
 
- We apply logarithmic transformation on $y_{it}$ since it better fits the data.  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the percentage change interpretation is usually  closely preserved (except for changes beginning at 0 which are not of great interest to us).   
-
 In additional specifications used to test sensitivity of results, we also include  the terms $ E_i \cdot t$ and $ E_i \cdot t^2$  that can capture  ethnicity-specific time trends. 
 This allows for a certain  deviation from the parallel trends if it can be described by the specified (quadratic or linear) function \citep[chapter 5]{angrist_mostly_2009}. 
 %If the inclusion of these terms does not  significantly  change the coefficients, it would suggest that our results are not driven by spurious correlation.
 However, a potential issue with the ethnicity-specific time trends is that they could absorb part of the treatment effect if it increases over time \citep{meer_effects_2016} which is why we do not include them in our default specification. 
+ We apply logarithmic transformation on $y_{it}$ since it better fits the data.  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the 
+ %percentage change interpretation
+ properties of standard logarithmic transformation
+ are usually  closely preserved (except for changes beginning at 0 which are not of great interest to us).   
+
+For continuous variables, log-linear models have straightforward percentage change interpretation, i.e. for variable $x_j$ with corresponding coefficient $\gamma_j$, the estimated percentage change in $y$ for small change in $x_j$ is equal to $100 \cdot \gamma_j$. However, as \citet{halvorsen_interpretation_1980} point out, this interpretation is not correct for dummy variables. Fortunately, \citet{kennedy_estimation_1981} derives the following unbiased estimator for percentage change effect $p_j$ of a dummy variable $x_j$:
+\begin{equation}
+\hat p_j = 100 \cdot \left(\exp\left\{\hat\beta_j - \frac{1}{2} \hat V\left(\hat\beta_j\right)\right\} - 1 \right)
+ \label{eq:dummy_vars}
+\end{equation}
+where $\hat\beta_j$ is the estimated coefficient on $x_j$ and  $\hat V\left(\hat\beta_j\right)$ is an estimate of variance of $\hat\beta_j$. 
+Since our main coefficients of interest are dummy variables, we will use this formula to obtain estimate of percentage change effect.
+
 
 %While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for different phases of the German-Soviet relations. For this reason, we also estimate a difference-in-differences model given by the following equation:
 %The simple difference-in-differences can be expressed as
@@ -42,9 +53,11 @@ However, a potential issue with the ethnicity-specific time trends is that they 
 %However, the treatment status of some minorities changed in this period as they geopolitical relations 
 
 
-The identifying assumption for the specifications \ref{eq:dynamic_did} is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables.\footnote{In the presence of linear ethnicity-specific time trends, the identifying assumption  is the parallel growth of the oucome variable of control and treatment group. This is equivalent to the parallel trends for the first differences of the outcome \citep{mora_alternative_2017}. } Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
+The identifying assumption for the specifications \ref{eq:dynamic_did} is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables.\footnote{In the presence of linear ethnicity-specific time trends, the identifying assumption  is the parallel growth of the outcome variable of control and treatment group. This is equivalent to the parallel trends for the first differences of the outcome \citep{mora_alternative_2019}. } Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
 
-As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most DiD regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable. \citet[chapter 8]{angrist_mostly_2009} suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. More rigorous solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}.
+As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most difference-in-differences regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable \citet[chapter 8]{angrist_mostly_2009}.
+%suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. 
+Possible solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}.
 Since we have small number of groups we use the generalization of \citet{mccaffrey_bias_2002} correction to models with arbitrary sets of fixed effects by \citet{pustejovsky_small-sample_2018}.
 
 

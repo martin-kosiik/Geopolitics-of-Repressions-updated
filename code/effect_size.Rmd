@@ -35,20 +35,57 @@ fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pr
 
 ```
 
-
+60640
 ```{r}
 totals <- min_by_year %>% 
   filter(ethnicity == "German") %>% 
-  mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
+  mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date + 1) %>% 
   dplyr::select(YEAR, total_repression)
+
+new_data<- min_by_year %>% 
+  filter(ethnicity == "German") %>% 
+  mutate_at(vars(starts_with("year_")), funs(ifelse(. == 1, 0, 0))) %>% 
+  bind_rows(filter(min_by_year, ethnicity == "German"), .id = "type_col")
+
+counter_facts <-  augment(lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year), newdata =  new_data) %>% 
+  dplyr::select(type_col, YEAR, .fitted) %>% 
+  mutate(type_col = recode_factor(type_col, "1" = "counterfactual", "2" = "actual")) %>% 
+  tidyr::spread(key = "type_col", value = ".fitted") %>% 
+  mutate(count_synth = exp(counterfactual) - 1,
+         count_treat = exp(actual) - 1,
+         effect_count = round(count_treat- count_synth),
+         effect_log = actual - counterfactual,
+         effect_pct_change_naive = 100 * (exp(effect_log) - 1),
+         effect_count_based_on_pct = arrests_in_year() * (effect_pct_change_naive/100),
+         effect_count_based_on_pct_rounded = round(effect_count_based_on_pct))
+
+counter_facts %>% 
+  filter(YEAR > 1932) %>% 
+  summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
+
+
+augment(lm(fmla_pred_full_imp_date_no_trends_geopol_from_1927, data = min_by_year), newdata =  new_data) %>% 
+  dplyr::select(type_col, YEAR, .fitted) %>% 
+  mutate(type_col = recode_factor(type_col, "1" = "counterfactual", "2" = "actual")) %>% 
+  tidyr::spread(key = "type_col", value = ".fitted") %>% 
+  mutate(count_synth = exp(counterfactual) - 1,
+         count_treat = exp(actual) - 1,
+         effect_count = round(count_treat- count_synth),
+         effect_log = actual - counterfactual,
+         effect_pct_change_naive = 100 * (exp(effect_log) - 1),
+         effect_count_based_on_pct = arrests_in_year() * (effect_pct_change_naive/100),
+         effect_count_based_on_pct_rounded = round(effect_count_based_on_pct)) %>% 
+  View("from41")
+
 
 totals %>% 
   filter(YEAR > 1932) %>% 
   summarise(total = sum(total_repression))
 
-arrests_in_year <- function(base_year = 1921){
+arrests_in_year <- function(base_year_from = 1921, base_year_to = 1921){
   totals %>% 
-  filter(YEAR == base_year) %>% 
+  filter(YEAR >= base_year_from, YEAR <= base_year_from) %>% 
+  summarise(total_repression = mean(total_repression)) %>% 
   pull(total_repression)
 }
 
@@ -69,7 +106,8 @@ no_log_pred_full_imp_date_no_trends_geopol
 summary(lm_robust(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year, 
                           clusters = min_by_year$ethnicity, se_type = "CR2"))
 
-pct_effects <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year, base_year = 1921){
+pct_effects <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year,
+                        base_year_from = 1921, base_year_to = 1921){
   lm_robust(formula, data = data, 
                           clusters = data$ethnicity, se_type = "CR2") %>% 
   estimatr::tidy() %>% 
@@ -82,12 +120,16 @@ pct_effects <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, data
          effect_pct_change_se = sqrt(effect_pct_change_var),
          effect_pct_change_ci_lower = effect_pct_change - qt(0.975, df = round(df)) * effect_pct_change_se,
          effect_pct_change_ci_upper = effect_pct_change + qt(0.975, df = round(df)) * effect_pct_change_se,
-         effect_count = arrests_in_year(base_year = base_year) * (effect_pct_change/100),
+         effect_count = arrests_in_year(base_year_from = base_year_from, base_year_to = base_year_to) *
+                       (effect_pct_change/100),
          effect_count_rounded = round(effect_count),
-         effect_count_lower = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_lower/100),
+         effect_count_lower = arrests_in_year(base_year_from = base_year_from, base_year_to = base_year_tp) *
+                          (effect_pct_change_ci_lower/100),
          effect_count_rounded_lower = round(effect_count_lower),
-         effect_count_upper = arrests_in_year(base_year = base_year) * (effect_pct_change_ci_upper/100),
-         effect_count_rounded_upper = round(effect_count_upper)) 
+         effect_count_upper = arrests_in_year(base_year_from = base_year_from, base_year_to = base_year_to) *
+                          (effect_pct_change_ci_upper/100),
+         effect_count_rounded_upper = round(effect_count_upper)) %>% 
+    as_tibble()
 }
 
 
@@ -115,16 +157,21 @@ pct_effects_time_window <- function(formula = fmla_window_pre_treat_pred_full_im
 pct_effects_time_window()
 
 
+pct_effects(no_log_pred_full_imp_date_no_trends_geopol) %>% 
+  filter(nice_labs > 1932) %>% 
+  summarize(sum = sum(estimate))
+
 pct_effects() %>% 
   View()
 
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol_from_1933, base_year = 1932) %>% 
-  View()
-
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol_from_1933, base_year_from = 1921, base_year_to = 1932) %>% 
+  total_effects()
+  
+  
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol) %>% 
   total_effects()
 
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
+pct_effects(fmla_pred_full_imp_date_no_trends_geopol) %>% 
   total_effects(year_til = 1954)
 
 pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
@@ -189,13 +236,16 @@ effects_data <- treat_data %>%
   mutate(count_synth = exp(value_synth) - 1,
          count_treat = exp(value_treat) - 1,
          effect_count = round(count_treat- count_synth),
-         effect_log = value_treat - value_synth) 
+         effect_log = value_treat - value_synth,
+         effect_pct_change_naive = 100 * (exp(effect_log) - 1),
+         effect_count_based_on_pct = arrests_in_year() * (effect_pct_change_naive/100),
+         effect_count_based_on_pct_rounded = round(effect_count_based_on_pct)) 
 
 
 total_effects_synth <- function(data, year_from = 1932, year_til = 1961){
   data %>% 
     filter(index > year_from, index < year_til) %>% 
-    summarize_at(c("effect_count", "count_synth", "count_treat"), sum) %>% 
+    summarize_at(c("effect_count", "count_synth", "count_treat", "effect_count_based_on_pct"), sum) %>% 
     as_tibble()
 }
 

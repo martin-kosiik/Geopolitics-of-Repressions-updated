@@ -49,7 +49,7 @@ opts_current$set(label = "descr_stats_by_ethnicity")
 min_by_year %>% 
   mutate(label_preds = label + prediction) %>% 
   group_by(ethnicity) %>% 
-  summarize_at(vars(label, label_preds), c("mean", "sd", "min", "max", "sum")) %>% 
+  summarize_at(dplyr::vars(label, label_preds), c("mean", "sd", "min", "max", "sum")) %>% 
   select(!!column_order) %>% 
   arrange(ethnicity) %>% 
   kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 2",
@@ -67,7 +67,7 @@ opts_current$set(label = "descr_stats_date_imp")
 min_by_year %>% 
   mutate(label_preds_imp = label_imp_date + prediction_imp_date) %>% 
   group_by(ethnicity) %>% 
-  summarize_at(vars(label_imp_date, label_preds_imp), c("mean", "sd", "min", "max", "sum")) %>% 
+  summarize_at(dplyr::vars(label_imp_date, label_preds_imp), c("mean", "sd", "min", "max", "sum")) %>% 
   select(!!column_order) %>% 
   arrange(ethnicity) %>% 
   kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 2",
@@ -84,13 +84,20 @@ min_by_year %>%
 
 
 ```{r}
-mylog10_trans <- function (base = 10) 
-{
+mylog10_trans <- function (base = 10) {
   trans <- function(x) log(x + 1, base)
   inv <- function(x) base^(x) - 1 
   trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
             domain = c(0, Inf))
 }
+
+mylog10_abs_sign_trans <- function (base = 10) {
+  trans <- function(x) sign(x) * log(abs(x) + 1, base)
+  inv <- function(x) sign(x)* ( base^(abs(x)) - 1 )
+  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
+            domain = c(-Inf, Inf))
+}
+
 
 mynaturallog_trans <- function (base = exp(1)) 
 {

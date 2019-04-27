@@ -61,6 +61,12 @@ var_labels <- str_c("$",names(default_model$coefficients)) %>%
   str_replace(":", "*") %>% 
   str_c("$")
 
+var_labels <- str_c("$",names(default_model$coefficients)) %>% 
+  str_subset("german:year_") %>% 
+  str_replace("german:year_", "\\\\text{German}\\_{i} \\\\cdot \\\text{Year}\\_{t}^") %>% 
+  str_c("$")
+
+
 var_labels <- names(default_model$coefficients) %>% 
   str_subset("german:year_") %>% 
   #str_replace_all("t", "t\\\\") %>% 
@@ -87,12 +93,12 @@ stargazer(default_model, no_ind_ethn_model, rehabs_model,
          # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
           add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
                            #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
-                           c("Ethnicity-spec. time trends", "No", "No", "No"),
                            c("Eth. with ind. state excluded", "No", "Yes", "No"),
-                           c("Only rehabil. ind.", "No", "No", "Yes"), 
-                           c("Geopol. relations controls", "Yes", "No", "Yes")),
+                           c("Only rehabilitated ind.", "No", "No", "Yes"), 
+                           c("Geopol. relations controls", "Yes", "No", "Yes"),
+                           c("Ethnicity-spec. time trends", "No", "No", "No")),
           column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
-          star.cutoffs = c(0.05, 0.01, 0.001),
+          #star.cutoffs = c(0.05, 0.01, 0.001),
           table.placement = "!h")%>%
   cat(sep = '\n', file = here::here("tables/diff_table.tex"))
 ```
@@ -128,9 +134,9 @@ robust_se_list <- map(list(default_model, lin_trends_model, quad_trends_model), 
 
 ```{r}
 stargazer(default_model, lin_trends_model, quad_trends_model, 
-          keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table",
+          keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table_trends",
           se = robust_se_list, 
-          covariate.labels = var_labels, title = "Difference-in-differences results",
+          covariate.labels = var_labels, title = "Difference-in-differences results - Ethnicity-specific time trends",
           dep.var.labels.include = FALSE, single.row = T, header = F,
           font.size = "small", no.space = T, 
          # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
@@ -138,12 +144,12 @@ stargazer(default_model, lin_trends_model, quad_trends_model,
                            #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
                            c("Ethnicity-spec. time trends", "None", "Linear", "Quadratic"),
                            c("Eth. with ind. state excluded", "No", "Yes", "No"),
-                           c("Only rehabil. ind.", "No", "No", "Yes"), 
-                           c("Geopol. relations controls", "Yes", "No", "Yes")),
-          column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
-          star.cutoffs = c(0.05, 0.01, 0.001),
+                         #  c("Only rehabil. ind.", "No", "No", "Yes"), 
+                           c("Geopol. relations controls", "Yes", "Yes", "Yes")),
+          # column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
+         # star.cutoffs = c(0.05, 0.01, 0.001),
           table.placement = "!h")%>%
-  cat(sep = '\n', file = here::here("tables/diff_table.tex"))
+  cat(sep = '\n', file = here::here("tables/diff_table_trends.tex"))
 ```
 
 

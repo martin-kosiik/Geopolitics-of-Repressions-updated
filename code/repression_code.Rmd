@@ -36,6 +36,7 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          log_n_pred = log(1 + label + prediction),
          log_n_imp_date = log(1 + label_imp_date),
          log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         n_pred_full_imp_date =  label_imp_date + pred_adj_full_scaled_imp_date,
          log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab),
          log_n_pred_pars_imp_date = log(1 + label_imp_date + pred_adj_scaled_imp_date),
          log_n_pred_imp_date = log(1 + label_imp_date + prediction_imp_date)) %>% 
@@ -44,12 +45,13 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          post_german = german * ifelse(YEAR >= 1933, 1, 0),
          ethnicity = as.factor(ethnicity),
          YEAR_sq = YEAR^2, 
-         pre_treatment = ifelse(YEAR >= 1930 & YEAR < 1933, 1, 0),
+         pre_treatment = ifelse(YEAR >= 1922 & YEAR < 1933, 1, 0),
          hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
          pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
          war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
          post_war = ifelse(YEAR >= 1945, 1, 0)) 
 ```
+
 
 
 ```{r}
@@ -148,112 +150,6 @@ fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date 
 ```
 
 
-
-```{r}
-fmla <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
-fmla <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
-fmla_imp_date <- as.formula(paste("log_n_imp_date ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
-
-fmla <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +",
-                         paste0("ethnicity_", ethnicities, collapse = " + "), "+ ",
-                         paste0("ethnicity_", ethnicities, ":YEAR", collapse = " + "), " + ",
-                         paste0("ethnicity_", ethnicities, ":YEAR_sq", collapse = " + ")))
-
-fmla_pred_full <- as.formula(paste("log_n_pred_full ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: I(YEAR^2)"))
-
-fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
-
-
-fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity"))
-
-
-fmla_pred_full_imp_date_lin_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR"))
-
-
-fmla_no_trends <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity"))
-
-fmla_lin_trends <- as.formula(paste("log_n ~ ", 
-                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) + ", 
-                         paste0("ethnicity_", ethnicities, collapse = " + "), " + ",
-                         paste0("ethnicity_", ethnicities, ":YEAR", collapse = " + ")))
-
-
-diff_model <- lm(fmla,  data = min_by_year)
-diff_model_pred_full <- lm(fmla_pred_full,  data = min_by_year)
-
-
-
-diff_model_restr <- lm(fmla,  data = filter(min_by_year, YEAR <= 1945))
-
-summary(diff_model_pre_treat)
-
-fmla_no_log <- as.formula(paste("n ~ ", 
-                         paste0("german:","post_", years, collapse = " + "),  "+ as.factor(YEAR) +
-                         ethnicity + ethnicity: YEAR"))
-diff_model_no_log <- lm(fmla_no_log,  data = min_by_year)
-
-diff_model_no_trends <- lm(fmla_no_trends,  data = min_by_year)
-```
-
-```{r}
-var_labels <- str_c("$",names(diff_model$coefficients)) %>% 
-  str_subset("german:post_") %>% 
-  str_replace_all("t", "t\\\\") %>% 
-  str_replace(":", "*") %>% 
-  str_c("$")
-
-cluster.boot(diff_model, cluster = min_by_year$ethnicity)
-
-diff_model_robust <- commarobust(diff_model, clusters = min_by_year$ethnicity, se_type = "CR2")
-
-summary(diff_model_robust)
-
-diff_model_restr_robust <- commarobust(diff_model_restr,
-                                       clusters = filter(min_by_year, YEAR <= 1945)$ethnicity, se_type = "stata")
-diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_year$ethnicity, se_type = "stata")
-
-
-stargazer(diff_model, diff_model_restr, diff_model_no_trends, diff_model_no_log,
-          keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
-          covariate.labels = var_labels, title = "Difference-in-differences results",
-          dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
-          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes", "Yes"),
-                           c("Ethnicity dummies", "Yes", "Yes", "Yes", "Yes"),
-                           c("Ethnicity time trends", "Yes", "Yes", "No", "Yes")),
-          column.labels = c("1921-1958", "1921-1945", "1921-1958","1921-1958")) %>% 
- cat(sep = '\n', file = here("tables/diff_table.tex"))
-```
-
-```{r}
-stargazer(diff_model, diff_model_restr,diff_model_no_log,
-          se = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust),
-          p = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust, stat = "p.value"),
-          keep = "german:post_+", omit.stat = c("ser", "f"), label = "dif_table",
-          covariate.labels = var_labels, title = "Difference-in-differences results",
-          dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
-          add.lines = list(c("Year dummies", "Yes", "Yes", "Yes"),
-                           c("Ethnicity dummies", "Yes", "Yes", "Yes")),
-          column.labels = c("1921-1958", "1921-1945", "1921-1958")) %>% 
- cat(sep = '\n', file = here("tables/diff_table.tex"))
-```
-
 ```{r labeled data}
 plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "CR2", level = 0.95){
   model <- lm(formula,  data = data)
@@ -345,6 +241,33 @@ min_by_year %>%
   dplyr::select(.resid) %>% 
   mutate(YEAR = 1920 + row_number()) %>% 
   ggplot(aes(x = YEAR, y = .resid)) + geom_point()
+```
+
+
+```{r}
+
+years_from_1933 <- 1933:1960
+years_from_1927 <- 1927:1960
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1933 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1933, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1927, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1933)+
+  theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1933.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927)+
+  theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1927.pdf"))
+
+
 ```
 
 

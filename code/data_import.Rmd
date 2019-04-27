@@ -14,12 +14,12 @@ library(tidyverse)
 library(readxl)
 library(here)
 library(lubridate)
-library(klaR)
+#library(klaR)
 library(caret)
 library(bnlearn)
 library(bnclassify)
 Sys.setlocale("LC_CTYPE", "russian") 
-library(naniar)
+#library(naniar)
 library(knitr)
 library(kableExtra)
 ```
@@ -206,8 +206,8 @@ data_labeled <- data_labeled %>%
 ```
 
 ```{r}
-data_labeled <- droplevels.data.frame(data_labeled)
 
+set.seed(2019)
 rand <-  sample(1:2, size = nrow(data_labeled), replace = TRUE)
 train_set <- data_labeled[rand == 1,]
 
@@ -255,6 +255,8 @@ gc()
 
 
 ```{r}
+set.seed(2019)
+
 nb <- nb('ethnicity', data_labeled)
 nb_model <- lp(nb, data_labeled , smooth = 0.005)
 

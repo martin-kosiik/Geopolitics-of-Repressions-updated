@@ -16,6 +16,7 @@ library(lubridate)
 library(rstanarm)
 library(scales)
 library(stargazer)
+library(data.table)
 ```
 
 ```{r}
@@ -41,6 +42,7 @@ month_freq <- memorial_lists %>%
   pull(month_freq)
 
 set.seed(2019)
+
 
 some_date <-  memorial_lists %>% 
   filter(no_date == 0) %>% 
@@ -76,14 +78,8 @@ both_dates <- some_date %>%
          date_process = parse_date_time(process_date, "dmy")) %>% 
   filter(!(is.na(date_arrest) | is.na(date_process))) %>% 
   mutate(diff_days = interval(date_arrest, date_process) / ddays(1)) %>% 
-  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1965) %>% 
+  filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961) %>% 
   filter(diff_days >= 0)
-  
-
-missing_day <- memorial_lists %>% 
-  filter((!is.na(MONTH)) & (!is.na(MONTH_PROCESS))) %>% 
-  mutate(date_arrest = parse_date_time(arest_date, "dmy"), 
-         date_process = parse_date_time(process_date, "dmy")) %>% 
   
 
   
@@ -132,6 +128,7 @@ missing_date_of_arrest <- some_date %>%
   dplyr::select(person_id, YEAR_PROCESS) %>% 
   filter(YEAR_PROCESS >1920, YEAR_PROCESS < 1961)
 
+set.seed(2019)
 
 missing_date_of_arrest <-missing_date_of_arrest %>% 
   mutate(diff_day_imp = round(exp(rnorm(n(), mean = lm_model_simple_intercept, sd = lm_model_simple_sigma)) - 1),

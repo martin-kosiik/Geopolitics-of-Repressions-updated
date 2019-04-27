@@ -37,6 +37,30 @@ fmla_window_pre_treat_pred_full_imp_date_no_trends <-
 
 
 ```{r}
+fmla_window_pre_treat_pred_full_imp_date_geopol <-
+                    as.formula(paste0("log_n_pred_full_imp_date ~ german:pre_treatment+german:hostility +german:pact +
+                                    german:war +  german:post_war +  as.factor(YEAR) + 
+                                    ethnicity + ethnicity:YEAR + ethnicity:YEAR_sq +", 
+                                    paste0(geopol_vars, collapse = " + ")))
+
+fmla_window_pre_treat_pred_full_imp_date_lin_trends_geopol <-
+                    as.formula(paste0("log_n_pred_full_imp_date ~ german:pre_treatment+german:hostility +german:pact +
+                                    german:war +  german:post_war +  as.factor(YEAR) + 
+                                    ethnicity + ethnicity:YEAR +", 
+                                    paste0(geopol_vars, collapse = " + ")))
+
+
+
+fmla_window_pre_treat_pred_full_imp_date_no_trends_geopol <-
+                    as.formula(paste0("log_n_pred_full_imp_date ~ german:pre_treatment+german:hostility +german:pact +
+                                    german:war +  german:post_war +  as.factor(YEAR) + 
+                                    ethnicity +", 
+                                    paste0(geopol_vars, collapse = " + ")))
+
+```
+
+
+```{r}
 diff_model_window_pre_treat <- lm(fmla_window_pre_treat, data = min_by_year)
 ```
 

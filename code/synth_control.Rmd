@@ -19,6 +19,7 @@ library(kableExtra)
 library(knitr)
 library(gghighlight)
 library(timetk)
+library(scales)
 ```
 
 ```{r}
@@ -32,6 +33,7 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          log_n_pred = log(1 + label + prediction),
          log_n_imp_date = log(1 + label_imp_date),
          log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         n_pred_full_imp_date = label_imp_date + pred_adj_full_scaled_imp_date,
          log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab)) %>% 
   left_join(ethnicity_controls, by = "ethnicity") %>% 
   mutate(german = ifelse(ethnicity == "German", 1, 0),
@@ -103,12 +105,29 @@ sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.id
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
+dep_var <- "n_pred_full_imp_date"
+times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
+
+times.pred <- cbind("n_pred_full_imp_date"       = c("1921","1932"),
+                    "pop_total"             = c("1921","1932"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+
+
+
 sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+
 
 
 agg.fns <- rep("mean", ncol(times.pred))                       
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
+
+dep_var <- "n_pred_full_imp_date"
+times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
+
+
 
 sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
@@ -119,7 +138,7 @@ sc_results_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identif
 
 ```
 
-```{r}
+```{r tables of predictor means}
 mean_all <-  min_by_year %>% 
   filter(YEAR < 1933) %>% 
   summarize_at(c("log_n_pred_full_imp_date", "pop_total", "urb_rate_pct", "clad_sim"), mean) %>% 
@@ -207,8 +226,12 @@ tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>%
         text = element_text(size=12)) + 
   labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
   geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
-    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
-}
+    #scale_y_continuous(trans = "mylog10_abs_sign" , breaks = c(0,2,10,100,1000,10000)) +
+    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y")
+  }
+
+
+
 
 placebo_highlight_all(sc_placebo_pred_full, "log_n_pred_full")
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))

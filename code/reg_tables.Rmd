@@ -214,7 +214,7 @@ diff_table3 <-  stargazer(pred_adj_formulas_full_years_geopol_lm,
           table.placement = "!h", 
          notes = "This will be replaced", notes.append = FALSE, notes.align = "l")
 
-note_latex3 <- "\\multicolumn{4}{l} {\\parbox[t]{\\textwidth}{\\textit{Notes:} Cluster-robust standard errors are in the parentheses. The coefficients from these models are plotted in the figure \\ref{fig:did_robustness_time_trends}. For additional information, refer to the notes of the figures \\ref{fig:did_robustness_pred_adj}. $^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01}}"
+note_latex3 <- "\\multicolumn{4}{l} {\\parbox[t]{\\textwidth}{\\textit{Notes:} Cluster-robust standard errors are in the parentheses. The coefficients from these models are plotted in the figure \\ref{fig:did_robustness_pred_adj}. For additional information, refer to the notes of the figures \\ref{fig:did_robustness_pred_adj}. $^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01}}"
 
 diff_table3[grepl("Note",diff_table3)] <- note_latex3
 

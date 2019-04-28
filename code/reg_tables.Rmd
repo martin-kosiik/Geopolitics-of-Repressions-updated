@@ -73,15 +73,14 @@ var_labels <- names(default_model$coefficients) %>%
   str_replace_all("\\_", "-") %>% 
   str_replace(":", "*")
 
-cluster.boot(diff_model, cluster = min_by_year$ethnicity)
 
-diff_model_robust <- commarobust(diff_model, clusters = min_by_year$ethnicity, se_type = "CR2")
 
-summary(diff_model_robust)
 
-diff_model_restr_robust <- commarobust(diff_model_restr,
-                                       clusters = filter(min_by_year, YEAR <= 1945)$ethnicity, se_type = "stata")
-diff_model_no_log_robust <- commarobust(diff_model_no_log, clusters = min_by_year$ethnicity, se_type = "stata")
+var_labels <- str_c("$",names(default_model$coefficients)) %>% 
+  str_subset("german:year_") %>% 
+  str_replace("german:year_", "\\\\beta\\_{") %>% 
+  str_c("}$")
+
 
 
 stargazer(default_model, no_ind_ethn_model, rehabs_model, 

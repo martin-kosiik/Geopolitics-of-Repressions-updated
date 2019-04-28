@@ -37,9 +37,18 @@ fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pr
 
 60640
 ```{r}
+
+arrests_in_year <- function(base_year_from = 1921, base_year_to = 1921){
+  totals %>% 
+  filter(YEAR >= base_year_from, YEAR <= base_year_from) %>% 
+  summarise(total_repression = mean(total_repression)) %>% 
+  pull(total_repression)
+}
+
+
 totals <- min_by_year %>% 
   filter(ethnicity == "German") %>% 
-  mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date + 1) %>% 
+  mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
   dplyr::select(YEAR, total_repression)
 
 new_data<- min_by_year %>% 
@@ -64,6 +73,17 @@ counter_facts %>%
   summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
 
 
+counter_facts %>% 
+  filter(YEAR > 1932, YEAR < 1940) %>% 
+  summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
+
+
+counter_facts %>% 
+  filter(YEAR > 1921, YEAR < 1933) %>% 
+  summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
+
+
+
 augment(lm(fmla_pred_full_imp_date_no_trends_geopol_from_1927, data = min_by_year), newdata =  new_data) %>% 
   dplyr::select(type_col, YEAR, .fitted) %>% 
   mutate(type_col = recode_factor(type_col, "1" = "counterfactual", "2" = "actual")) %>% 
@@ -82,12 +102,7 @@ totals %>%
   filter(YEAR > 1932) %>% 
   summarise(total = sum(total_repression))
 
-arrests_in_year <- function(base_year_from = 1921, base_year_to = 1921){
-  totals %>% 
-  filter(YEAR >= base_year_from, YEAR <= base_year_from) %>% 
-  summarise(total_repression = mean(total_repression)) %>% 
-  pull(total_repression)
-}
+
 
 arrests_in_year()
 
@@ -250,6 +265,9 @@ total_effects_synth <- function(data, year_from = 1932, year_til = 1961){
 }
 
 total_effects_synth(effects_data)
+total_effects_synth(effects_data, year_from = 1932, year_til = 1940)
+total_effects_synth(effects_data, year_from = 1921, year_til = 1933)
+
 
 ```
 

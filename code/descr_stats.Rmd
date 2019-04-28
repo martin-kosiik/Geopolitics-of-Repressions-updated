@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(scales)
 library(knitr)
 library(kableExtra)
+library(tidyverse)
 ```
 
 ```{r}
@@ -29,13 +30,14 @@ opts_current$set(label = "total_arrests_by_ethnicity")
 min_by_year %>% 
   group_by(ethnicity) %>% 
   summarize(Arrests_label = sum(label_imp_date), Arrests_preds = sum(label_imp_date + prediction_imp_date),
-            Arrests_preds_adj = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
+            Arrests_preds_adj = sum(label_imp_date + pred_adj_scaled_imp_date),
+            Arrests_preds_adj_full = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
   arrange(desc(Arrests_label)) %>% 
   kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
         col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadj. Imputation", 
-                      "Labeled + Adj. Imputation"), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Reference" = 3)) %>% 
-  kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
+                      "Labeled + Parsimon. Adj.", "Labeled + Full-matrix Adj."), format.args = list(big.mark = " ")) %>% 
+  add_header_above(c(" " = 1, "Arrests" = 3)) %>% 
+  kable_styling(font_size = 7, latex_options = c("hold_position")) %>%  
   write_file("tables/total_arrests_tab.tex")
 
   

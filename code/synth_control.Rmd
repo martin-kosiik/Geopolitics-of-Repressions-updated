@@ -44,6 +44,7 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
 ```{r}
 opts_current$set(label = "sc_predictors")
 ethnicity_controls %>% 
+  arrange(ethnicity) %>% 
   dplyr::select(ethnicity, pop_total, clad_sim, urb_rate_pct, ind_country) %>% 
   kable("latex", booktabs = T, digits = 2, linesep = "", format.args = list(big.mark = " "),
         col.names = c("Ethnic group", "Total population", "Ling. similarity to Russian", 

@@ -88,15 +88,15 @@ diff_table <-  stargazer(default_model, no_ind_ethn_model, rehabs_model,
           se = list(default_robust_se, no_ind_ethn_robust_se, rehabs_robust_se), 
           covariate.labels = var_labels, title = "Difference-in-differences results",
           dep.var.labels.include = FALSE, single.row = T, header = F,
-          font.size = "small", no.space = T, 
-          dep.var.labels = c("$\\log(1 + y_{it})$"), 
+          font.size = "small", no.space = T,  dep.var.caption  = "Model",
+          dep.var.labels = c("$\\log(1 + y_{it})$", "$\\log(1 + y_{it})$"), 
           add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
                            #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
                            c("Eth. with ind. state excluded", "No", "Yes", "No"),
                            c("Only rehabilitated ind.", "No", "No", "Yes"), 
                            c("Geopol. relations controls", "Yes", "No", "Yes"),
                            c("Ethnicity-spec. time trends", "No", "No", "No")),
-          column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
+          #column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
           #star.cutoffs = c(0.05, 0.01, 0.001),
           table.placement = "!h",
           notes = "This will be replaced", notes.append = FALSE, notes.align = "l")
@@ -145,7 +145,7 @@ diff_table2 <-  stargazer(default_model, lin_trends_model, quad_trends_model,
           covariate.labels = var_labels, title = "Difference-in-differences results - Ethnicity-specific time trends",
           dep.var.labels.include = FALSE, single.row = T, header = F,
           font.size = "small", no.space = T, 
-         # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          dep.var.labels = c("$\\log(1 + y_{it})$"),  dep.var.caption  = "Model",
           add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
                            #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
                            c("Ethnicity-spec. time trends", "None", "Linear", "Quadratic"),
@@ -164,6 +164,70 @@ diff_table2[grepl("Note",diff_table2)] <- note_latex2
 diff_table2 %>% 
   cat(sep = '\n', file = here::here("tables/diff_table_trends.tex"))
 ```
+
+## Ethnicity imputation adjustments
+
+```{r}
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+fmla_pars_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_pars_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+```
+
+```{r}
+
+pred_adj_formulas_full_years_geopol <- c(fmla_pred_full_imp_date_no_trends_geopol,
+                                       fmla_pars_pred_imp_date_no_trends_geopol,
+                                       fmla_pred_imp_date_no_trends_geopol)
+
+
+pred_adj_formulas_full_years_geopol_lm<-map(pred_adj_formulas_full_years_geopol, ~lm(formula = ., data = min_by_year))
+
+robust_se_list_pred_adj <- map(pred_adj_formulas_full_years_geopol_lm, robust_se)
+```
+
+```{r}
+diff_table3 <-  stargazer(pred_adj_formulas_full_years_geopol_lm, 
+          keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table_pred_adj",
+          se = robust_se_list_pred_adj, 
+          covariate.labels = var_labels, title = "Difference-in-differences results - Ethnicity Imputation Adjustments",
+          dep.var.labels.include = FALSE, single.row = T, header = F,
+          font.size = "small", no.space = T, dep.var.caption  = "Model",
+         # dep.var.labels = c("$\\log(1 + y_{it})$"), 
+          add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
+                           c("Ethnicity imputation adjust.", "Full-matrix", "Parsimonoius", "None"),
+                           c("Ethnicity-spec. time trends", "None", "None", "None"),
+                           c("Eth. with ind. state excluded", "No", "No", "No"),
+                         #  c("Only rehabil. ind.", "No", "No", "Yes"), 
+                           c("Geopol. relations controls", "Yes", "Yes", "Yes")),
+          # column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
+         # star.cutoffs = c(0.05, 0.01, 0.001),
+          table.placement = "!h", 
+         notes = "This will be replaced", notes.append = FALSE, notes.align = "l")
+
+note_latex3 <- "\\multicolumn{4}{l} {\\parbox[t]{\\textwidth}{\\textit{Notes:} Cluster-robust standard errors are in the parentheses. The coefficients from these models are plotted in the figure \\ref{fig:did_robustness_time_trends}. For additional information, refer to the notes of the figures \\ref{fig:did_robustness_pred_adj}. $^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01}}"
+
+diff_table3[grepl("Note",diff_table3)] <- note_latex3
+
+diff_table3 %>% 
+  cat(sep = '\n', file = here::here("tables/diff_table_pred_adj.tex"))
+
+```
+
+
+
+
+
+
 
 
 

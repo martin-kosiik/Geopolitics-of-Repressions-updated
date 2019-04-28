@@ -83,13 +83,13 @@ var_labels <- str_c("$",names(default_model$coefficients)) %>%
 
 
 
-stargazer(default_model, no_ind_ethn_model, rehabs_model, 
+diff_table <-  stargazer(default_model, no_ind_ethn_model, rehabs_model, 
           keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table",
           se = list(default_robust_se, no_ind_ethn_robust_se, rehabs_robust_se), 
           covariate.labels = var_labels, title = "Difference-in-differences results",
           dep.var.labels.include = FALSE, single.row = T, header = F,
           font.size = "small", no.space = T, 
-         # dep.var.labels = c("$\\log(1 + y_{it})$", "$y_{it}$"), 
+          dep.var.labels = c("$\\log(1 + y_{it})$"), 
           add.lines = list(#c("Year dummies", "Yes", "Yes", "Yes"),
                            #c("Ethnicity dummies", "Yes", "Yes", "Yes"),
                            c("Eth. with ind. state excluded", "No", "Yes", "No"),
@@ -98,7 +98,14 @@ stargazer(default_model, no_ind_ethn_model, rehabs_model,
                            c("Ethnicity-spec. time trends", "No", "No", "No")),
           column.labels = c("Default", "Ind. eth. excluded", "Only Rehabs"),
           #star.cutoffs = c(0.05, 0.01, 0.001),
-          table.placement = "!h")%>%
+          table.placement = "!h",
+          notes = "This will be replaced", notes.append = FALSE, notes.align = "l")
+
+note_latex <- "\\multicolumn{4}{l} {\\parbox[t]{Cluster-robust standard errors are in the parentheses. The coefficients from model (1) are plotted in the figure \\ref{fig:did_effets}, from model (2) in the figure \\ref{fig:did_effets_no_ind_countries}, and from model (3) in the figure \\ref{fig:did_effects_rehabs}. For additional information, refer to the notes of the respective figures. $^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01}}"
+
+diff_table[grepl("Note",diff_table)] <- note_latex
+
+diff_table %>% 
   cat(sep = '\n', file = here::here("tables/diff_table.tex"))
 ```
 

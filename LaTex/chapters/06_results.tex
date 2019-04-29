@@ -6,7 +6,7 @@ All 38 ethnic groups in the dataset are included.
 We imputed missing ethnicity and date of arrest as described in the section \ref{sec:missing_data}.  Full matrix adjustment from equation \ref{eq:full_matrix_adj}) was applied to the ethnicity imputations. 
 %We start by presenting results for the data with imputed ethnicity (adjusted with full matrix correction from equation \ref{eq:full_matrix_adj} and date of arrest since we consider them to be the most credible. However, we also consider how the results change if do not impute or apply different adjustment further in the paper. 
 
- The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are plotted in the figure \ref{fig:did_effets}.
+ The estimated coefficients  $\beta_k$ from the dynamic difference-in-differences model (\ref{eq:dynamic_did}) are provided in the table \ref{dif_table} in the column (1) and  plotted in the figure \ref{fig:did_effets}.
  %Recall that our dependent variable  is $\log\left(1 + \text{arrests}_{it}\right)$ and therefore we can interpret the coefficients  $\beta_k$  as percentage change in arrests.
  We can draw several conclusions from the results. 
  First, the coefficients from 1933 to 1938 are all smaller than 1 and most of them are not significantly different from zero which implies that hostility between Germany and the Soviet Union in this period does not seem to impact the repressions of Germans contrary to the theoretical predictions. Second, the political arrests of Germans start to rise in 1939 which is surprising given that  Molotov-Ribbentrop pact guaranteeing neutrality Germany and the USSR was signed that year. The repressions then peak  in 1940 and 1941  at 4 log points
@@ -89,7 +89,7 @@ We address this problem by applying the synthetic control method in the next sec
  
 Another potential issue is that some ethnic groups changed their treatment status in this period in various complicated ways. 
 We tried to control for this by including a set of dummy variables  that capture the most important changes in geopolitical relations (more on their definition in appendix). 
-However, these dummy variables might miss  more subtle changes in relations with the USSR. As a robustness check, we therefore exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences are plotted in the figure \ref{fig:did_effets_no_ind_countries} in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
+However, these dummy variables might miss  more subtle changes in relations with the USSR. As a robustness check, we therefore exclude every ethnicity which constituted a core group in some independent state in the interwar period from the dataset (except for Germans, of course) and reestimate the model. This criterion removes 10 ethnic groups from the dataset. The full list of them is provided in the table \ref{tab:sc_predictors}. The results of the dynamic difference-in-differences model are provided in the table \ref{dif_table} in the column (2) and plotted in the figure \ref{fig:did_effets_no_ind_countries} both in the appendix. The estimated coefficients change  very little compared to the results with all ethnic groups included, only confidence intervals appear slightly wider since we have fewer observations. Therefore our previous results are maintained. 
 
 %For example, Poland was invaded by the USSR and Germany but it took  only about month until the Polish forces were defeated. The Baltic states were annexed and incorporated into the Soviet Union in June 1940 only to be invaded by Germany year later. 
 %It is difficult to decide what treatment status should we assign in these cases. 
@@ -133,7 +133,7 @@ Since there is no clear consensus in the literature, we apply both methods and s
 % Taken together, our results show that, while there may be advantages in balancing on covariates to construct the SC estimator, a perfect balance on covariates should not be required for the SC method, as long as there is a perfect balance on a long set of pre-treatment outcomes. O
 
 
-The calculated optimal weights $W$ of ethnic groups in the synthetic German minority are provided in the table \ref{tab:sc_weights} (ethnic groups with zero weight are not shown). The highest contribution in the synthetic German minority have Greeks and Russians  with weights 0.32 and 0.31, respectively.  Lithuanians, Ossetians, Chuvashs, Georgians, Tatars, and Koreans  are also represented in the synthetic control although only with  weights smaller than 0.10. 
+The calculated optimal weights $W$ of ethnic groups in the synthetic German minority are provided in the table \ref{tab:sc_weights} (ethnic groups with zero weight are not shown). The highest contribution in the synthetic German minority have Greeks and Russians  with weights 0.32 and 0.31, respectively.  Lithuanians, Ossetians, Chuvashs, Georgians, Tatars, and Koreans  are also represented in the synthetic control although only with  weights equal or smaller than 0.10. 
 \input{tables/sc_weights.tex}
 
 %The balance of covaria
@@ -142,7 +142,7 @@ The calculated optimal weights $W$ of ethnic groups in the synthetic German mino
 
 Figure \ref{fig:sc_comp_plot} shows the  arrests of the German minority and its synthetic control.
 The synthetic control fits the actual pre-treatment values reasonably well. 
-In the post-treatment period, both time series follow similar general trends (rise in 1937-1938 and decline after 1945). 
+In the post-treatment period, both time series follow similar general trends. 
 However up until 1955, the actual arrests of Germans are consistently higher than the predictions of  synthetic control. %We can get more detailed picture in 
 We can infer the estimated effect size in the post-1933 period  from 
 the figure  \ref{fig:sc_placebo_gaps_all} which shows the difference between the actual arrest and their synthetic counterparts for each year (on $\log(1 + x)$ scale). 
@@ -173,8 +173,8 @@ We can estimate the number of arrests attributable to the geopolitical changes a
 
 
 %As we metioned in the section
-We estimate the significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in the figure \ref{fig:sc_placebo_gaps_all}. Even in comparison with the placebo tests, 
-the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955 although for years 1933-1938 the effect for Germans seems within the standard range of the placebo gaps.
+We assess the significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in the figure \ref{fig:sc_placebo_gaps_all}. Even in comparison with the placebo tests, 
+the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955, although for years 1933-1938 the effect for Germans moves within the standard range of the placebo gaps.
 
 The figure \ref{fig:sc_placebo_gaps_all} also shows that for some ethnic groups the pre-treatment gaps are large.
  For example, the gap for Russians stays above 2 for the  whole pre-1933 period. 
@@ -267,19 +267,19 @@ However, the question is if these people were arrested for aiding the invading G
 %We  try to answer this by restricting  our analysis to only rehabilitated individuals. 
 Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Political Repression} specified  that individuals who joined the German army\footnote{Subsequent amendments expanded the restriction to anyone who aided the German army. }  were not eligible for rehabilitation, we can filter out the cases of direct 
 cooperation by restricting  our analysis to only rehabilitated victims \citep{frierson_russias_2014}. 
-In the Memorial database, there  are 1 257 796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are plotted in the figure \ref{fig:did_effects_rehabs}. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
+In the Memorial database, there  are 1 257 796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are provided in the table \ref{dif_table} in the column (3) and plotted in the figure \ref{fig:did_effects_rehabs}. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
 %this is a consequence of h
 
 Second, we consider if the inclusion of ethnicity-specific time trends affects the results.
 %As we discussed in the section \ref{subsec:methodology_did}, ethnicity-specific time trends can test if the t
 %As we explained in the methodology section, 
 % the ethnicity-specific time trends allows us. 
-The estimates regressions with quadratic, linear, and no time (default) trends are  plotted in the figure \ref{fig:did_robustness_time_trends} in the appendix. 
+The estimates from regressions with quadratic, linear, and no time (default) trends are  provided in the table \ref{dif_table_trends} and plotted in the figure \ref{fig:did_robustness_time_trends} both in the appendix. 
 The inclusion of these trends appears to increase the estimates of the effect  with  the coefficients for the model with linear ethnicity-specific time trends being somewhat higher compared to the baseline model with no trends and the estimates for quadratic time trends being higher still.
 %The coefficients for the model with no ethnicity-specific time trends are somewhat lower for the baseline model and the estimates for linear time trends are lower still. Nevertheless, the main general pattern is preserved in all specifications.
 
 Third, we test the sensitivity of results to different adjustments of ethnicity imputation. 
-As we explain in the subsection \ref{subsubsec:pred_adj}, the adjustments were applied in order to correct for the unbalanced accuracy in prediction of our Naive Bayes classifier across ethnic groups. The results from fitting our default specification to data with different adjustments are shown in the figure \ref{fig:did_robustness_pred_adj}.
+As we explain in the subsection \ref{subsubsec:pred_adj}, the adjustments were applied in order to correct for the unbalanced accuracy in prediction of our Naive Bayes classifier across ethnic groups. The results from fitting our default specification to data with different adjustments are provided in the table \ref{dif_table_pred_adj} and shown in the figure \ref{fig:did_robustness_pred_adj}.
 We see that the estimates for the full matrix (used by default) and the parsimonious adjustment are virtually the same. When no adjustment is applied, the coefficients even get slightly larger. 
 
 %Forth, we omit different sets of interactions of the  year and German dummy variables to change the baseline against which the estimated coefficients are compared. In all previous specifications the only omitted year was 1921. In figure \ref{}

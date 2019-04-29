@@ -104,10 +104,10 @@ However, our main goal is the best out-of-sample accuracy of the model's predict
 
 \subsubsection{Adjusting for Unbalanced Prediction Accuracy} \label{subsubsec:pred_adj}
 To reliably asses the out-of-sample performance of our model, we used 10-fold cross-validation on the data with non-missing ethnicity. That is, the data is first randomly split into 10 groups. A model is fitted to 9 group and the remaining group is used to test the model's performance. This process is then repeated 9 times  until every group has been tested. 
-Using this method, the resulting overall accuracy of our model is 78.7\%. However,  we are also interested how it varies by ethnicity.
+Using this method, the resulting overall accuracy of our model is 79.3\%. However,  we are also interested how it varies by ethnicity.
 For this reason we calculate sensitivity and specificity for each ethnic group.\footnote{Sensitivity measures the proportion of observations in the class that are correctly identified by the model as such (i.e. number of true positives divided by all positives). Specificity measures the proportion of observations \emph{not} in the class that are correctly identified as such (i.e. number of true negatives divided by all negatives).} 
 The results, provided in the table \ref{tab:sens_spec} in the appendix, show that the sensitivity differs significantly by ethnicity. 
-Some ethnic groups with distinctive names such as Chinese or Japanese are classified  with accuracy higher than 95\%  while for other ethnicities such as Chuvash or Udmurt it is about 10\%. This severe imbalance in sensitivity and specificity  across ethnic groups could potentially cause bias in the imputations. 
+Some ethnic groups with distinctive names such as Chinese or Japanese are classified  with accuracy higher than 90\%  while for other ethnicities such as Chuvash or Udmurt it is about 10\%. This severe imbalance in sensitivity and specificity  across ethnic groups could potentially cause bias in the imputations. 
 
 Therefore we develop adjustments that try to correct for these biases in the model's predictions. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
 \begin{equation}
@@ -122,7 +122,7 @@ Suppose, for example, that Armenians are often misclassified as Chechens and tha
 Then the cross-validated specificity for Chechens in the training set will underestimate the specificity in the test set because it does not take into account higher proportion of Armenians. 
 %If, for example, the proportions of the arrests of some ethnic group are substantially different between the test and training set and if there is constant then 
 
-Fortunately, we can address this potential bias by more building complex modeling.
+Fortunately, we can address this potential bias with a more complex model.
 First for all ethnic groups $i$ and $j$, we define the misclassification rate $b_{ij}$ as share of people with ethnicity $j$ that are classified as $i$.
 Notice that for $i = j$, the misclassification rate is simply prediction accuracy for ethnicity $i$.
 It follows from the definition of the terms that predicted number of arrests for ethnic group $i$ at time $t$,  $P_{it}$, is equal to 
@@ -139,11 +139,11 @@ To express $\mathbf{R}_t$, we just  apply basic linear algebra
 \mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t.
 \end{equation}
 We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
-makes only somewhat weaker assumption that the train and test set misclassification rates are not significantly different. 
+makes only somewhat weaker assumption that the train and test set misclassification rates are not substantially different. 
 %On the other hand, it might be noisier
 % lower bias, higher variance
 
-One issue that we encountered when applying these adjustments was that some values of $\mathbf{R}_t$ were negative. Thus, we replaced all negative values with zero. Finally, we scaled all  the values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer. The results 
+One issue that we encountered when applying these adjustments was that some values of $\mathbf{R}_t$ were negative. Thus, we replaced all negative values with zero. Finally, we scaled all  the values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer. The comparison of total number of arrests for each  adjustment and ethnic group is provided in the table \ref{tab:total_arrests_by_ethnicity}. A graph showing the change in arrests in time by ethnicity and imputation adjustment is provided in the figure \ref{fig:prediction_type_by_year}. 
 
 % Jeste se zmin o scalovani
 

@@ -34,10 +34,10 @@ min_by_year %>%
             Arrests_preds_adj_full = sum(label_imp_date + pred_adj_full_scaled_imp_date)) %>% 
   arrange(desc(Arrests_label)) %>% 
   kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
-        col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadj. Imputation", 
+        col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadj. Imput.", 
                       "Labeled + Parsimon. Adj.", "Labeled + Full-matrix Adj."), format.args = list(big.mark = " ")) %>% 
-  add_header_above(c(" " = 1, "Arrests" = 3)) %>% 
-  kable_styling(font_size = 7, latex_options = c("hold_position")) %>%  
+  add_header_above(c(" " = 1, "Arrests" = 4)) %>% 
+  kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
   write_file("tables/total_arrests_tab.tex")
 
   

@@ -227,6 +227,30 @@ plot_effects_robust_se(formula = fmla_pred_full_imp_date_geopol_rehab)
 
 
 
+
+
+lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
+          min_by_year, clusters = min_by_year$ethnicity, se_type = "stata") %>% 
+  estimatr::tidy() %>% 
+  as_tibble() %>% 
+  filter(str_detect(term, "german:")) %>% 
+ # rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""))%>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+    # geom_vline(xintercept= 1933, col = "red", linetype = "dashed", size = 1)+
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        text = element_text(size=14),
+        axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+       y = "Coefficient")
+
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"))
+
+
 min_by_year %>% 
   lm(formula = fmla_pred_full_imp_date_geopol) %>% 
   broom::augment() %>% 

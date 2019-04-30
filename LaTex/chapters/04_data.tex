@@ -1,5 +1,5 @@
 Our data on Soviet repressions come from  the Victims of Political Terror in the USSR database by the Russian human rights organization \citet{memorial_zhertvy_2017}.\footnote{The database can be accessed and searched from  \url{http://base.memo.ru/} (new version) or at \url{http://lists.memo.ru/} (older version). However, we downloaded the file with every record from the database from \url{https://github.com/MemorialInternational/memorial_data_FULL_DB/blob/master/data/lists.memo.ru-disk/lists.memo.ru-disk.zip}} 
-The Memorial data has already been used in empirical research by \citet{zhukov_stalins_2018} to estimate the  effects of the Soviet repressions on the current political participation. 
+The Memorial data has already been used in empirical research by \citet{zhukov_stalins_2018} to estimate the long-term  effects of the Soviet repressions on  political participation. 
  The main sources of the Memorial lists are declassified Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression, and \enquote{Books of Memory}. 
 Vast  majority records in the database are individual arrests under  Article 58. 
 This means that the victims of other repressive activities of the Soviet state such mass forced migration, counter-insurgency operations of the Red Army during Russian Civil War or famines are mostly excluded. Therefore our research focuses on one  particular type of repression (individual arrests by the NKVD). 
@@ -19,13 +19,13 @@ At the time of our access to the database, the database contained 2.7 million re
 %\subsection{Missing Data Analysis}
 Missing data presents another major challenge. 
 %Another major issue with the data is frequent  
- Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and a first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the \mbox{1 197 373} observations with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in the subsection \ref{subsec:inferring_ethnicity}).
+ Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and a first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the \mbox{1 197 373} observations with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in subsection \ref{subsec:inferring_ethnicity}).
 \input{tables/missing_data_count.tex}
 
 Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity.\footnote{
 We consider a date missing only if not even year of arrest is available. Many observations have information on year of arrest even though the exact month or day are missing. We do not categorize these observation as having missing date of arrest since our fundamental unit of analysis is a year and thus month and day are not of high interest to us. The same applies to the date of trial.} 
 One solution, albeit only partial, might be to use the date of trial    to extrapolate the missing date of arrest where the trial date is available.
-As is shown in the table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of trial. 
+As is shown in  table \ref{tab:missing_date_of_arrest_process}, we could impute this way the missing date of arrests for 903 493 observations for which we have the date of trial. 
 Total number of arrests used for our analysis would therefore increase from 1 053 638 to  1 957 131.  However, there remains 747 419 observations for which neither the date of arrest nor the date of trail are known. 
 Unfortunately, not much can be done address this problem.
 %The table \ref{tab:missing_date_of_arrest_process} shows for this 
@@ -48,13 +48,13 @@ This leaves us with 38 ethnic groups.
 
 After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
-With 38  ethnic groups  and 40 time periods (from 1921 to 1960), we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in the table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
+With 38  ethnic groups  and 40 time periods (from 1921 to 1960), we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
 
-In addition to data on repressions, we also obtained some information on some characteristics of the  ethnic groups in our dataset that we will use as covariates in the synthetic control method. 
-In particular, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{It is available online at \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
+In addition to data on repressions, we also obtained some information on characteristics of the  ethnic groups in our dataset that we use as covariates in the synthetic control method. 
+In particular, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{Demoscope is a project of Institute of Demography of the National Research University Higher School of Economics that provides resources on demographic history of Russia and the Soviet Union. The data from  1926 Soviet Census that we used  were downloaded from \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree. It has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both
-The full data are provided in the table \ref{tab:sc_predictors} in the appendix.
+The full data are provided in table \ref{tab:sc_predictors} in the appendix.
 
 
 \newpage
@@ -62,7 +62,7 @@ The full data are provided in the table \ref{tab:sc_predictors} in the appendix.
 %napis o missing at random, completely at random asumptions
 \subsection{Inferring Ethnicity from Names} \label{subsec:inferring_ethnicity}
 In this section, we explain our method for predicting ethnicity of an individual from his or her names. Using names for imputing ethnicity has several advantages. First, full name  is available for every individuals in the dataset. Second, names have been shown to be highly predictive of ethnicity in a variety of applications \citep{mateos_review_2007, hofstra_sources_2017, hofstra_predicting_2018}. 
-%Finally, it seems 
+%Finally, it seems likely that the predictive power of names do not change in time at least in the 40 year period we study. 
 
 Given the high number of predictors, we need a model that is not  computationally demanding but at the same time achieves reasonable level of prediction accuracy. Naive Bayes classifier meets these criteria and has been for this reason used in wide range of applications including text classification  \citep{gentzkow_text_2019}.
 %We will brief introduce its 
@@ -88,7 +88,7 @@ The Naive Bayes classifier then chooses the ethnicity with the highest posterior
     \hat{y} = \underset{k \in \{1, \dots, K\}}{\operatorname{argmax}} \ p(E_k) \displaystyle\prod_{i=1}^{3} p(x_i \mid E_k).
 \end{equation}
 
-However, one potential issue is that whenever a likelihood of a certain feature is estimated to be 0 then the posterior probability is always 0 regardless of the prior  or the likelihoods of other features. For example, suppose that a person has a typical German first name but a rare surname which does not appear in the training set at all. 
+One potential issue is that whenever a likelihood of a certain feature is estimated to be zero then the posterior probability is always zero regardless of the prior  or the likelihoods of other features. For example, suppose that a person has a typical German first name but a rare surname which does not appear in the training set at all. 
 Then the useful information contained in the first name will be completely ignored since the zero likelihood of the surname will override any other value and we will end up with the posterior probability of zero for all ethnic groups.
 
 To address this problem, we apply Laplace smoothing. 
@@ -96,7 +96,7 @@ For every ethnicity, let $c_j$ be number of people with a name $j$ and $N$ be to
 \begin{equation}
     \hat\theta_j = \frac{c_j + \alpha}{N + \alpha d} \qquad j = 1, \dots, d
 \end{equation}
-where parameter $\alpha > 0 $ is a smoothing parameter.  This ensures that for any finite value of $N$,  $\hat\theta_j$ will never be zero. %Nevertheless,  $\alpha$ should not be set too high since that could 
+where parameter $\alpha > 0 $ is a smoothing parameter.  This ensures that for any finite value of $N$,  $\hat\theta_j$ will never be exactly zero. %Nevertheless,  $\alpha$ should not be set too high since that could 
 In our model, relatively small value of  $\alpha = 0.005 $  turned out to be sufficient and  was chosen. 
 
 It is important to note that the conditional independence assumption often does not hold in the data and the estimated posterior probabilities therefore have to be taken with a grain of salt. %have are thus not always reliable. 
@@ -104,12 +104,12 @@ However, our main goal is the best out-of-sample accuracy of the model's predict
 
 \subsubsection{Adjusting for Unbalanced Prediction Accuracy} \label{subsubsec:pred_adj}
 To reliably asses the out-of-sample performance of our model, we used 10-fold cross-validation on the data with non-missing ethnicity. That is, the data is first randomly split into 10 groups. A model is fitted to 9 group and the remaining group is used to test the model's performance. This process is then repeated 9 times  until every group has been tested. 
-Using this method, the resulting overall accuracy of our model is 79.3\%. However,  we are also interested how it varies by ethnicity.
-For this reason we calculate sensitivity and specificity for each ethnic group.\footnote{Sensitivity measures the proportion of observations in the class that are correctly identified by the model as such (i.e. number of true positives divided by all positives). Specificity measures the proportion of observations \emph{not} in the class that are correctly identified as such (i.e. number of true negatives divided by all negatives).} 
-The results, provided in the table \ref{tab:sens_spec} in the appendix, show that the sensitivity differs significantly by ethnicity. 
+Using this method, the resulting overall accuracy of our model is 79.3\%. However,  we are also interested in  how this varies by ethnicity.
+For this reason we calculate sensitivity and specificity for each ethnic group.\footnote{Sensitivity measures the proportion of observations in the class (in our case ethnicity) that are correctly identified by the model as such (i.e. number of true positives divided by all positives). Specificity measures the proportion of observations \emph{not} in the class that are correctly identified as such (i.e. number of true negatives divided by all negatives).} 
+The results, provided in table \ref{tab:sens_spec} in the appendix, show that the sensitivity differs significantly by ethnicity. 
 Some ethnic groups with distinctive names such as Chinese or Japanese are classified  with accuracy higher than 90\%  while for other ethnicities such as Chuvash or Udmurt it is about 10\%. This severe imbalance in sensitivity and specificity  across ethnic groups could potentially cause bias in the imputations. 
 
-Therefore we develop adjustments that try to correct for these biases in the model's predictions. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be actual the number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
+We develop adjustments that try to correct for these biases in the model's predictions. Let $P_{it}$ be the number of people with predicted ethnicity $i$ arrested at time $t$, $R_{it}$ be the actual number of people with ethnicity $i$ arrested at time $t$, $\alpha_i$ and $\beta_i$  be sensitivity and specificity of our classifier for ethnic group $i$ and $N_t$ be the total number of arrests at time $t$. Then the predicted arrests of a given ethnicity are sum of true positives and false positives, that is
 \begin{equation}
     P_{it} = \alpha_i R_{it} + \left( N_t - R_{it} \right) \cdot \left(1 - \beta_i \right).  
 \end{equation}
@@ -119,7 +119,7 @@ We are interested in $R_{it}$ but we only directly observe $P_{it}$ and $N_t$. H
 \end{equation}
 We will refer to this method of correcting predictions as parsimonious adjustment.  The parameters $\alpha_i$ and $\beta_i$ are not known to us but we can use their estimates from the cross-validation on the training data. This assumes that the these parameters do not differ significantly for the training and test data. But this might not be the case. 
 Suppose, for example, that Armenians are often misclassified as Chechens and that the number of Armenians in the data with missing ethnicity  is disproportionately higher than in the data with information on ethnicity. 
-Then the cross-validated specificity for Chechens in the training set will underestimate the specificity in the test set because it does not take into account higher proportion of Armenians. 
+Then the cross-validated specificity for Chechens in the training set will underestimate the specificity in the test set because it does not take into account the higher proportion of Armenians. 
 %If, for example, the proportions of the arrests of some ethnic group are substantially different between the test and training set and if there is constant then 
 
 Fortunately, we can address this potential bias with a more complex model.
@@ -139,11 +139,12 @@ To express $\mathbf{R}_t$, we just  apply basic linear algebra
 \mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t.
 \end{equation}
 We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
-makes only somewhat weaker assumption that the train and test set misclassification rates are not substantially different. 
+makes only somewhat weaker assumption that the train and test set misclassification rates are not substantially different. On the other hand, the estimates of misclassification rate will likely be noisier (have higher variance) compared to the estimates of specificity and sensitivity because they are based on fewer observations. 
 %On the other hand, it might be noisier
 % lower bias, higher variance
 
-One issue that we encountered when applying these adjustments was that some values of $\mathbf{R}_t$ were negative. Thus, we replaced all negative values with zero. Finally, we scaled all  the values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer. The comparison of total number of arrests for each  adjustment and ethnic group is provided in the table \ref{tab:total_arrests_by_ethnicity}. A graph showing the change in arrests in time by ethnicity and imputation adjustment is provided in the figure \ref{fig:prediction_type_by_year}. 
+One issue that we encountered when applying these adjustments to the actual data was that some predicted values of $\mathbf{R}_t$ were negative. We decided to replace all  negative values with zero in order to preserve this basic feature of count data. Finally, we scaled all   values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer.
+The comparison of total number of arrests for each  adjustment and ethnic group is provided in table \ref{tab:total_arrests_by_ethnicity}. A graph showing the change in arrests in time by ethnicity and imputation adjustment is provided in figure \ref{fig:prediction_type_by_year}. 
 
 % Jeste se zmin o scalovani
 
@@ -163,8 +164,8 @@ Our strategy for imputing the missing arrest dates is to  predict it from the da
 Hence we use the year of trial as a predictor to our model. 
 
 We begin by examining the data with both dates available. 
-The histogram for number of days between arrest and trial (on scale of $\log_{10}(1 + x)$) is shown in the figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and trial being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
- which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit. 
+The histogram for number of days between arrest and trial (on scale of $\log_{10}(1 + x)$) is shown in figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and trial being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
+ which is much higher than the normal model would predict. Moreover, the  zero values are making the estimated mean of the normal distribution lower than would be appropriate for the positive values resulting in poor fit as can be seen in figure  \ref{fig:simple_lm_hist}. 
 
  \begin{figure}[h]
 \centering
@@ -173,7 +174,7 @@ The histogram for number of days between arrest and trial (on scale of $\log_{10
 \label{fig:simple_lm_hist}
 \begin{minipage}{0.92\textwidth}
 \footnotesize
-\emph{Notes:} The x-axis is shown on  $\log(1 + x)$ scale.
+\emph{Notes:} The x-axis is shown on  $\log_{10}(1 + x)$ scale.
 \end{minipage}
 
 \end{figure}
@@ -181,7 +182,7 @@ The histogram for number of days between arrest and trial (on scale of $\log_{10
 To address this problem, we model the zero and positive values separately in a two-stage process 
 %by first predicting if a the number of days is zero and then fitting log-normal regression to the positive date. 
 using a method described in \citet[p. 537-538]{gelman_data_2006}. 
-Let $y$ be the number of days between arrest of an individual and his or her trial and $X$ be set of dummy variables indicating the year of trial. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
+Let $y$ be the number of days between arrest of an individual and his or her trial and $X$ be a set of dummy variables indicating the year of trial. We also define $I^y$ as an indicator variable that equals 1 if $y > 0$ and 0 otherwise and  $y^{\text{pos}}$ to be only positive values of $y$ (i.e. $y^{\text{pos}} = y$ if   $y > 0$).  In the first stage, we predict $I^y$  using logistic regression
 \begin{equation}
 \Pr\left( I_i^y = 1 \right)  = \text{logit}^{-1} \left(X_i \alpha \right).
 \end{equation}
@@ -190,25 +191,25 @@ In the second stage, simple log-linear regression is applied to predict only the
 \log\left(y_i^{\text{pos}}\right) \sim \text{N} \left(X_i \beta, \sigma \right).
 \end{equation}
 We then fit the first model to the data where the exact dates of both arrest and trial are available and the second model to the subset of the same  data for which $y > 0$.
-The results of both of these models are provided in the table \ref{tab:date_imp_results} in the appendix. The years of trial appear to be important predictors both in the first stage and even more in the second stage. 
-However, the unexplained variance is still high making up about 76\% of the total variability in the dependent variable in the second model. 
+The results of both of these models are provided in table \ref{tab:date_imp_results} in the appendix. The years of trial appear to be important predictors both in the first stage and even more in the second stage. 
+However, the unexplained variance is still high making up about 77\% of the total variability in the dependent variable in the second model. 
 
 %After  these models are fitted to the data with non-missing date of arrest and year of process,
 We  proceed to apply the fitted models to the missing data to get the predicted probability of $y$  being positive and the mean value of $y$ if it is positive. For each observation with missing date of arrest $X_i$, we then randomly draw from the Bernoulli distribution with  $\text{logit}^{-1} \left(X_i \hat\alpha \right)$ as its parameter to obtain $\hat I_i^y$. We also draw from the normal distribution with mean $X_i \hat\beta$ and exponentiate the result to get $\hat y_i^{\text{pos}}$. Finally, the predicted number of days is calculated simply as $\hat y_i = \hat I_i^y \cdot \hat y_i^{\text{pos}}$. 
 
-The histogram of the imputed values is provided in the figure \ref{fig:mixed_model_preds_hist} in the appendix. 
-The resulting distribution  highly resembles the distribution  in the figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the actual data fairly well. 
+The histogram of the imputed values is provided in figure \ref{fig:mixed_model_preds_hist} in the appendix. 
+The resulting distribution  highly resembles the distribution  in figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the actual data fairly well. 
 
 Nevertheless,  one issue is that for significant number of observations we do not have the exact date of trial but only year. In particular, 
 while the year of trial is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of trial is missing for 369 393 of them and the day for 390 174. 
-To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of trial in the non-missing data between the years 1921 to 1960. 
+To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of trial in the non-missing data for the years from 1921 to 1960. 
 Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability.\footnote{Every date, however, has to be consistent with the calendar. This means that for January we take a sample of numbers from 1 to 31, for February from 1 to 28 and so on. } 
 The imputed months and days of the trials are therefore only weakly informed guesses, nevertheless they enable us to carry on with the analysis. 
 
 %Once we have completed the above steps, 
 The final step is to calculate the imputed date of arrest by subtracting the predicted number of days from the date of process (i.e. we go back in time by given number of days). Since we conduct the analysis with annual observations, we ignore predicted month and day of arrests  keep only information on year. The number of arrests for each ethnicity by year (including the imputed years) is then counted for the period from 1921 to 1960 which forms our final dataset. 
 
-The resulting time series of all arrests with imputed years is plotted in the figure \ref{fig:date_imputation_line} in the appendix. Arrests with imputed dates seem to follow  similar trends with the labeled data  although there is slight divergence at the beginning and end of the series and in the 1930s.
+The resulting time series of all arrests with imputed years is plotted in figure \ref{fig:date_imputation_line} in the appendix. Arrests with imputed dates seem to follow  similar trends with the labeled data  although there is slight divergence at the beginning and end of the series and in the 1930s.
 %involves only counting back 
 %we have the exact date of process and the predicted 
 %for the subset of the data where the date of arrest is to be imputed, 369 393 observations lack the month of the process and 390 174 miss the day out of the total 903 455 (all have year). 

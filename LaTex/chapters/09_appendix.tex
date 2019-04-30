@@ -18,9 +18,9 @@ If you have any troubles with replications or any other questions, please email 
 \setcounter{figure}{0}
 \renewcommand{\thefigure}{A\arabic{figure}}
 
-\subsection*{International Relations Controls}
+\subsection*{International Relations Controls} \label{subsec:geopol_rel_controls}
 \addcontentsline{toc}{subsection}{International Relations Controls}
-The summary of major changes in international relations of the Soviet Union with states that have significant minorities in the USSR that we use as control variable in our default  difference-in-differences specification (equation \ref{eq:dynamic_did}) are provided in the table \ref{tab:geopol_relations}. In particular, we created a separate dummy variable for every combination of state and  phase of geopolitical relations. 
+The summary of major changes in international relations of the Soviet Union with states that have significant minorities in the USSR that we use as control variable in our default  difference-in-differences specification (equation \ref{eq:dynamic_did}) are provided in table \ref{tab:geopol_relations}. In particular, we created a separate dummy variable for every combination of state and  phase of geopolitical relations. 
 The blank cells indicate that no special dummy variable covers that years (i.e. there was no significant change in relations with the given country in that year).
 For example in case of Hungarian ethnicity, we created one dummy variable for the period of war with the USSR (from 1941 to 1944) and another one covering the whole post-1945 period. 
 We briefly describe the relevant history below to explain why we choose such classification. 
@@ -160,11 +160,23 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 %\includegraphics[width=\linewidth]{Gaus.pdf}
 %\rule{\linewidth}{10em}
 \footnotesize
-\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.   Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed. Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
 \label{fig:did_robustness_pred_adj}
 \end{figure}
 
+ \begin{figure}[H]
+\centering
+\caption{Dynamic DiD, Stata Standard Errors}
+\includegraphics[width=\textwidth]{plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf}
+\begin{minipage}{0.92\textwidth}
+%\includegraphics[width=\linewidth]{Gaus.pdf}
+%\rule{\linewidth}{10em}
+\footnotesize
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations.  We used Stata standard errors clustered on ethnicity.  Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_robustness_stata_se}
+\end{figure}
 
 %\input{tables/diff_table.tex}
 %\thispagestyle{empty}

@@ -1,6 +1,6 @@
 \subsection{Difference-in-differences} \label{subsec:methodology_did}
 We employ difference-in-differences design to estimate the effect of the changing geopolitical relations on repressions of Germans in the USSR. 
-Our main specification is the dynamic difference-in-differences model:
+Our main specification is the following dynamic difference-in-differences model:
 \begin{equation}
  \log\left(1 + y_{it}\right) = \sum_{k= 1922}^{1960} \beta_k \, \text{German}_{i} \cdot \text{Year}_{t}^k +  \lambda_t + a_i +  \text{Relations}_{it}   + u_{it},
  \label{eq:dynamic_did}
@@ -8,7 +8,7 @@ Our main specification is the dynamic difference-in-differences model:
 %+  E_i \cdot t \:  + E_i \cdot t^2 \: 
  %+ \sum_{j= 1}^5 \omega_j \, german_{it} \cdot post_{it - k}    
 
-where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are dummy variables that equals 1 if its year $k$ equals to $t$ and 0 otherwise.
+where $y_{it}$ is number of arrests of people with ethnicity $i$ in year $t$ (from 1921 to 1960), $\lambda$ is year fixed effect, $a$ is ethnicity fixed effect (both captured by respective dummy variables) and  $\text{Year}_{t}^k$ are  dummy variables  that equals 1 if its year $k$ equals to $t$ and 0 otherwise.
 %(except for 1939 which is equal to 1 if $t \geq 1959$ and zero otherwise). The coefficients of interest are $\beta_k$. 
 Prior to  1933 they capture the lead (anticipatory) effects  used to test if pre-treatment trends are parallel. After 1933 they capture the dynamic lagged effects. The only omitted year is 1921 which thus serves as a baseline against which other coefficients are compared. 
 %The 5 coefficients $\omega_j$ capture the potential lagged effects (extending from 1934 to 1938), whereas the 3 coefficients capture the lead (anticipatory) effects (from 1930 to 1932) used to test pre-treatment parallel trends. 
@@ -29,7 +29,7 @@ For continuous variables, log-linear models have straightforward percentage chan
  \label{eq:dummy_vars}
 \end{equation}
 where $\hat\beta_j$ is the estimated coefficient on $x_j$ and  $\hat V\left(\hat\beta_j\right)$ is an estimate of variance of $\hat\beta_j$. 
-Since our main coefficients of interest are dummy variables, we will use this formula to obtain estimate of percentage change effect.
+Since our main coefficients of interest are dummy variables, we will use this formula to obtain estimates of percentage change effect.
 
 
 %While the equation \ref{eq:dynamic_did} gives us information on the changes in the effect, it might be useful to have a single estimate of an average effect for different phases of the German-Soviet relations. For this reason, we also estimate a difference-in-differences model given by the following equation:
@@ -53,15 +53,18 @@ Since our main coefficients of interest are dummy variables, we will use this fo
 %However, the treatment status of some minorities changed in this period as they geopolitical relations 
 
 
-The identifying assumption for the specifications \ref{eq:dynamic_did} is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables.\footnote{In the presence of linear ethnicity-specific time trends, the identifying assumption  is the parallel growth of the outcome variable of control and treatment group. This is equivalent to the parallel trends for the first differences of the outcome \citep{mora_alternative_2019}. } Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
+The identifying assumption for difference-in-differences model in equation \ref{eq:dynamic_did} is that the number of arrest of Germans after 1933 would go in parallel to arrests of other minorities in the absence shock to German-Soviet relations conditional on our control variables.\footnote{In the presence of linear ethnicity-specific time trends, the identifying assumption  is the parallel growth of the outcome variable of control and treatment group. This is equivalent to the parallel trends for the first differences of the outcome \citep{mora_alternative_2019}. } Although we cannot test this assumption, we can test whether the trends were parallel prior to 1933 (pre-treatment) which could increase our confidence that they were parallel after 1933 too. This can be testing if the coefficients $\beta_k$ on the lead effects are significantly different from zero.  
 
-As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most difference-in-differences regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 40), the cluster-robust standard errors are downward-biased and not reliable \citep[chapter 8]{donald_inference_2007, angrist_mostly_2009}.
+As \citet{bertrand_how_2004} show, the usual standard errors  are downward-biased for most difference-in-differences regressions since they do not account for the serial correlation within the units of interests (states, countries etc.). A common solution to this problem is to estimate standard errors using robust covariance matrix that allows for clustering (i.e. cluster-robust standard errors). However for small number of groups (generally less than 50), the cluster-robust standard errors are downward-biased and not reliable \citep[chapter 8]{donald_inference_2007, angrist_mostly_2009}.
 %suggest taking the maximum of cluster-robust as a simple rule of thumb to avoid gross misjudgements in precision. 
-One possible solution might be to use $G - 1$ degrees of freedom  (where $G$ is the number of clusters) instead of $N - K$ 
+One possible solution might be to use $G - 1$ degrees of freedom   instead of $N - K$ (where $G$ is the number of clusters, $N$ number of observation, and $K$ number of parameters),
 together with a special finite-sample correction of the covariance matrix \citep{angrist_mostly_2009, cameron_practitioners_2015, imbens_robust_2016}.
- This type of standard errors is a default cluster-robust option in Stata and we thus label them as Stata  standard errors. 
-Nevertheless, \citet{imbens_robust_2016} have shown  that for small number of clusters using Stata standard errors  results in over-rejection of the null hypothesis. 
-Since we have small number of ethnic groups we use (38 in most specifications), we use the  \citet{pustejovsky_small-sample_2018} estimator as our default option and the Stata  standard errors as a robustness check. 
+ This type of standard errors is a default cluster-robust option in Stata and we thus label them as Stata  standard errors. Nevertheless, \citet{imbens_robust_2016} have shown  that for small number of clusters using Stata standard errors  results in over-rejection of the null hypothesis. 
+\citet{mccaffrey_bias_2002} propose an alternative method called bias-reduced linearization which  adjusts the standard cluster-robust variance estimator such that it is unbiased under the model specified. 
+Effective degrees of freedom are then estimated based on  Satterthwaite approximation. 
+\citet{imbens_robust_2016} recommend using  bias-reduced linearization over other methods even in  moderately sized samples. One potential problem of bias-reduced linearization is that it might be undefined for certain specifications. But recently  \citet{pustejovsky_small-sample_2018} have generalized the method to models with arbitrary sets of fixed effects (including differnce-in-differences). 
+%Nevertheless, \citet{imbens_robust_2016} have shown  that for small number of clusters using Stata standard errors  results in over-rejection of the null hypothesis. 
+Since we have small number of clusters (38 ethnic groups), we use the  estimator by \citet{pustejovsky_small-sample_2018}  as our default option and the Stata  standard errors as a robustness check. 
 
 %Possible solutions are cluster bootstrapping \citep{cameron_bootstrap-based_2008, cameron_practitioners_2015} and  using $t$-distribution with $G- K$ degrees of freedom (where $G$ is number of clusters and $K$ number of parameters) rather than the standard Normal distribution \citep{mccaffrey_bias_2002, imbens_robust_2016}.
 %Since we have small number of groups we use the generalization of \citet{mccaffrey_bias_2002} correction to models with arbitrary sets of fixed effects by \citet{pustejovsky_small-sample_2018}.
@@ -71,7 +74,7 @@ Since we have small number of ethnic groups we use (38 in most specifications), 
 %However, the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
 However, difference-in-differences makes a fairly strong assumption regarding the absence of time-varying individual-specific heterogeneity which might be unrealistic in some empirical settings.
 The synthetic control method has been increasingly applied in the economic literature to overcome this issue \citep{abadie_economic_2003, abadie_synthetic_2010, billmeier_assessing_2013, cavallo_catastrophic_2013}. The method works by constructing a synthetic version of the treated unit from the control units  based on matching of pre-treatment variables. The outcomes of synthetic control are then compared to the actual outcomes  to estimate the treatment effect.
-Unlike difference-in-differences, the synthetic control method allows for the presence of certain time-varying unit-specific confounders although only if they can be  captured by the factor model in the equation \ref{factor_model}.
+Unlike difference-in-differences, the synthetic control method allows for the presence of certain time-varying unit-specific confounders although only if they can be  captured by the factor model in equation \ref{factor_model}.
 %We 
 %the parallel trends assumption required for unbiasedness of difference-in-differences can be too restri for .
 
@@ -105,7 +108,7 @@ The synthetic control method thus offers more general model that, in contrast to
 
 %Unlike difference-in-differences,  the synthetic control method  allows for unit-specific time trends as long as they can be captured by the factor model. 
 
-We then try to estimate the counterfactual outcome $Y_{1t}^N$  by constructing a synthetic control group  as a convex combination of available comparison units (in our case other ethnic groups in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
+The method works by estimating the counterfactual outcome $Y_{1t}^N$  by constructing a synthetic control group  as a convex combination of available comparison units (in our case other ethnic groups in the USSR) that most closely resembles the pre-treatment characteristics of the treated group
  (or more precisely, for which the average of its factor loadings $\boldsymbol{\mu}_i$ match the factor loadings of the treated unit  $\boldsymbol{\mu}_1$). 
  %The intuition be
  
@@ -113,7 +116,7 @@ We then try to estimate the counterfactual outcome $Y_{1t}^N$  by constructing a
  More formally, we choose a vector of weights $W = (w_2, \dots, w_J, w_{J+1})$ subject to $w_j \geq 0$ for $j = 2, \dots, J, J + 1$ and $w_2 +  \dots + w_J + w_{J+1} = 1$ that minimize $\left\Vert X_1 - X_0 W \right\Vert_V = \sqrt{\left(X_1 - X_0 W\right)^T V \left(X_1 - X_0 W\right)}$ where
   $X_1 = (Z_1, Y_1^{K_1}, \dots, Y_1^{K_L})$ is a $(k \times 1)$ vector of pre-treatment characteristics of the treated unit,  $Y^{K_l}$ are linear combinations of
 pre-treatment outcomes, and %(analogously for $X_0$)
-  $X_0$ is a $(k \times J)$ matrix with pre-treatment characteristics of untreated units analogous to $X_1$, 
+  $X_0$ is a $(k \times J)$ matrix with pre-treatment characteristics of untreated units analogous to $X_1$,  and
  %$X_1$ is a vector of pre-treatment characteristics of the treated unit,
   $V$ is  a $(k \times k)$  matrix that weights the importance of different pre-treatment predictors in the minimization problem. 
   $V$ is usually chosen among symmetric and positive semidefinite matrices to minimize the  mean squared prediction error (MSPE) in the outcome in the pre-treatment period so that the $V$-weights would reflect the predictive power of the covariates. 
@@ -128,19 +131,19 @@ The effect of the treatment $\alpha_{1t}$ at time $t > T_0$ is then estimated as
 where $w^*_j$ are the estimated optimal weights. 
 
 The synthetic control method, however, does not provide us with any standard errors that could measure the uncertainty in the estimates.
-\citet{abadie_synthetic_2010} propose assessing significance  using  placebo tests and randomization inference. Synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
-such a result would not be likely under the null hypothesis of zero treatment effect.
+\citet{abadie_synthetic_2010} propose assessing significance  using  placebo tests and randomization inference. The synthetic control method is applied iteratively to every unit in the donor pool as if they were treated and the results of placebo test are then compared to the treated unit. If the estimated effect for the treated unit is much larger than the placebo effects, it implies that the effect is likely significant since 
+such result would not be likely under the null hypothesis of zero treatment effect.
 %\citet{abadie_synthetic_2010} propose a procedure for obtaining Fisher exact  $p$-values based on randomization inference and placebo tests. 
 
 %Therefore if the estimated effect for the treated unit is much larger than the placebo effects, it implies that such a result would not be likely under the null hypothesis of zero treatment effect and the $p$-value would then be accordingly small. 
 
 However, \citet{abadie_synthetic_2010}  point out that placebo synthetic controls with poor pre-treatment fit do not provide good comparison for estimating rareness of large effect for a treated unit with a good  pre-treatment fit. They thus recommend excluding excluding placebo units with substantially higher pre-treatment MSPE relatively to the treated unit. 
 
-Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE is somewhat arbitrary. Better way to asses significance of results might be to compare the ratios of post/pre-treatment MSPE
+Nevertheless, the choice of any level of the cutoff of pre-treatment MSPE is somewhat arbitrary. \citet{abadie_synthetic_2010} suggests that  better way to asses significance of results might be to compare the ratios of post/pre-treatment MSPE which
 %\footnote{More formally, the MSPE ratio is defined as $\text{MSPE ratio_j} = \sum_{t = T_0 + 1}^{T} Y_{jt} -  \hat{ Y_{jt}^N}$ } since
 %Using  the ratios instead of the values of $\hat\alpha$ allows us to
 %asses the significance of results reltice 
-take into account different values of pre-treatment fit between the treated unit and the placebo tests. First, the  MSPE ratio for unit $j$ is defined as
+takes into account different values of pre-treatment fit between the treated unit and the placebo tests. First, the  MSPE ratio for unit $j$ is defined as
 \begin{equation} \label{eq:mspe_ratio}
 \text{MSPE ratio}_j = \frac{\sum_{t = T_0 + 1}^{T} \left( Y_{jt} -  \hat Y_{jt}^N\right)^2}{\sum_{t = 1}^{T_0} \left( Y_{jt} -  \hat Y_{jt}^N\right)^2} 
 \end{equation}
@@ -149,7 +152,8 @@ The  $p$-values can then be calculated as
 \begin{equation} \label{eq:p_ratio}
  p_1   = \frac{\sum_{j = 2}^{J + 1} \mathbbm{1}\left( \text{MSPE ratio}_{j} \geq \text{MSPE ratio}_{1} \right)}{J + 1}.
 \end{equation}
-where $\mathbbm{1}$ is an indicator function that equals 1 if the equation in its argument is true and 0 otherwise.  
+where $\mathbbm{1}$ is an indicator function that equals 1 if the equation in its argument is true and 0 otherwise. 
+%Notice that this is equivalent to the rank of 
 
 %would suggest that the results are significant since these results would be less likely if there were no treatment effect 
 %Large difference between the outcomes of synthetic control and actual data is can be indicative of large effect 

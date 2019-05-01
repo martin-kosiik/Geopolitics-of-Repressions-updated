@@ -13,6 +13,9 @@ library(data.table)
 library(tidyverse)
 library(here)
 library(sf)
+Sys.setlocale("LC_CTYPE", "russian") 
+library(mapview)
+library(leaflet)
 ```
 
 ```{r}
@@ -58,6 +61,9 @@ merged <- merged %>%
   dplyr::select(person_id, ORIGIN_LONG, ORIGIN_LAT) %>% 
   filter(!is.na(ORIGIN_LONG), !is.na(ORIGIN_LAT))
 
+rm(events)
+gc()
+
 merged %>% 
   count(person_id, ORIGIN_LONG, ORIGIN_LAT, sort = T) %>% 
   View()
@@ -75,8 +81,46 @@ ussr_map <- st_read(here::here("data/ussr_shapefiles/1926SovietUnion.shp"))
 
 st_crs(ussr_map) <- "+proj=longlat +datum=WGS84 +no_defs"
 
-arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), 
-                 crs = 4326)
+ussr_borders <-  ussr_map %>% 
+    #group_by(COUNTYFP) %>% 
+    summarise(geometry = st_union(.))
+
+
+border_provinces <- c("Karelian ASSR", "Murmansk province", "Leningrad province", "Pskov province", 
+                         "Belorussian ASSR", "Ukrainian ASSR", "Transcaucasian SFSR")
+
+ussr_map <- ussr_map %>% 
+  mutate(border_province = as.factor(ifelse(NameENG %in% border_provinces, 1, 0))) %>% 
+  dplyr::select(Id, NameENG, NameRUS, border_province)
+
+
+ggplot(ussr_map) +
+    geom_sf(fill = "gray95", color = "gray50", size = 0.5) +
+    geom_sf(aes(fill = border_province))+
+    theme_void() +
+    coord_sf(crs = "+proj=longlat +datum=WGS84 +no_defs", ndiscr = F) + 
+    labs(fill = "Border province (in Europe)") + 
+    theme(legend.position="bottom")
+
+ggsave(here::here("plots/final/border_provinces_map.pdf"))
+
+
+
+mapview(ussr_map)
+plot(ussr_borders)
+
+arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), crs = 4326) 
+
+arrests_sf_head <- head(arrests_sf, 1000)
+
+joined <-  arrests_sf %>%
+   st_join(ussr_map) 
+
+joined %>% 
+  st_set_geometry(NULL) %>% 
+   mutate(border_province = as.factor(ifelse(NameENG %in% border_provinces, 1, 0))) %>% 
+  count(border_province, sort = T) %>% 
+  View()
 
 ```
 

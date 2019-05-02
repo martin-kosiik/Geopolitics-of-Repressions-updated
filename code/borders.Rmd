@@ -61,7 +61,7 @@ merged <- merged %>%
   dplyr::select(person_id, ORIGIN_LONG, ORIGIN_LAT) %>% 
   filter(!is.na(ORIGIN_LONG), !is.na(ORIGIN_LAT))
 
-rm(events)
+rm(list = c("events", "events_distinct", "memorial_lists"))
 gc()
 
 merged %>% 
@@ -72,9 +72,6 @@ merged %>%
 
 
 ```{r}
-ussr_map <- st_read(system.file(here::here("data/ussr_shapefiles/1926SovietUnion"), package="sf"))
-
-ussr_map <- st_read(system.file(here::here("data/ussr_shapefiles/1897RussianEmpire.shp"), package="sf"))
 ussr_map <- st_read(here::here("data/ussr_shapefiles/1897RussianEmpire.shp"))
 
 ussr_map <- st_read(here::here("data/ussr_shapefiles/1926SovietUnion.shp"))
@@ -116,11 +113,25 @@ arrests_sf_head <- head(arrests_sf, 1000)
 joined <-  arrests_sf %>%
    st_join(ussr_map) 
 
-joined %>% 
+joined_df <- joined %>% 
   st_set_geometry(NULL) %>% 
-   mutate(border_province = as.factor(ifelse(NameENG %in% border_provinces, 1, 0))) %>% 
-  count(border_province, sort = T) %>% 
-  View()
+  mutate(border_province = case_when(is.na(border_province) ~ "outside USSR",
+                                     border_province == 1 ~ "yes", 
+                                     border_province == 0 ~ "no"))
+
+person_id_with_multiple_matches <- joined_df %>% 
+  count(person_id, border_province, sort = T) %>% 
+  count(person_id, sort = T) %>% 
+  filter(nn > 1)
+
+joined_df <- joined_df %>% 
+  anti_join(person_id_with_multiple_matches, by = "person_id") %>% 
+  dplyr::select(person_id, border_province)
+
+fwrite(joined_df, here::here("data/border_arrests.csv"))
+
+joined_df %>% 
+  count(border_province, sort = T) 
 
 ```
 

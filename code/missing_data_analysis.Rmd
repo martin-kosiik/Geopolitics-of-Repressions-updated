@@ -47,11 +47,13 @@ gc()
 
 arrest_date_imputation <- readRDS(file = here::here("data/arrest_date_imputation.RData"))
 
+border_arrests <- fread(here::here("data/border_arrests.csv"))
 
 events <- events %>% 
-  left_join(arrest_date_imputation, by = "person_id", suffix = c(".only_label", ""))
+  left_join(arrest_date_imputation, by = "person_id", suffix = c(".only_label", "")) %>% 
+  left_join(border_arrests, by = "person_id")
 
-
+rm(list = c("arrest_date_imputation", "border_arrests"))
 
 events %>% 
   count(YEAR, source_date_arrest, sort =T) %>% 
@@ -116,14 +118,6 @@ spec_sens_data %>%
     write_file(here::here("tables/sens_spec.tex"))
 
 ```
-
-```{r}
-spec_sens_data %>% 
-  mutate(resut = (Sensitivity + Specificity -1)) %>% 
-  View()
-```
-
-
 
 ## By year
 ```{r}
@@ -190,13 +184,32 @@ rehabs <- events %>%
   get_arrests_by_year() %>% 
   dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
 
+non_border_provinces <- events %>% 
+  filter(!is.na(source_date_arrest), !is.na(border_province), border_province == "no") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>% 
+  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_non_border"))
+
+border_provinces <- events %>% 
+  filter(!is.na(source_date_arrest), !is.na(border_province), border_province == "yes") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>%
+  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_border"))
+
+
 
 min_by_year_all <- only_labeled_dates %>% 
   left_join(all_dates, by = c("YEAR", "ethnicity"), suffix = c("", "_imp_date")) %>% 
   left_join(rehabs, by = c("YEAR", "ethnicity"), suffix = c("", "_rehab")) 
 
-
 write_csv(min_by_year_all, here::here("data/min_by_year_preds.csv")) 
+
+
+min_by_year_all_border <- non_border_provinces %>% 
+  left_join(border_provinces, by = c("YEAR", "ethnicity")) 
+
+write_csv(min_by_year_all_border, here::here("data/min_by_year_borders.csv")) 
+
 ```
 
 ```{r}

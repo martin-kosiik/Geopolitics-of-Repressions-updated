@@ -25,7 +25,7 @@ library(clubSandwich)
 
 Import the  data
 
-```{r}
+```{r import data}
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
   mutate(ethnicity_id = as.numeric(1:n()),
          urb_rate_pct = urb_rate * 100)
@@ -53,8 +53,7 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
 ```
 
 
-
-```{r}
+```{r geopolitical controls definition}
 min_by_year <- min_by_year %>% 
   mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
          geopol_finnish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Finnish")),
@@ -76,7 +75,7 @@ min_by_year <- min_by_year %>%
 ```
 
 
-```{r}
+```{r year dummies}
 years <- 1922:1960
 
 year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){

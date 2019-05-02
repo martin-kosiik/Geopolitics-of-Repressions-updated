@@ -60,13 +60,13 @@ ethnicity_controls %>%
 
 ## MSCMT implementation
 ### Annual observations 
-```{r}
+```{r data preparation}
 data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "ethnicity_id", 
                                 time.variable="YEAR", unit.names.variable="ethnicity")
 
 ```
 
-```{r}
+```{r definiton of variables}
 dep_var <- "log_n_pred_full_imp_date"
 
 treatment.identifier <- "German"

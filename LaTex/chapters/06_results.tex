@@ -168,23 +168,23 @@ After 1955, the gap shrinks to zero.
 The results are similar to difference-in-differences in the overall trends although the estimated effects by   the synthetic control  are slightly smaller than the their difference-in-differences equivalents.  
 
 We can estimate the number of arrests attributable to the geopolitical changes as we did for difference-in-differences by transforming the actual  and synthetic values from logarithmic to natural scale and subtracting  them from each other. The results are   
- that in the whole post-1933 the total number of arrests for the synthetic German minority is  25 180 in contrast to to  153 060 of actual German arrests which implies that the estimated effect accounts for 127 880 (83\%) of all German arrests in that period. If we repeat the same calculations but  only for years from 1933 to 1939, 
+ that in the whole post-1933 the total number of arrests for the synthetic German minority is  25 180 in contrast to  153 060 of actual German arrests which implies that the estimated effect accounts for 127 880 (83\%) of all German arrests in that period. If we repeat the same calculations but  only for years from 1933 to 1939, 
  the resulting share of arrests attributable to the effect decreases to 53\% (16 526 arrests out of 31 041). The same measure for the whole pre-treatment period is 8\% (1 638 arrests out of 18 517).
 
 %As we metioned in the section
 We assess the significance of our results with placebo tests by applying the same procedure to every ethnic group in the dataset. The differences between the actual values and the respective synthetic control for every placebo ethnicity are plotted in grey in figure \ref{fig:sc_placebo_gaps_all}. Even in comparison with the placebo tests, 
-the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955, although for years 1933-1938 the effect for Germans moves within the standard range of the placebo gaps.
+the estimated effect for German ethnicity  still appears relatively large for the period from 1939 to 1955, although for years 1933-1938 the effect for Germans keeps within the standard range of the placebo gaps.
 
 Figure \ref{fig:sc_placebo_gaps_all} also shows that for some ethnic groups the pre-treatment gaps are large.
  For example, the gap for Russians stays above 2 for the  whole pre-1933 period. 
  This indicates that synthetic control of these ethnic groups does not capture the actual pre-treatment trends well. 
  %In other words, no linear combination of ethnic group cannot 
- As we explained in subsection \ref{subsec:sc_methodology}, the placebo synthetic controls  with with substantially  worse pre-treatment then the treated unit should not be 
+ As we explained in subsection \ref{subsec:sc_methodology}, the placebo synthetic controls  with  substantially  worse pre-treatment than the treated unit should not be 
 used in estimating significance of the treatment effect. 
 %are not very helpful for
 %for estimating rareness of an effect for a treated unit with a good pre-treatment fit. 
 We thus  exclude the placebo ethnicities whose pre-treatment mean squared prediction error (MSPE) is 20 times higher than the same measure for German minority. Even though this is relatively lenient cutoff, it removes  8 ethnic groups that does not meet the criterion. 
-The resulting plot is shown in figure \ref{fig:sc_placebo_gaps_all_20_times}. The post-1933 gaps in German arrests now stand out more clearly and even the gap for the years 1933-1938 now appears relatively significant.  
+The resulting plot is shown in figure \ref{fig:sc_placebo_gaps_all_20_times}. The post-1933 gaps in German arrests now stand out more clearly. %and even the gap for the years 1933-1938 now appears relatively significant.  
 %They thus recommend excluding excluding placebo groups with substantially higher pre-treatment mean squared prediction error  (MSPE)
 
 %Following \citet{abadie_synthetic_2010}  we therefore exclude ethnic groups whose pre-treatment MSPE is 5 times higher then the same measure for German minority. This removes 4 ethnic groups with the worst pre-treatment fit. The resulting plot is shown in the figure \ref{fig:sc_placebo_gaps_all_20_times}. The post-1933 gaps in German arrests now stand out more clearly. 
@@ -268,6 +268,11 @@ Since the  Russia’s 1991 Law  \enquote{On Rehabilitation of Victims of Politic
 cooperation by restricting  our analysis to only rehabilitated victims \citep{frierson_russias_2014}. 
 In the Memorial database, there  are 1 257 796 individuals  classified as  rehabilitated (for rest of the data we either do not have the information on rehabilitation or they were not eligible for rehabilitation).  We thus re-estimate our baseline specification using only those observations. The results are provided in table \ref{dif_table} in the column (3) and plotted in figure \ref{fig:did_effects_rehabs}. We see that the coefficients after 1933 change only little. Nonetheless, the pre-treatment estimates deviate from zero more. 
 %this is a consequence of h
+
+Second, we explore heterogeneity in the effect by proximity to the border.
+Since border frontiers are more vulnerable to foreign invasion, the repressions there might be stronger. 
+%For example, \citet{mcnamee_demographic_2019} found that the expulsions of minorities with ethnic ties to hostile power was stronger in the areas without natural border. 
+We therefore identified  provinces that share border with European states. 
 
 Second, we consider if the inclusion of ethnicity-specific time trends affects the results.
 %As we discussed in the section \ref{subsec:methodology_did}, ethnicity-specific time trends can test if the t

@@ -2,18 +2,19 @@
 %All other .tex files are just subfiles of this shell and do not contain "\begin{document} ... \end{document}"
 %If Czech characters do not translate in pdf correctly, go back to http://latex.feec.vutbr.cz/cz/latex/lokalni-instalace/instalace-miktex/ for proper activation of Czech support in MikTeX 
 
-\documentclass{article}
+\documentclass[oneside]{article}
 \usepackage[T1]{fontenc}
 %\usepackage[round]{natbib}
 %\usepackage[autostyle]{csquotes}
 
+\usepackage[a-2u]{pdfx} 
 
 
 \usepackage[
     backend=biber,
     style=authoryear,
     natbib=true,
-    firstinits=true, % render first and middle names as initials
+  %  firstinits=true, % render first and middle names as initials
    % sortlocale=en_US,
     url=false, 
     doi=true,

@@ -96,6 +96,7 @@ events <- events %>%
   mutate(names_split = str_split(NAME, pattern = " "),
          first_name = as.factor(map_chr(names_split, nth, 2)),
          surname = as.factor(map_chr(names_split, 1)),
+         patronymic = as.factor(map_chr(names_split, nth, 3)),
          number_of_names = as.factor(map_int(names_split, length)),
          ethnicity = as.factor(ethnicity)) %>% 
   dplyr::select(-c(names_split, NAME))

@@ -74,6 +74,12 @@ counter_facts %>%
 
 
 counter_facts %>% 
+  filter(YEAR > 1940, YEAR < 1946) %>% 
+  summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
+
+
+
+counter_facts %>% 
   filter(YEAR > 1932, YEAR < 1940) %>% 
   summarize_at(c("count_synth", "count_treat", "effect_count"), sum) 
 

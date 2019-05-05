@@ -15,7 +15,7 @@ library(here)
 library(sf)
 Sys.setlocale("LC_CTYPE", "russian") 
 library(mapview)
-library(leaflet)
+#library(leaflet)
 ```
 
 ```{r}
@@ -64,9 +64,12 @@ merged <- merged %>%
 rm(list = c("events", "events_distinct", "memorial_lists"))
 gc()
 
-merged %>% 
-  count(person_id, ORIGIN_LONG, ORIGIN_LAT, sort = T) %>% 
-  View()
+multiple_matches <- merged %>% 
+  count(person_id, sort = T) %>% 
+  filter(n > 1)
+
+merged <- merged %>% 
+  anti_join(multiple_matches, by = "person_id")
 
 ```
 
@@ -108,7 +111,6 @@ plot(ussr_borders)
 
 arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), crs = 4326) 
 
-arrests_sf_head <- head(arrests_sf, 1000)
 
 joined <-  arrests_sf %>%
    st_join(ussr_map) 

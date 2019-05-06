@@ -109,17 +109,19 @@ Nonetheless, this table provides only very coarse classification of changes in g
 \caption{Time Series of Arrests }
 \centering
 \includegraphics[width=\textwidth]{plots/arrests/date_imputation_line.pdf}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Note:} Values on the y-axis are plotted on the $\log_{10}\left(1 + y\right)$ scale.
+\end{minipage}
 \label{fig:date_imputation_line}
 \end{figure}
 
 
  \begin{figure}[H]
 \centering
-\caption{Map of Soviet Provinces}
+\caption{Map of Soviet Regions (Provinces and ASSR), 1926}
 \includegraphics[width=\textwidth]{plots/final/border_provinces_map.pdf}
 \begin{minipage}{0.92\textwidth}
-%\includegraphics[width=\linewidth]{Gaus.pdf}
-%\rule{\linewidth}{10em}
 \footnotesize
 \emph{Notes:} The source of the map is \citet{sablin_transcultural_2018}.  
 \end{minipage}
@@ -152,7 +154,7 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 
  \begin{figure}[H]
 \centering
-\caption{Dynamic DiD, Arrests from Border Regions Excluded}
+\caption{Dynamic DiD, Only Border Regions}
 \includegraphics[width=\textwidth]{plots/final/point_range_robust_cr2_border_provinces.pdf}
 \begin{minipage}{0.92\textwidth}
 \footnotesize
@@ -160,6 +162,18 @@ Standard errors are clustered on the level of ethnicity and are based on cluster
 Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
 \label{fig:did_effects_border}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\caption{Dynamic DiD, Border Regions Excluded}
+\includegraphics[width=\textwidth]{plots/final/point_range_robust_cr2_border_provinces.pdf}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. Controls for major changes in relations with the USSR are included.
+Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_effects_non_border}
 \end{figure}
 
  \begin{figure}[H]
@@ -287,5 +301,48 @@ Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied o
 \begin{minipage}{0.92\textwidth}
 \footnotesize
 \emph{Notes:} The whole post-treatment period in the numerator (1933-1960) for both figures.  Otherwise same as for the figure \ref{fig:sc_placebo_gaps_more_rob_checks}.
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H] 
+\caption{Gaps between synthetic control and actual values for placebo tests}
+\begin{subfigure}{\textwidth}
+\caption{Only Border Regions}
+\includegraphics[width=0.9\linewidth]{plots/final/placebo_highlight_all_border_provinces.pdf}
+\label{fig:sc_placebo_gaps_border_regions}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Border Regions Excluded}
+\includegraphics[width=0.9\linewidth]{plots/final/placebo_highlight_all_non_border_provinces.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_placebo_gaps_all_non_border_regions}
+\end{subfigure}
+\label{fig:sc_placebo_gaps_by_border_comp}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} 
+All pre-treatment outcomes were used as predictors. 
+%The predictors are the mean of $\log\left(1 + \text{arrests}\right)$ in the pre-treatment period, total population of the ethnic group in the USSR and its urbanization rate (both taken from the 1926 Soviet census), and linguistic similarity to Russian.
+Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations.
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H] 
+\caption{Ratios of post-treatment MSPE to pre-treatment MSPE}
+\begin{subfigure}{\textwidth}
+\caption{Only Border Regions}
+\includegraphics[width=\linewidth]{plots/final/border}
+\label{fig:sc_mspe_ratios_border_regions}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\caption{Border Regions Excluded}
+\includegraphics[width=\linewidth]{plots/final/mspe_ratios_non_border_provinces.pdf}
+%Ethnic groups with pre-treatment MSPE higher than 5 times the MSPE of Germany excluded
+\label{fig:sc_mspe_ratios_non_border_regions}
+\end{subfigure}
+\label{fig:sc_mspe_ratios_by_borer_comp}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} The whole post-treatment period in the numerator (1933-1960) for both figures.  Otherwise same as for the figure \ref{fig:sc_placebo_gaps_by_border_comp}.
 \end{minipage}
 \end{figure}

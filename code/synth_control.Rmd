@@ -106,14 +106,6 @@ sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.id
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
-dep_var <- "n_pred_full_imp_date"
-times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
-
-times.pred <- cbind("n_pred_full_imp_date"       = c("1921","1932"),
-                    "pop_total"             = c("1921","1932"),
-                    "clad_sim"              = c("1921","1932"),
-                    "urb_rate"              = c("1921","1932"))
-
 
 
 sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
@@ -124,11 +116,6 @@ sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, co
 agg.fns <- rep("mean", ncol(times.pred))                       
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
-
-dep_var <- "n_pred_full_imp_date"
-times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
-
-
 
 sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
@@ -215,7 +202,7 @@ sc_results_mean$combined %>%
 ```
 
 
-```{r annual sc}
+```{r placebo highlight function}
 placebo_highlight_all <- function(placebo_data = sc_placebo, dep_var = dep_var){
 tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>% 
   mutate(date = as_date(str_c(index,"-01-01"))) %>% 
@@ -294,9 +281,12 @@ mspe_ratios <-  ppratio(placebo_data, dep_var, range.pre = c("1921","1932"),
 
 
 tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
-  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios)) %>% 
-  ggplot(aes(x = ethnicity, y = mspe_ratios))+ geom_col() + coord_flip() + theme_minimal() +
-  labs(x = element_blank(), y = "MSPE ratio")
+  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios), 
+         german = as.factor(ifelse(ethnicity == "German", 1, 0))) %>% 
+  ggplot(aes(x = ethnicity, y = mspe_ratios, fill = german))+ geom_col() + coord_flip() + theme_minimal() +
+  labs(x = element_blank(), y = "MSPE ratio", fill = element_blank()) + guides(fill = FALSE)+
+  scale_fill_manual(breaks = c("0", "1"),  values=c("gray", "#FF3300"))
+
 }
 
 
@@ -316,7 +306,7 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_rati
 ```
 
 
-```{r}
+```{r comparision plots}
 timetk::tk_tbl(sc_results$combined[[dep_var]]) %>% 
   mutate(date = as_date(str_c(index,"-01-01"))) %>% 
   gather("type", dep_var, treated, synth, -date) %>% 
@@ -402,8 +392,15 @@ tibble(ethnicity = names(sc_data$w), Weights = sc_data$w) %>%
 ### Robustness checks
 Only rehabilitated individuals
 ```{r}
+
 dep_var <- "log_n_pred_full_imp_date_rehab"
 times.dep  <- cbind("log_n_pred_full_imp_date_rehab" = c("1921","1932"))
+times.pred <- cbind("log_n_pred_full_imp_date"       = c("1921","1932"),
+                    "pop_total"             = c("1921","1932"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+agg.fns <- rep("id", ncol(times.pred))
+
 
 sc_placebo_rehabs <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 

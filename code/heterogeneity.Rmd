@@ -184,10 +184,10 @@ ggsave(here::here("plots/final/placebo_highlight_all_border_provinces.pdf"))
 placebo_highlight_mspe(sc_placebo_border, "log_n_border", exclusion_ratio = 20)
 
 placebo_mspe_barplot(sc_placebo_border, "log_n_border", range_post = c("1933", "1960"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
+ggsave(here::here("plots/final/mspe_ratios_border_provinces.pdf"))
 
 placebo_mspe_barplot(sc_placebo_border, "log_n_border", range_post = c("1933", "1939"))
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf"))
+ggsave(here::here("plots/final/mspe_ratios_border_provinces_until_1939.pdf"))
 
 
 ```
@@ -214,7 +214,7 @@ placebo_highlight_mspe(sc_placebo_non_border, "log_n_non_border", exclusion_rati
 placebo_mspe_barplot(sc_placebo_non_border, "log_n_non_border", range_post = c("1933", "1960"))
 ggsave(here::here("plots/final/mspe_ratios_non_border_provinces.pdf"))
 
-placebo_mspe_barplot(sc_placebo_border, "log_n_border", range_post = c("1933", "1939"))
+placebo_mspe_barplot(sc_placebo_non_border, "log_n_non_border", range_post = c("1933", "1939"))
 ggsave(here::here("plots/final/mspe_ratios_non_border_provinces_until_1939.pdf"))
 
 

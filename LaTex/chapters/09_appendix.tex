@@ -115,15 +115,15 @@ Nonetheless, this table provides only very coarse classification of changes in g
 
  \begin{figure}[H]
 \centering
-\caption{Dynamic DiD, Only Ethnicities without Independent State}
-\includegraphics[width=\textwidth]{plots/final/map}
+\caption{Map of Soviet Provinces}
+\includegraphics[width=\textwidth]{plots/final/border_provinces_map.pdf}
 \begin{minipage}{0.92\textwidth}
 %\includegraphics[width=\linewidth]{Gaus.pdf}
 %\rule{\linewidth}{10em}
 \footnotesize
-\emph{Notes:} Only ethnic groups without independent state are included in the control group. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. The quadratic ethnicity-specific time trends are included.  Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\emph{Notes:} The source of the map is \citet{sablin_transcultural_2018}.  
 \end{minipage}
-\label{fig:did_effets_no_ind_countries}
+\label{fig:map}
 \end{figure}
 
 %\subsection{Difference-in-differnces Results}
@@ -148,6 +148,18 @@ Nonetheless, this table provides only very coarse classification of changes in g
 Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
 \end{minipage}
 \label{fig:did_effects_rehabs}
+\end{figure}
+
+ \begin{figure}[H]
+\centering
+\caption{Dynamic DiD, Arrests from Border Regions Excluded}
+\includegraphics[width=\textwidth]{plots/final/point_range_robust_cr2_border_provinces.pdf}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\emph{Notes:} All 38 ethnic groups are included. Ethnicity and date of arrest were imputed.  Full matrix adjustment was applied on ethnic group imputations. Controls for major changes in relations with the USSR are included.
+Standard errors are clustered on the level of ethnicity and are based on cluster robust estimator by \citet{pustejovsky_small-sample_2018}. Error bars show 95\% confidence intervals. 
+\end{minipage}
+\label{fig:did_effects_border}
 \end{figure}
 
  \begin{figure}[H]

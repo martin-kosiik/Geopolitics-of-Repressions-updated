@@ -178,6 +178,8 @@ sc_placebo_border <- mscmt(data_prep_mscmt, treatment.identifier, controls.ident
                               seed=2019, placebo = TRUE, single.v=TRUE)
 
 placebo_highlight_all(sc_placebo_border, "log_n_border")
+ggsave(here::here("plots/final/placebo_highlight_all_border_provinces.pdf"))
+
 
 placebo_highlight_mspe(sc_placebo_border, "log_n_border", exclusion_ratio = 20)
 

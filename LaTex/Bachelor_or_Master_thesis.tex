@@ -2,7 +2,7 @@
 %All other .tex files are just subfiles of this shell and do not contain "\begin{document} ... \end{document}"
 %If Czech characters do not translate in pdf correctly, go back to http://latex.feec.vutbr.cz/cz/latex/lokalni-instalace/instalace-miktex/ for proper activation of Czech support in MikTeX 
 
-\documentclass[oneside]{article}
+\documentclass[oneside, pdftex,pdfa,pdfversion=1.4,hidelinks]{article}
 \usepackage[T1]{fontenc}
 %\usepackage[round]{natbib}
 %\usepackage[autostyle]{csquotes}
@@ -71,11 +71,14 @@
 \usepackage{bbm}
 \usepackage{placeins}
 
-\usepackage[ colorlinks,
-  allcolors=.,
-  urlcolor=blue]{hyperref}
-\usepackage{graphicx}
+%\usepackage[ %colorlinks,
+%colorlinks = false,
+%hidelinks  %allcolors=.,
+ % urlcolor=blue
+ % ]{hyperref}
+  \usepackage{graphicx}
 \usepackage{enumitem}
+
 \usepackage{booktabs}
 %\usepackage{breqn}
 \usepackage[flushleft]{threeparttable}
@@ -122,10 +125,9 @@
 
 \newcommand{\noop}[1]{} 
 \newcommand\notype[1]{\unskip}
-
+ \usepackage{hyperref}
 %this should generate norm page of approx 1800 characters per page
 %with 30 lines times 60 characters per line (excluding space)
-
 \begin{document}
 %\nobibliography*
 \input{LaTex/Title/title_compiler.tex}

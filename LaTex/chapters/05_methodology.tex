@@ -18,6 +18,7 @@ In additional specifications used to test sensitivity of results, we also includ
 This allows for a certain  deviation from the parallel trends if it can be described by the specified (quadratic or linear) function \citep[chapter 5]{angrist_mostly_2009}. 
 %If the inclusion of these terms does not  significantly  change the coefficients, it would suggest that our results are not driven by spurious correlation.
 However, a potential issue with the ethnicity-specific time trends is that they could absorb part of the treatment effect if it increases over time \citep{meer_effects_2016} which is why we do not include them in our default specification. 
+
  We apply logarithmic transformation on $y_{it}$ since it better fits the data.  We use $\log\left(1 + y_{it}\right)$ because some observations (although not many) have $y = 0$. As discussed in \citet[p. 193]{wooldridge_introductory_2015},  the 
  %percentage change interpretation
  properties of standard logarithmic transformation

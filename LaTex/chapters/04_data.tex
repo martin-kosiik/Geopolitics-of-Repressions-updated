@@ -1,11 +1,11 @@
-Our data on Soviet repressions come from  the Victims of Political Terror in the USSR database by the Russian human rights organization \citet{memorial_zhertvy_2017}.\footnote{The database can be accessed and searched from  \url{http://base.memo.ru/} (new version) or at \url{http://lists.memo.ru/} (older version). The TSV file with the records from the database from which we created our dataset can be downloaded from \url{https://github.com/MemorialInternational/memorial_data_FULL_DB/blob/master/data/lists.memo.ru-disk/lists.memo.ru-disk.zip}} 
+Our data on Soviet repressions come from  the Victims of Political Terror in the USSR database by  Russian human rights organization \citet{memorial_zhertvy_2017}.\footnote{The database can be accessed and searched from  \url{http://base.memo.ru/} (new version) or at \url{http://lists.memo.ru/} (older version). The TSV file with the records from the database from which we created our dataset can be downloaded from \url{https://github.com/MemorialInternational/memorial_data_FULL_DB/blob/master/data/lists.memo.ru-disk/lists.memo.ru-disk.zip}} 
 The Memorial data has already been used in empirical research by \citet{zhukov_stalins_2018} to estimate the long-term  effects of the Soviet repressions on  political participation. 
  The main sources of the Memorial lists are declassified Russian Interior Ministry documents, prosecutor’s offices and the Commission for the Rehabilitation of Victims of Political Repression, and \enquote{Books of Memory}. The years of arrests in the database span the whole existence of the Soviet Union (1917 to 1991) even though overwhelming share of them are from 1930s and 1940s since the scale and severity of repressions was greatest in this period. 
 Vast  majority records are individual arrests under  Article 58. 
 This means that the victims of other repressive activities of the Soviet state such mass forced migration, counter-insurgency operations of the Red Army during Russian Civil War or famines are mostly excluded. Therefore our research focuses on one  particular type of repression (individual arrests by the NKVD). 
 
 Nevertheless, even if we restrict ourselves to the individual arrests, the Memorial database is still not complete.
-According to one estimate cited in \citep[p. 270]{zhukov_stalins_2018},   3.8 million people were convicted under Article 58 from 1921 to 1953 (which is a subset of the period that Memorial database covers) but
+According to one estimate cited in \citep[p. 270]{zhukov_stalins_2018},   3.8 million people were convicted under Article 58 from 1921 to 1953 (which is a subset of the period that the Memorial database covers) but
 %The Memorial database contains records from the entire period of existence of the Soviet Union even though overwhelming majority of them are from
 at the time of our access to the database, the database contained only 2.7 million records. 
 %is approximately 70\% of estimated 3.8 million people convicted under Article 58 between 1921 and 1953 .
@@ -47,15 +47,32 @@ This leaves us with 38 ethnic groups.
 %Chechen 953
 %Uyghur 851
 
-After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. %In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
+After imputations of ethnicity and the date of arrest had been applied,  we created our main dataset by counting number of arrest for each ethnicity by year. 
+We decided to limit ourselves only to the period from 1921 to 1960 because there are not many arrests after 1960 (usually less than 100 in a year). 
+%In the original dataset, there were more than 120 different ethnicities. Some of them however have very low frequency and thus
 %A few people who were categorized as having multiple ethnicities were dropped from the dataset and not counted. 
-With 38  ethnic groups  and 40 time periods (from 1921 to 1960), we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
+With 38  ethnic groups  and 40 time periods, we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
 
 In addition to data on repressions, we also obtained some information on characteristics of the  ethnic groups in our dataset that we use as covariates in the synthetic control method. 
-In particular, we acquired total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{Demoscope is a project of Institute of Demography of the National Research University Higher School of Economics that provides resources on demographic history of Russia and the Soviet Union. The data from  1926 Soviet Census that we used  were downloaded from \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
+In particular, we downloaded total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{Demoscope is a project of Institute of Demography of the National Research University Higher School of Economics that provides resources on demographic history of Russia and the Soviet Union. The data from  1926 Soviet Census that we used  were downloaded from \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree. It has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both
 The full data are provided in table \ref{tab:sc_predictors} in the appendix.
+
+Finally, we acquired data that would allow us to test for heterogeneity in the effect by proximity to the border. 
+%\citet{zhukov_stalins_2018} have already g
+Although the Memorial database contains either pre-arrest residential addresses or birthplaces for more than 2 million observations, they are not geocoded (we do not have the exact longitude and latitude). 
+%We take advantage of the 
+Fortunately,  \citet{zhukov_stalins_2018} have already geocoded the Memorial data and therefore we merged their dataset to ours.\footnote{The dataset from \citet{zhukov_stalins_2018} can be  downloaded  from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} The datasets were merged based on first, last, and patronymic names, year of birth, and source. An unique match was found for 2 010 295 observations. We also obtained a  map of  borders of Soviet provinces and Autonomous Soviet Socialist Republics (ASSR) in 1926 digitized by \citet{sablin_transcultural_2018}. We identified 7  provinces or ASSR that shared a border with any European country (they are shown in figure \ref{fig:map}.\footnote{In particular, those border regions are Karelian ASSR, Murmansk province, Leningrad province, Pskov province, Belorussian ASSR, Ukrainian ASSR, Transcaucasian SFSR} 
+ If a pre-arrest residential addresses or birthplace of an individual fell into one of those selected regions, we classified that observation as a borer arrest. 
+ %Based on this definition, 
+%In total, x observations were matched. 
+%1 no              1633021
+%2 yes              229304
+%3 outside USSR     147970
+
+
+
 
 
 \newpage

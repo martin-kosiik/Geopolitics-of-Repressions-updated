@@ -185,13 +185,13 @@ rehabs <- events %>%
   dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
 
 non_border_provinces <- events %>% 
-  filter(!is.na(source_date_arrest), !is.na(border_province), border_province == "no") %>% 
+  filter(!is.na(source_date_arrest),  location == "outside 250 km border buffer") %>% 
   get_arrests_by_year() %>% 
   dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>% 
   rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_non_border"))
 
 border_provinces <- events %>% 
-  filter(!is.na(source_date_arrest), !is.na(border_province), border_province == "yes") %>% 
+  filter(!is.na(source_date_arrest), location == "within 250 km border buffer") %>% 
   get_arrests_by_year() %>% 
   dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>%
   rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_border"))

@@ -100,7 +100,7 @@ plot_effects_robust_se(formula = border_no_trends_geopol, data = min_by_year)
 ggsave(here::here("plots/final/point_range_robust_cr2_border_provinces.pdf"))
 
 plot_effects_robust_se(formula = non_border_no_trends_geopol, data = min_by_year) 
-ggsave(here::here("plots/final/point_range_robust_cr2_border_provinces.pdf"))
+ggsave(here::here("plots/final/point_range_robust_cr2_non_border_provinces.pdf"))
 ```
 
 ```{r}

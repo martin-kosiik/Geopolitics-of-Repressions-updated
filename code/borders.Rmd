@@ -16,6 +16,7 @@ library(sf)
 Sys.setlocale("LC_CTYPE", "russian") 
 library(mapview)
 #library(leaflet)
+library(mapedit)
 ```
 
 ```{r}
@@ -71,6 +72,7 @@ multiple_matches <- merged %>%
 merged <- merged %>% 
   anti_join(multiple_matches, by = "person_id")
 
+rm(multiple_matches)
 ```
 
 
@@ -85,13 +87,20 @@ ussr_borders <-  ussr_map %>%
     #group_by(COUNTYFP) %>% 
     summarise(geometry = st_union(.))
 
+ussr_borders <-  ussr_map %>% 
+    #group_by(COUNTYFP) %>% 
+    summarise(geometry = st_union(.)) %>% 
+  st_boundary()
 
-border_provinces <- c("Karelian ASSR", "Murmansk province", "Leningrad province", "Pskov province", 
-                         "Belorussian ASSR", "Ukrainian ASSR", "Transcaucasian SFSR")
+
+
+# border_provinces <- c("Karelian ASSR", "Murmansk province", "Leningrad province", "Pskov province", 
+#                         "Belorussian ASSR", "Ukrainian ASSR", "Transcaucasian SFSR")
+
+
 
 ussr_map <- ussr_map %>% 
-  mutate(border_province = as.factor(ifelse(NameENG %in% border_provinces, 1, 0))) %>% 
-  dplyr::select(Id, NameENG, NameRUS, border_province)
+  dplyr::select(Id, NameENG, NameRUS)
 
 
 ggplot(ussr_map) +
@@ -105,35 +114,87 @@ ggplot(ussr_map) +
 ggsave(here::here("plots/final/border_provinces_map.pdf"))
 
 
+mapview(ussr_borders)
 
 mapview(ussr_map)
-plot(ussr_borders)
+editMap(mapview(ussr_map))
+
+drawed_polygons <- editMap(mapview(ussr_borders))
+
+
+saveRDS(drawed_polygons, file = here::here("data/drawed_polygons.RData"))
+
+drawed_polygons <- readRDS(here::here("data/drawed_polygons.RData"))
+
+
+mapview(drawed_polygons$drawn)
+
+
+
+#ussr_borders_lines <- st_cast(ussr_borders, to =  "MULTILINESTRING")
+
+border_lines <- st_intersection(ussr_borders, drawed_polygons$drawn)
+
+mapview(border_lines %>% 
+          st)
+
+border_lines %>% 
+  st_transform(crs = 7801) %>% 
+  st_buffer(dist = 250000, nQuadSegs = 1) %>% 
+  st_intersection(ussr_map %>% st_transform(crs = 7801)) %>% 
+  mapview()
+  
+
+buffer_250km <- border_lines %>% 
+  st_transform(crs = 7801) %>% 
+  st_buffer(dist = 250000, nQuadSegs = 1) %>% 
+  st_intersection(ussr_map %>% st_transform(crs = 7801)) %>% 
+  st_transform(crs = "+proj=longlat +datum=WGS84 +no_defs")
+
+
+
+ggplot(ussr_map) +
+    geom_sf(fill = "gray95", color = "gray50", size = 0.5) +
+    geom_sf(data = st_transform(buffer_250km, crs = "+proj=longlat +datum=WGS84 +no_defs"), fill = "gray50")+
+    theme_void() +
+    coord_sf(crs = "+proj=longlat +datum=WGS84 +no_defs", ndiscr = F) + 
+    labs(fill = "Border province (in Europe)") + 
+    theme(legend.position="bottom")
+
+ggsave(here::here("plots/final/border_buffer_map.pdf"))
+
+
 
 arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), crs = 4326) 
 
+arrests_sf <- arrests_sf 
+
+#distances_from_border <- st_distance(arrests_sf, border_lines)
 
 joined <-  arrests_sf %>%
-   st_join(ussr_map) 
+  st_join(buffer_250km, suffix = c("", "_buffer")) %>% 
+   st_join(ussr_map, suffix = c("", "_whole")) 
+
+
+outside_ussr <- joined %>% 
+  st_set_geometry(NULL) %>% 
+  filter(is.na(border_province))
+
 
 joined_df <- joined %>% 
   st_set_geometry(NULL) %>% 
-  mutate(border_province = case_when(is.na(border_province) ~ "outside USSR",
-                                     border_province == 1 ~ "yes", 
-                                     border_province == 0 ~ "no"))
+  mutate(location = case_when(!is.na(NameENG) ~ "within 250 km border buffer", 
+                              !is.na(NameENG_whole) ~ "outside 250 km border buffer",
+                              TRUE ~ "outside USSR"))
 
-person_id_with_multiple_matches <- joined_df %>% 
-  count(person_id, border_province, sort = T) %>% 
-  count(person_id, sort = T) %>% 
-  filter(nn > 1)
-
-joined_df <- joined_df %>% 
-  anti_join(person_id_with_multiple_matches, by = "person_id") %>% 
-  dplyr::select(person_id, border_province)
-
-fwrite(joined_df, here::here("data/border_arrests.csv"))
 
 joined_df %>% 
-  count(border_province, sort = T) 
+  count(location)
+  
+joined_df <- joined_df %>% 
+  dplyr::select(person_id, location)
+
+fwrite(joined_df, here::here("data/border_arrests.csv"))
 
 ```
 

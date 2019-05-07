@@ -159,16 +159,18 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
   filter(str_detect(term, "german:")) %>% 
   rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
   mutate(nice_labs = str_replace(term,"german:year_","")
-         #, nice_labs = as.numeric(nice_labs)
+         , nice_labs = as.numeric(nice_labs)
          #,nice_labs = ifelse(as.numeric(nice_labs)== max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)
          )%>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-    # geom_vline(xintercept= 1933, col = "red", linetype = "dashed", size = 1)+
+     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
   theme(axis.line = element_line(size = 1), 
-        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(), 
         text = element_text(size=14),
         axis.text.x = element_text(angle = 60, hjust = 1)) +
+    scale_x_continuous(breaks=seq(1922,1960,1))+
   labs(x = "Year", 
         #caption = "error bars show 95% confidence intervals \n 
          #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
@@ -234,18 +236,22 @@ lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
   as_tibble() %>% 
   filter(str_detect(term, "german:")) %>% 
  # rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
-  mutate(nice_labs = str_replace(term,"german:year_",""))%>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = as.numeric(nice_labs))%>% 
   ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-    # geom_vline(xintercept= 1933, col = "red", linetype = "dashed", size = 1)+
+     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
   geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
   theme(axis.line = element_line(size = 1), 
-        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
         text = element_text(size=14),
         axis.text.x = element_text(angle = 60, hjust = 1)) +
   labs(x = "Year", 
         #caption = "error bars show 95% confidence intervals \n 
          #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
-       y = "Coefficient")
+       y = "Coefficient") + 
+      scale_x_continuous(breaks=seq(1922,1960,1))
+
 
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"))
 

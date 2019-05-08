@@ -1,3 +1,8 @@
-# Geopolitics of Repressions
-  I study how geopolitical concerns influence attitudes of a state toward its minorities. I exploit the  Hitler rise to power in 1933 as an exogenous shock to Soviet-German relations. 
-    Using the digitized archival data on 2.3 million individual arrests by the Soviet secret police, I apply difference-in-differences and synthetic control method to estimate how changing geopolitical relations influenced repressions of Germans in the USSR. Both models show that arrests of Germans  relative to other minorities increased after 1933. 
+My bachelor thesis project 
+
+## Abstract
+  This thesis studies how geopolitical concerns influence attitudes of a state toward its ethnic minorities.
+    Using  data digitized from archival sources on  more than 2 million individual arrests by the Soviet secret police, I apply difference-in-differences and synthetic control method to estimate how changing German-Soviet relations influenced repressions of Germans in the Soviet Union. 
+   The results of both methods show that
+   there was large and statistically significant increase in arrests of Germans following the German invasion into the Soviet Union in 1941.
+   Furthermore, the impact of war  appears to be highly persistent since there is almost  no decline in the estimated effect on repressions for nearly 10 years after the end of the war.

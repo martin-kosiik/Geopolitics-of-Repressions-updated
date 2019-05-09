@@ -20,7 +20,7 @@ at the time of our access to the database, the database contained only 2.7 milli
 %\subsection{Missing Data Analysis}
 Missing data presents another major challenge. 
 %Another major issue with the data is frequent  
- Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and a first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of an individual. In particular, we will train a Naive Bayes classifier on the \mbox{1 197 373} observations with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in subsection \ref{subsec:inferring_ethnicity}).
+ Table \ref{tab:missing_data_count} shows how many values are missing for the variables of our interest. We can see that information on ethnicity is not available for more than half of all observations. In contrast, a surname is recorded for every arrest in the dataset and a first name is missing only for negligible fraction of observations. The availability of information on names enables us to use them to infer missing ethnicity of individuals. In particular, we will train a Naive Bayes classifier on the \mbox{1 197 373} observations with known ethnicity and use the model's predictions to impute the ethnicity for the remaining 1 507 177 observations (the details are described in subsection \ref{subsec:inferring_ethnicity}).
 \input{tables/missing_data_count.tex}
 
 Date of arrest, which is also necessary for our analysis, has even higher rate of missingness than ethnicity.\footnote{
@@ -54,21 +54,26 @@ We decided to limit ourselves only to the period from 1921 to 1960 because there
 With 38  ethnic groups  and 40 time periods, we have 1520 observations in total. Basic descriptive statistics  for each ethnicity are provided in table \ref{tab:descr_stats_by_ethnicity}.  The plot of arrest by ethnicity and year (after applying the transformation $\log\left(1 + y_{it}\right)$) is shown in figure \ref{fig:facet_by_year}. 
 
 In addition to data on repressions, we also obtained some information on characteristics of the  ethnic groups in our dataset that we use as covariates in the synthetic control method. 
-In particular, we downloaded total population of the ethnic groups and their urbanization rate from 1926 Soviet Census from the Demoscope website.\footnote{Demoscope is a project of Institute of Demography of the National Research University Higher School of Economics that provides resources on demographic history of Russia and the Soviet Union. The data from  1926 Soviet Census that we used  were downloaded from \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based from Glottolog language trees \citep{hammarstrom_glottolog_2018}.
+In particular, we downloaded total population of the ethnic groups and their urbanization rate from the 1926 Soviet Census from the Demoscope website.\footnote{Demoscope is a project of Institute of Demography of the National Research University Higher School of Economics that provides resources on demographic history of Russia and the Soviet Union. The data from the 1926 Soviet Census that we used  were downloaded from \url{http://www.demoscope.ru/weekly/ssp/ussr_nac_26.php}} For each ethnic group, we also calculated the cladisitc similarity of its language to Russian based language trees from the Glottolog database
+\citep{hammarstrom_glottolog_2018}.
 Cladistic measure of linguistic similarity counts the number of shared branching points between the two nodes on a language tree. It has been used by \citet{fearon_ethnic_2003} and \citet{dickens_ethnolinguistic_2018} among others. 
 %For example, Ukrainian and Russian have the cladisitc similarity of 4 since they are both
-The full data are provided in table \ref{tab:sc_predictors} in the appendix.
+The complete data of all pre-treatment covariates used in the analysis are provided in table \ref{tab:sc_predictors} in the appendix.
 
-Finally, we acquired data that would allow us to test for heterogeneity in the effect by proximity to the border. 
+Furthermore, we acquired data that would allow us to test for heterogeneity in the effect by proximity to the border. 
+The Memorial database does not include the location of arrest but it does contain either pre-arrest residential addresses or birthplaces for more than 2 million observations. Since migration of individuals was relatively rare in the Soviet Union, the 
+pre-arrest  addresses and birthplaces can serve as a proxy variables for location of arrest.
 %\citet{zhukov_stalins_2018} have already g
-Although the Memorial database contains either pre-arrest residential addresses or birthplaces for more than 2 million observations, they are not geocoded (we do not have the exact longitude and latitude). 
+However, the addresses in the Memorial database are not geocoded and therefore we do not have the exact longitude and latitude. 
 %We take advantage of the 
 Fortunately,  \citet{zhukov_stalins_2018} have already geocoded the Memorial data and therefore we merged their dataset to ours.\footnote{The dataset from \citet{zhukov_stalins_2018} can be  downloaded  from the replications file archive of the journal available  at \url{https://www.prio.org/JPR/Datasets/}} The datasets were merged based on first, last, and patronymic names, year of birth, and source. An unique match was found for 2 010 295 observations. 
 We also downloaded  a map  of  borders of the  USSR in 1926 digitized by \citet{sablin_transcultural_2018}. 
-We defined border frontier as an area that is within 250 kilometers of the Soviet outer borders (they are depicted on the map in figure \ref{fig:map}). 
+We defined border frontier as an area that is within 250 kilometers of the Soviet borders (they are depicted on the map in figure \ref{fig:map}). 
 We then used longitude and latitude of the geocoded arrests (i.e. the location of pre-arrest addresses or birthplaces)  to determine if they geographically fall within the border frontiers.
 Overall 355 101 of arrests were classified as being from those border areas, 1 507 224 of arrests as being outside them. 
-%Furthermore, 147 970 of observations fell outside of the 1926 borders of the Soviet Union. Given the fact that the USSR expanded its territory, some of those cases could be. Nevertheless, we dropped these observations from the analysis. 
+ 147 970 of observations fell outside of the 1926 borders of the Soviet Union which can be explained by the fact that the USSR expanded its territory after 1945.  Nevertheless, we decided to drop these observations from the analysis. Finally, we applied the same procedures to the observations from the border and non-border areas as we did for the whole dataset.
+
+% datasets that are described above. 
 
 
 %We identified 7  provinces or ASSR that shared a border with any European country (they are shown in figure \ref{fig:map}.\footnote{In particular, those border regions are Karelian ASSR, Murmansk province, Leningrad province, Pskov province, Belorussian ASSR, Ukrainian ASSR, Transcaucasian SFSR} 
@@ -170,12 +175,12 @@ To express $\mathbf{R}_t$, we just  apply basic linear algebra
 \begin{equation} \label{eq:full_matrix_adj}
 \mathbf{R}_t  = \mathbf{B}^{-1} \cdot  \mathbf{P}_t.
 \end{equation}
-We will call this method the full matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
+We will call this method the full (confusion) matrix adjustment. Compared to the parsimonious adjustment (in equation \ref{eq:pars_adj}), this correction no longer assumes that the test set sensitivity and specificity be accurately estimated  from the training set.  The full matrix adjustment
 makes only somewhat weaker assumption that the train and test set misclassification rates are not substantially different. On the other hand, the estimates of misclassification rate will likely be noisier (have higher variance) compared to the estimates of specificity and sensitivity because they are based on fewer observations. 
 %On the other hand, it might be noisier
 % lower bias, higher variance
 
-One issue that we encountered when applying these adjustments to the actual data was that some predicted values of $\mathbf{R}_t$ were negative. We decided to replace all  negative values with zero in order to preserve this basic feature of count data. Finally, we scaled all   values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer.
+One final issue that we encountered when applying these adjustments to the actual data was that some predicted values of $\mathbf{R}_t$ were negative. We decided to replace all  negative values with zero in order to preserve this basic feature of the data. Finally, we scaled all   values such that the total number of arrests would stay unchanged after the adjustment and rounded it to the nearest integer.
 The comparison of total number of arrests for each  adjustment and ethnic group is provided in table \ref{tab:total_arrests_by_ethnicity}. A graph showing the change in arrests in time by ethnicity and imputation adjustment is provided in figure \ref{fig:prediction_type_by_year}. 
 
 % Jeste se zmin o scalovani
@@ -193,7 +198,7 @@ The comparison of total number of arrests for each  adjustment and ethnic group 
 
 \subsection{Imputing Missing Date of Arrest} \label{subsec:imputing_missing_date}
 Our strategy for imputing the missing arrest dates is to  predict it from the date of trial. For this reason, we model the number of days between arrest and trial and fit it to a subset of the data for which both dates are known. It  is reasonable to expect that the average number of day from  arrest to trial could  vary considerably throughout the years.    %FOr example
-Hence we use the year of trial as a predictor to our model. 
+Hence we use the year of trial as a predictor for our model. 
 
 We begin by examining the data with both dates available. 
 The histogram for number of days between arrest and trial (on scale of $\log_{10}(1 + x)$) is shown in figure \ref{fig:simple_lm_hist}. First, we can see that there is fairly large variance in the variable with   number of days ranging from 0 to more than 1000.\footnote{Zero, of course, corresponds to both arrest and trial being in the same day.}  Second, the transformed data seems to be following the normal distribution except for the density at 0
@@ -232,7 +237,7 @@ We  proceed to apply the fitted models to the missing data to get the predicted 
 The histogram of the imputed values is provided in figure \ref{fig:mixed_model_preds_hist} in the appendix. 
 The resulting distribution  highly resembles the distribution  in figure \ref{fig:simple_lm_hist} including the fraction of zero values indicating our model captures the actual data fairly well. 
 
-Nevertheless,  one issue is that for significant number of observations we do not have the exact date of trial but only year. In particular, 
+Nevertheless,  another complicating factor is that for significant number of observations we do not have the exact date of trial but only year. In particular, 
 while the year of trial is recorded for all 903 455 observations where the date of arrest is to be imputed, the month of trial is missing for 369 393 of them and the day for 390 174. 
 To fill in the missing month, we take a random sample from all months with probability equal to the relative frequency of the months of trial in the non-missing data for the years from 1921 to 1960. 
 Even simpler method is used to impute the missing days where we just randomly choose a day within given month with uniform probability.\footnote{Every date, however, has to be consistent with the calendar. This means that for January we take a sample of numbers from 1 to 31, for February from 1 to 28 and so on. } 

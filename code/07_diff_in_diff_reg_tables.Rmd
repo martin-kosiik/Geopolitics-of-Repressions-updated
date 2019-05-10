@@ -225,12 +225,6 @@ diff_table3 %>%
 
 
 
-
-
-
-
-
-
 ```{r}
 stargazer(diff_model, diff_model_restr,diff_model_no_log,
           se = starprep(diff_model_robust, diff_model_restr_robust, diff_model_no_log_robust),

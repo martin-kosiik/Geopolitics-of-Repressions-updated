@@ -1,4 +1,9 @@
-My bachelor thesis project 
+# The Geopolitics of Repressions
+This repository contains code for my bachelor thesis project titled The Geopolitics of Repressions. 
+The final version of the manuscript is available [here](https://martin-kosiik.github.io/Geopolitics_of_Repressions.pdf).
+
+To succesfully replicate the results, you first need to download the data. 
+
 
 ## Abstract
   This thesis studies how geopolitical concerns influence attitudes of a state toward its ethnic minorities.

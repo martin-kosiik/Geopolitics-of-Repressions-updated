@@ -1,31 +1,14 @@
----
-title: "Missing data summary tables and ethnicity imputations"
-author: "Martin Kosík"
-date: "March 18, 2019"
-output: github_document
-editor_options: 
-  chunk_output_type: console
----
+Missing data summary tables and ethnicity imputations
+================
+Martin Kosík
+March 18, 2019
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(data.table)
-library(tidyverse)
-library(readxl)
-library(here)
-library(lubridate)
-library(caret)
-library(bnlearn)
-library(bnclassify)
-Sys.setlocale("LC_CTYPE", "russian") 
-library(knitr)
-library(kableExtra)
-```
-
-## Missing data summary tables
+Missing data summary tables
+---------------------------
 
 Import data
-```{r}
+
+``` r
 selected_vars <- c("person_id", "nation", "arest_date", "process_date", "surname", "name")
 memorial_lists <- fread(here::here("memo_list/memorial_lists.tsv"), encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="")
@@ -38,7 +21,8 @@ memorial_lists <- memorial_lists[, no_date_of_process := ifelse(process_date == 
 ```
 
 Contingency tables of missing ethnicity and dates af arrest and process
-```{r}
+
+``` r
 opts_current$set(label = "missingness_of_ethnicity_and_date")
 memorial_lists %>% 
   count(no_date, no_ethnicity) %>% 
@@ -62,11 +46,11 @@ memorial_lists %>%
         col.names = c("Date of Trial", "Missing", "Present"), format.args = list(big.mark = " ")) %>% 
   add_header_above(c(" " = 1, "Date of Arrest" = 2)) %>% 
   write_file(here::here("tables/missing_date_of_arrest_process.tex"))
-
 ```
 
 Create LaTeX table showing proportion of missing values by variable
-```{r}
+
+``` r
 n_of_obs <- nrow(memorial_lists)
 
 opts_current$set(label = "missing_data_count")
@@ -83,10 +67,12 @@ memorial_lists %>%
   write_file(here::here("tables/missing_data_count.tex"))
 ```
 
-## Ethnicity imputation
+Ethnicity imputation
+--------------------
 
 Re-import data
-```{r}
+
+``` r
 rm(list = ls())
 selected_vars <- c("person_id", "nation", "surname", "name", "patronimic")
 
@@ -96,23 +82,33 @@ memorial_lists <- fread(here::here("memo_list/memorial_lists.tsv"), encoding="UT
 
 translations <- read_excel(here::here("data/ethnicity_translations.xlsx")) %>% 
   mutate(ethnicity = ifelse(ethnicity == "Uyghur", NA, ethnicity))
-
 ```
 
-
 Split the data based on missingness of information on ethnicity
-```{r}
+
+``` r
 memorial_lists <-
   memorial_lists %>% 
   left_join(translations, by = "nation") %>% 
   mutate(ethnicity = as.factor(ifelse(is.na(ethnicity), "Other", ethnicity)))  
+```
 
+    ## Warning: Column `nation` joining factor and character vector, coercing into
+    ## character vector
+
+``` r
 data_labeled <- memorial_lists[!memorial_lists$ethnicity %in% c("Missing", "Other"),]
 data_missing <- memorial_lists[memorial_lists$ethnicity  == "Missing",]
 rm(memorial_lists)
 rm(translations)
 gc()
+```
 
+    ##            used  (Mb) gc trigger  (Mb) max used  (Mb)
+    ## Ncells  2609957 139.4    4182832 223.4  3591513 191.9
+    ## Vcells 45798751 349.5   94885937 724.0 94687351 722.5
+
+``` r
 data_labeled_person_id <- data_labeled$person_id
 data_labeled$ethnicity <- droplevels(data_labeled$ethnicity)
 
@@ -121,7 +117,8 @@ data_labeled <- data_labeled %>%
 ```
 
 Perform 10-fold cross validation and save the resulting confusion matrix
-```{r}
+
+``` r
 set.seed(2019)
 folds <- sample(1:10, size = nrow(data_labeled), replace = T)
 
@@ -140,8 +137,13 @@ rm(list = c("CV_nb", "folds", "conf_matrix"))
 gc()
 ```
 
+    ##            used  (Mb) gc trigger  (Mb)  max used  (Mb)
+    ## Ncells  2632400 140.6    4182832 223.4   3591513 191.9
+    ## Vcells 42289017 322.7  113943124 869.4 113930083 869.3
+
 Train the model on all data with known ethnicity and use it to predict the missing ethnicity
-```{r}
+
+``` r
 set.seed(2019)
 
 nb <- nb('ethnicity', data_labeled)
@@ -154,13 +156,12 @@ data_missing <- data_missing %>%
 ```
 
 Join the datasets and save the results
-```{r}
+
+``` r
 events_preds <- 
   bind_rows(data_labeled, data_missing, .id = "id") %>% 
   mutate(prediction = ifelse(id == 1, 0, 1)) %>% 
   dplyr::select(person_id, -id, everything())
 
 fwrite(events_preds, here::here("data/events_predictions.csv"))
-
 ```
-

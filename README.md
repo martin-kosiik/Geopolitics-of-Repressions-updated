@@ -8,11 +8,11 @@ To succesfully replicate the analysis, follow the steps below:
 1. Downolad the repository by clicking on **Clone or download**  under the repository name. 
 2. Create a folder named `memo_list` on the same level as the folders `LaTex`, `code`, etc.
 3. Download the Memorial data from [here](https://github.com/MemorialInternational/memorial_data_FULL_DB/blob/master/data/lists.memo.ru-disk/lists.memo.ru-disk.zip) and unzip the content into `memo_list`. 
-4. Dowload the Zhukov and Talibova (2018) dataset and save it into `data` folder.
+4. Download the Zhukov and Talibova (2018) dataset from [here](https://www.prio.org/utility/DownloadFile.ashx?id=8&type=replicationfile) and copy file `eventsClean_v1.RData` into `data` folder of your cloned `Geopolitics-of-Repressions` repository.
 5. Open R project file `Geopolitics-of-Repressions.Rproj` and run the RMarkdown scripts in  `code` folder starting with `01_ethnicity_imputation_and_data_summary.Rmd` and ending with `11_effect_size_calculations.Rmd`. 
 6. Additionally, if you want to reproduce the manuscript itself, set the file `Bachelor_or_Master_thesis.tex` as the main file and run pdfLaTeX compiler. 
 
-
+If you have any troubles with replication or any other questions, email me at  [martin.kosiik@gmail.com](mailto:martin.kosiik@gmail.com).
 
 ## Abstract
   This thesis studies how geopolitical concerns influence attitudes of a state toward its ethnic minorities.

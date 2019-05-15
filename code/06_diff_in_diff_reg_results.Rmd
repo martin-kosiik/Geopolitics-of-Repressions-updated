@@ -1,13 +1,13 @@
 ---
 title: "Geopolitics of repression"
 author: "Martin Kosík"
-date: "1 ledna 2019"
+date: "January 1, 2019"
 output: github_document
 editor_options: 
   chunk_output_type: console
 ---
-Load the necessary packages
-```{r setup}
+Load the necessary packages and functions
+```{r setup, echo=T, results='hide', message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
@@ -20,11 +20,10 @@ library(estimatr)
 library(gghighlight)
 library(lubridate)
 library(clubSandwich)
-#library(cowplot)
+source(here::here("code/functions.R"))
 ```
 
 Import the  data
-
 ```{r import data}
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
   mutate(ethnicity_id = as.numeric(1:n()),
@@ -52,7 +51,7 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          post_war = ifelse(YEAR >= 1945, 1, 0)) 
 ```
 
-
+Geopolitical controls - definition
 ```{r geopolitical controls definition}
 min_by_year <- min_by_year %>% 
   mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
@@ -74,7 +73,7 @@ min_by_year <- min_by_year %>%
          geopol_hungarian_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Hungarian")))
 ```
 
-
+Year dummies - definition
 ```{r year dummies}
 years <- 1922:1960
 
@@ -86,19 +85,7 @@ year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
 min_by_year <- bind_cols(min_by_year, year_dummies)
 ```
 
-```{r}
-ethnicities <- setdiff(levels(min_by_year$ethnicity), "Yakut")
-
-ethnicity_dummies <- map_dfc(ethnicities, ~ ifelse(as.numeric(min_by_year$ethnicity == .), 1, 0)) %>% 
-  rename_all(funs( c(paste0("ethnicity_" ,ethnicities))))
-  
-
-min_by_year <- bind_cols(min_by_year, ethnicity_dummies)
-
-```
-
-We create the formulas and fit the models
-
+We create all necessary formulas
 ```{r}
 geopol_vars <- str_subset(names(min_by_year), "geopol")
 
@@ -149,68 +136,11 @@ fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date 
 ```
 
 
-```{r labeled data}
-plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "CR2", level = 0.95){
-  model <- lm(formula,  data = data)
-  model %>% 
-  conf_int(vcov = vcov,  level = level,
-          cluster = data$ethnicity,  test = "Satterthwaite") %>% 
-  as_tibble(rownames = "term") %>% 
-  filter(str_detect(term, "german:")) %>% 
-  rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
-  mutate(nice_labs = str_replace(term,"german:year_","")
-         , nice_labs = as.numeric(nice_labs)
-         #,nice_labs = ifelse(as.numeric(nice_labs)== max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)
-         )%>% 
-  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
-     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
-  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
-  theme(axis.line = element_line(size = 1), 
-        panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(), 
-        text = element_text(size=14),
-        axis.text.x = element_text(angle = 60, hjust = 1)) +
-    scale_x_continuous(breaks=seq(1922,1960,1))+
-  labs(x = "Year", 
-        #caption = "error bars show 95% confidence intervals \n 
-         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
-       y = "Coefficient")
-}
-
-
-plot_effects_robust_se() #+ theme(axis.text.x = element_text(angle = 60, hjust = 1))
-ggsave(here::here("plots/effects/annual/point_range_robust_cr2.pdf"))
-  
-plot_effects_robust_se(vcov = "CR0")
-ggsave(here::here("plots/effects/annual/point_range_robust_cr0.pdf"))
-
-
-plot_effects_robust_se(formula =  fmla_pred_full) #+ theme(axis.text.x = element_text(angle = 60 , hjust = 1))
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2.pdf"))
-
-plot_effects_robust_se(formula =  fmla_pred_full_imp_date_no_trends)
-
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_no_trends.pdf"))
-
-plot_effects_robust_se(data = min_by_year, formula =  fmla_pred_full_imp_date_lin_trends)
-
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_lin_trends.pdf"))
-
-
-plot_effects_robust_se(formula = fmla_pred_full_imp_date)+theme(axis.text.x = element_text(angle = 60 , hjust = 1))
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp.pdf"))
-ggsave(here::here("plots/effects/ethnicity_imputation/annual/point_range_robust_cr2_date_imp_full_years.pdf"))
-
-
+```{r}
 plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_text(angle = 90 , hjust = 1))
 ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp.pdf"))
 
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
 
-```
-
-
-```{r}
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol)
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"))
 
@@ -218,16 +148,8 @@ plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, vcov 
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr0.pdf"))
 
 
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_lin_trends_geopol)
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_geopol)
-
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_rehab)
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf"))
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_lin_trends_geopol_rehab)
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_geopol_rehab)
-
-
-
 
 
 lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
@@ -254,25 +176,9 @@ lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
 
 
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"))
-
-
-min_by_year %>% 
-  lm(formula = fmla_pred_full_imp_date_geopol) %>% 
-  broom::augment() %>% 
-  filter(german == 1) %>% 
-  dplyr::select(.resid) %>% 
-  View()
-
-min_by_year %>% 
-  lm(formula = fmla_pred_full_imp_date_geopol) %>% 
-  broom::augment() %>% 
-  filter(german == 1) %>% 
-  dplyr::select(.resid) %>% 
-  mutate(YEAR = 1920 + row_number()) %>% 
-  ggplot(aes(x = YEAR, y = .resid)) + geom_point()
 ```
 
-
+Differnt base years
 ```{r}
 
 years_from_1933 <- 1933:1960
@@ -299,7 +205,7 @@ ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1927
 
 ```
 
-
+Keeping or excluding the ethnic groups with independent state
 ```{r}
 min_by_year %>% 
   filter(ind_country == 1) %>% 
@@ -315,36 +221,3 @@ ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_ful
 
 ```
 
-
-```{r}
-quadratic_terms <-  min_by_year %>% 
-  filter(YEAR < 1940)  %>% 
-  lm_robust(formula = fmla, clusters = ethnicity, se_type = "CR2") %>% 
-  summary()
-  estimatr::tidy() %>% 
-  filter(str_detect(term, ":YEAR") | str_detect(term, "YEAR_sq")) %>% 
-  mutate(parameter = ifelse(str_detect(term, ":YEAR_sq"), "b", "a"),
-         term = str_extract(term, "_[:alpha:]+\\:") %>% 
-           str_replace_all("_|\\:", "")) %>% 
-  dplyr::select(term, estimate, parameter) %>% 
-  spread(key = parameter, value = estimate)
-  
-
-min_by_year %>% 
-  filter(YEAR < 1940) %>% 
-  left_join(quadratic_terms, by = c("ethnicity" = "term")) %>% 
-  mutate(predicted = a * (YEAR - 1920) + b * (YEAR - 1920)^2) %>% 
-  ggplot(aes(x = YEAR, y = predicted)) + geom_line() + facet_wrap(~ethnicity) +
-  labs(y = "log(1 + arrests)", x = "Year") + theme_bw()
-
-ggsave(here::here("plots/arrests_by_ethnicity.pdf"))
-```
-
-```{r}
-min_by_year %>% 
-  ggplot() + geom_line(aes(x = YEAR, y = log_n, col = ethnicity)) + gghighlight(ethnicity == "German") +
-  labs(y = "log(1 + arrests)", x = "Year") + theme_bw()
-
-ggsave(here::here("plots/arrests_by_ethnicity_highlight.pdf"))
-
-```

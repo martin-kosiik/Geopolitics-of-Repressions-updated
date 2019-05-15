@@ -1,13 +1,9 @@
----
-title: "Regression tables"
-author: "Martin Kosík"
-date: "April 21, 2019"
-output: github_document
-editor_options: 
-  chunk_output_type: console
----
+Regression tables
+================
+Martin Kosík
+April 21, 2019
 
-```{r setup, echo=T, results='hide', message=F, warning=F}
+``` r
 knitr::opts_chunk$set(echo = TRUE)
 library(stargazer)
 library(tidyverse)
@@ -22,8 +18,9 @@ library(lubridate)
 library(clubSandwich)
 ```
 
-Import the  data
-```{r import data}
+Import the data
+
+``` r
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
   mutate(ethnicity_id = as.numeric(1:n()),
          urb_rate_pct = urb_rate * 100)
@@ -50,8 +47,20 @@ min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>%
          post_war = ifelse(YEAR >= 1945, 1, 0)) 
 ```
 
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_integer(),
+    ##   ethnicity = col_character(),
+    ##   log_n = col_double(),
+    ##   log_n_imp_date = col_double(),
+    ##   log_n_rehab = col_double()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
 Geopolitical controls - definition
-```{r geopolitical controls definition}
+
+``` r
 min_by_year <- min_by_year %>% 
   mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
          geopol_finnish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Finnish")),
@@ -73,7 +82,8 @@ min_by_year <- min_by_year %>%
 ```
 
 Year dummies - definition
-```{r year dummies}
+
+``` r
 years <- 1922:1960
 
 year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
@@ -85,7 +95,8 @@ min_by_year <- bind_cols(min_by_year, year_dummies)
 ```
 
 Define formulas
-```{r}
+
+``` r
 geopol_vars <- str_subset(names(min_by_year), "geopol")
 
 fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
@@ -102,7 +113,8 @@ fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date 
 ```
 
 Fit the models
-```{r}
+
+``` r
 default_model <-  lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year)
 rehabs_model <-  lm(fmla_pred_full_imp_date_no_trends_geopol_rehab, data = min_by_year)
 no_ind_ethn_data <- min_by_year %>% 
@@ -121,12 +133,11 @@ robust_se <-  function(model,  vcov = "CR2",  level = 0.95, data = min_by_year){
 default_robust_se <- robust_se(default_model)
 rehabs_robust_se <- robust_se(rehabs_model)
 no_ind_ethn_robust_se <- robust_se(no_ind_ethn_model, data = no_ind_ethn_data)
-
-
 ```
 
 Make the table
-```{r echo=T, results='hide', message=F, warning=F}
+
+``` r
 var_labels <- str_c("$",names(default_model$coefficients)) %>% 
   str_subset("german:year_") %>% 
   str_replace("german:year_", "\\\\beta\\_{") %>% 
@@ -155,9 +166,9 @@ diff_table %>%
   cat(sep = '\n', file = here::here("tables/diff_table.tex"))
 ```
 
+### Time trends
 
-### Time trends 
-```{r}
+``` r
 geopol_vars <- str_subset(names(min_by_year), "geopol")
 
 fmla_pred_full_imp_date_lin_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
@@ -174,17 +185,15 @@ fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_im
                          ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
 ```
 
-
-```{r}
+``` r
 default_model <-  lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year)
 lin_trends_model <-  lm(fmla_pred_full_imp_date_lin_trends_geopol, data = min_by_year)
 quad_trends_model <-  lm(fmla_pred_full_imp_date_lin_trends_geopol, data = min_by_year)
 
 robust_se_list <- map(list(default_model, lin_trends_model, quad_trends_model), robust_se)
-
 ```
 
-```{r echo=T, results='hide', message=F, warning=F}
+``` r
 diff_table2 <-  stargazer(default_model, lin_trends_model, quad_trends_model, 
           keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table_trends",
           se = robust_se_list, 
@@ -207,7 +216,8 @@ diff_table2 %>%
 ```
 
 ### Ethnicity imputation adjustments
-```{r}
+
+``` r
 geopol_vars <- str_subset(names(min_by_year), "geopol")
 
 fmla_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_imp_date ~ ", 
@@ -223,8 +233,7 @@ fmla_pars_pred_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_pars_im
                          ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
 ```
 
-```{r}
-
+``` r
 pred_adj_formulas_full_years_geopol <- c(fmla_pred_full_imp_date_no_trends_geopol,
                                        fmla_pars_pred_imp_date_no_trends_geopol,
                                        fmla_pred_imp_date_no_trends_geopol)
@@ -235,7 +244,7 @@ pred_adj_formulas_full_years_geopol_lm<-map(pred_adj_formulas_full_years_geopol,
 robust_se_list_pred_adj <- map(pred_adj_formulas_full_years_geopol_lm, robust_se)
 ```
 
-```{r echo=T, results='hide', message=F, warning=F}
+``` r
 diff_table3 <-  stargazer(pred_adj_formulas_full_years_geopol_lm, 
           keep = "german:year_+", omit.stat = c("ser", "f", "rsq"), label = "dif_table_pred_adj",
           se = robust_se_list_pred_adj, 
@@ -255,5 +264,4 @@ diff_table3[grepl("Note",diff_table3)] <- note_latex3
 
 diff_table3 %>% 
   cat(sep = '\n', file = here::here("tables/diff_table_pred_adj.tex"))
-
 ```

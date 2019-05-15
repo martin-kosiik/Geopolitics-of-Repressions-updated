@@ -7,12 +7,14 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=T, results='hide', message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 library(scales)
 library(knitr)
 library(kableExtra)
 library(tidyverse)
+library(here)
+source(here::here("code/functions.R"))
 ```
 
 ```{r}
@@ -35,14 +37,13 @@ min_by_year %>%
   arrange(desc(Arrests_label)) %>% 
   kable("latex", booktabs = T, caption = "Total arrest by ethnicity, 1921-1960", linesep = "",
         col.names = c("Ethnicity", "Only Labeled", "Labeled + Unadj. Imput.", 
-                      "Labeled + Parsimon. Adj.", "Labeled + Full-matrix Adj."), format.args = list(big.mark = " ")) %>% 
+                      "Labeled + Parsimon. Adj.", "Labeled + Full-matrix Adj."),format.args = list(big.mark = ""))%>%
   add_header_above(c(" " = 1, "Arrests" = 4)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
   write_file("tables/total_arrests_tab.tex")
 
   
 ```
-
 
 ```{r}
 column_order <- c(1, seq(from = 2, by = 2, length.out = 5), seq(from = 3, by = 2, length.out = 5))
@@ -54,7 +55,7 @@ min_by_year %>%
   summarize_at(dplyr::vars(label, label_preds), c("mean", "sd", "min", "max", "sum")) %>% 
   select(!!column_order) %>% 
   arrange(ethnicity) %>% 
-  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 2",
+  kable("latex", booktabs = T, caption = "Descriptive Statistics of Arrests from 1921 to 1960 by Ethnicity, Part 1",
         linesep = "",
         col.names = c("Ethnicity", "Mean", "St.dev.", "Min", "Max", "Total", 
                       "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
@@ -84,47 +85,6 @@ min_by_year %>%
 ```
 
 
-
-```{r}
-mylog10_trans <- function (base = 10) {
-  trans <- function(x) log(x + 1, base)
-  inv <- function(x) base^(x) - 1 
-  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
-            domain = c(0, Inf))
-}
-
-mylog10_abs_sign_trans <- function (base = 10) {
-  trans <- function(x) sign(x) * log(abs(x) + 1, base)
-  inv <- function(x) sign(x)* ( base^(abs(x)) - 1 )
-  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
-            domain = c(-Inf, Inf))
-}
-
-
-mynaturallog_trans <- function (base = exp(1)) 
-{
-  trans <- function(x) log(x + 1, base)
-  inv <- function(x) base^(x) - 1 
-  trans_new(paste0("log-", format(base)), trans, inv, log_breaks(base = base), 
-            domain = c(0, Inf))
-}
-  
-```
-
-```{r}
-min_by_year %>% 
-  #mutate(log_day = log(1 + diff_day_imp_complex)) %>% 
-  ggplot(aes(x = label)) + geom_histogram(col = "white") + theme_minimal()+
-  scale_x_continuous(trans = "mylog10" , breaks = c(0,2,10,100,1000,10000))+
-  labs(x = "Number arrests of each ethnic group for a given year") + 
-  theme(axis.line = element_line(size = 1), 
-       # panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + expand_limits(x = -0.01)
-ggsave(here::here("plots/arrests/log_x_1_hist.pdf"))
-
-```
-
 ```{r}
 min_by_year %>% 
   transmute(label, pred_adj_full_scaled = label + pred_adj_full_scaled, 
@@ -150,6 +110,7 @@ ggsave(here::here("plots/arrests/facet_hist.pdf"))
 
 ```
 
+Histogram of arrests by different imputations. 
 ```{r}
 min_by_year %>% 
   dplyr::select(YEAR, ethnicity, label, label_imp_date) %>% 
@@ -170,6 +131,7 @@ min_by_year %>%
 ggsave(here::here("plots/arrests/facet_by_year.pdf"), scale = 1.2)
 ```
 
+Visualisation of arrests by year by prediction adjustment. 
 ```{r}
 min_by_year %>% 
   dplyr::select(YEAR, ethnicity, prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 

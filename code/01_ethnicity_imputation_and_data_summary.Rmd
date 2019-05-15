@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=T, results='hide', message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(tidyverse)

@@ -1,13 +1,13 @@
 ---
-title: "missing_data_analysis"
+title: "Creating the main dataset"
 author: "Martin Kosík"
-date: "27 února 2019"
-output: html_document
+date: "February 27, 2019"
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=T, results='hide', message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(tidyverse)
@@ -16,10 +16,11 @@ library(lubridate)
 library(scales)
 library(knitr)
 library(kableExtra)
+source(here::here("code/functions.R"))
 ```
 
+Load, pre-process and join all necessary datasets
 ```{r}
-
 events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF-8") %>% 
   dplyr::select(person_id, ethnicity, prediction)
 
@@ -54,7 +55,10 @@ events <- events %>%
   left_join(border_arrests, by = "person_id")
 
 rm(list = c("arrest_date_imputation", "border_arrests"))
+```
 
+Plot the arrests by year for data with and without imputated year of arrest
+```{r}
 events %>% 
   count(YEAR, source_date_arrest, sort =T) %>% 
   filter(YEAR >= 1921, YEAR < 1961) %>% 
@@ -73,10 +77,9 @@ events %>%
         text = element_text(size=12))
 
 ggsave(here::here("plots/arrests/date_imputation_line.pdf"))
-
 ```
 
-
+Load the confusion matrix and save the summary table
 ```{r}
 conf_matrix <- readRDS(here::here("data/conf_matrix.RData"))
 
@@ -119,7 +122,7 @@ spec_sens_data %>%
 
 ```
 
-## By year
+Define a function that creates the main dataset. First the arrests are counted, then the imputations are performed. 
 ```{r}
 get_arrests_by_year <- function(data){
 
@@ -169,6 +172,10 @@ min_by_year_all <- min_by_year_all %>%
 min_by_year_all
 }
 
+```
+
+Create and save the different types of datasets (only rehabilitated indviduals, border areas, etc.).
+```{r}
 all_dates <- events %>% 
   filter(!is.na(source_date_arrest)) %>% 
   get_arrests_by_year() %>% 
@@ -209,37 +216,6 @@ min_by_year_all_border <- non_border_provinces %>%
   left_join(border_provinces, by = c("YEAR", "ethnicity")) 
 
 write_csv(min_by_year_all_border, here::here("data/min_by_year_borders.csv")) 
-
-```
-
-```{r}
-min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) 
-min_by_year %>% 
-  dplyr::select(YEAR, ethnicity, prediction_unadj = prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
-  gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
-  mutate(log_n = log(1 + prediction)) %>% 
-  ggplot(aes(YEAR, log_n, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity) +
-  labs(y = "log(1 + arrests)", x = "Year", col = "Prediction type") +
-  scale_color_discrete(labels = c('Full matrix adj.',
-                              'Parsimonious adj.', 
-                              "No adj.")) + 
-  theme_bw()
-  
-
-ggsave(here::here("plots/missing_data_analysis/prediction_adj_compared_log.pdf"))
-
-min_by_year %>% 
-  dplyr::select(YEAR, ethnicity, prediction_unadj = prediction, pred_adj_scaled, pred_adj_full_scaled) %>% 
-  gather(key = "prediction_type", value = "prediction", -YEAR, -ethnicity) %>% 
-  mutate(log_n = log(1 + prediction)) %>% 
-  ggplot(aes(YEAR, prediction, col = prediction_type)) + geom_line() + facet_wrap(~ ethnicity, scales = "free_y") +
-  labs(y = "Number of arrests", x = "Year", col = "Prediction type") +
-  scale_color_discrete(labels = c('Full matrix adj.',
-                              'Parsimonious adj.', 
-                              "No adj.")) + 
-  theme_bw()
-
-ggsave(here::here("plots/missing_data_analysis/prediction_adj_compared_count.pdf"))
 
 ```
 

@@ -1,7 +1,7 @@
 ---
-title: "Heterogeneity"
+title: "Heterogeneity by border frontiers"
 author: "Martin Kosík"
-date: "2 května 2019"
+date: "May 2, 2019"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -24,8 +24,8 @@ library(MSCMT)
 library(timetk)
 library(scales)
 ```
-# Difference-in-differences
 
+## Difference-in-differences
 ```{r import files}
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
   mutate(ethnicity_id = as.numeric(1:n()),
@@ -130,7 +130,7 @@ ggsave(here::here("plots/final/point_range_robust_cr2_border_compar.pdf"))
 ```
 
 
-# Synthetic control method
+## Synthetic control method
 
 ```{r}
 ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%

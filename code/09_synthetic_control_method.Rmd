@@ -1,7 +1,7 @@
 ---
 title: "Synthetic control"
 author: "Martin Kosík"
-date: "14 února 2019"
+date: "February 14, 2019"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -20,6 +20,7 @@ library(knitr)
 library(gghighlight)
 library(timetk)
 library(scales)
+source(here::here("code/functions.R"))
 ```
 
 ```{r}
@@ -58,14 +59,14 @@ ethnicity_controls %>%
 
 ```
 
-## MSCMT implementation
-### Annual observations 
+Data preparation
 ```{r data preparation}
 data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "ethnicity_id", 
                                 time.variable="YEAR", unit.names.variable="ethnicity")
 
 ```
 
+Definition of the variables
 ```{r definiton of variables}
 dep_var <- "log_n_pred_full_imp_date"
 
@@ -84,15 +85,11 @@ times.pred <- cbind("log_n_pred_full_imp_date"       = c("1921","1932"),
                     "clad_sim"              = c("1921","1932"),
                     "urb_rate"              = c("1921","1932"))
 
-#agg.fns <- rep("mean", ncol(times.pred))                       
 agg.fns <- rep("id", ncol(times.pred))
 ```
 
 
 ```{r}
-sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, single.v=TRUE)
-sc_results$v
-
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
 dep_var <- "log_n_pred_full"
@@ -106,11 +103,8 @@ sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.id
 dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
-
-
-sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
-
-
+sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep,
+                                       times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
 
 
 agg.fns <- rep("mean", ncol(times.pred))                       
@@ -118,9 +112,6 @@ dep_var <- "log_n_pred_full_imp_date"
 times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
 sc_placebo_pred_full_imp_date_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
-
-
-
 
 sc_results_mean <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
 
@@ -203,24 +194,6 @@ sc_results_mean$combined %>%
 
 
 ```{r placebo highlight function}
-placebo_highlight_all <- function(placebo_data = sc_placebo, dep_var = dep_var){
-tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>% 
-  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
-  gather("ethnicity", dep_var, -c(date, index)) %>% 
-  ggplot(aes(date, dep_var, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
-  theme_minimal() +
-  theme(axis.line = element_line(size = 1), 
-        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + 
-  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
-    #scale_y_continuous(trans = "mylog10_abs_sign" , breaks = c(0,2,10,100,1000,10000)) +
-    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y")
-  }
-
-
-
-
 placebo_highlight_all(sc_placebo_pred_full, "log_n_pred_full")
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
 
@@ -231,64 +204,11 @@ placebo_highlight_all(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_d
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf"))
 
 
-#ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_all.pdf"))
-
-placebo_highlight_mspe <- function(placebo_data = sc_placebo, dep_var = dep_var, exclusion_ratio = 5){
-  
-rmspe_placebo <- placebo_data[-length(placebo_data)] %>% 
-  map("rmspe") %>% 
-  map_dbl(1) 
-
-rmspe_placebo_tibble <- tibble(ethnicity = names(rmspe_placebo), rmspe = rmspe_placebo) %>% 
-  mutate(mspe = rmspe^2) %>% 
-  mutate( mspe_german = mspe[ethnicity == "German"],
-         mspe_xtimes_higher = ifelse(exclusion_ratio * mspe_german < mspe, 1, 0))
-
-tk_tbl(placebo_data$placebo[[dep_var]]$gaps) %>% 
-  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
-  gather("ethnicity", dep_var, -c(date, index)) %>% 
-  left_join(rmspe_placebo_tibble, by = "ethnicity") %>% 
-  filter(!mspe_xtimes_higher) %>% 
-  ggplot(aes(date, dep_var, col = ethnicity)) + geom_line(size = 1)  + gghighlight(ethnicity == "German") +
-  theme_minimal() +
-  theme(axis.line = element_line(size = 1), 
-        #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
-        text = element_text(size=12)) + 
-  labs(x = element_blank(), y = "gaps in log(1 + arrests)") +
-  geom_vline(xintercept= ymd(19330101), col = "black", linetype = "dashed", size = 1)+
-    scale_x_date(date_minor_breaks = "2 year", date_breaks = "4 year", date_labels = "%Y") 
-}
-
-
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf"))
 
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date_robustnss.pdf"))
-
-
-
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_5_lower.pdf"))
-ggsave(here::here("plots/synthetic_control/annual/placebo_highlight_mspe_5_lower.pdf"))
-
-
-
-placebo_mspe_barplot <- function(placebo_data = sc_placebo, dep_var = dep_var, range_post = c("1933","1939")){
-  
-
-mspe_ratios <-  ppratio(placebo_data, dep_var, range.pre = c("1921","1932"),
-                        range.post = range_post, type = "mspe")
-
-
-tibble(mspe_ratios, ethnicity = names(mspe_ratios)) %>%
-  mutate(ethnicity = fct_reorder(ethnicity, mspe_ratios), 
-         german = as.factor(ifelse(ethnicity == "German", 1, 0))) %>% 
-  ggplot(aes(x = ethnicity, y = mspe_ratios, fill = german))+ geom_col() + coord_flip() + theme_minimal() +
-  labs(x = element_blank(), y = "MSPE ratio", fill = element_blank()) + guides(fill = FALSE)+
-  scale_fill_manual(breaks = c("0", "1"),  values=c("gray", "#FF3300"))
-
-}
-
 
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
@@ -311,7 +231,7 @@ timetk::tk_tbl(sc_results$combined[[dep_var]]) %>%
   mutate(date = as_date(str_c(index,"-01-01"))) %>% 
   gather("type", dep_var, treated, synth, -date) %>% 
   mutate(type = fct_recode(type, "Synthetic" = "synth", "Actual" = "treated") %>% 
-           fct_relevel("Actual")) %>% 
+          fct_relevel("Actual")) %>% 
   ggplot(aes(x = date, y = dep_var, col = type)) + theme_minimal() +
   theme(axis.line = element_line(size = 1), 
         #panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(), 
@@ -325,7 +245,6 @@ timetk::tk_tbl(sc_results$combined[[dep_var]]) %>%
                limits = c(as_date("1921-01-01"), NA)) +
   labs(x = element_blank(), y = "log(1 + arrests)", col = "German arrests") 
 
-ggsave(here::here("plots/synthetic_control/comparison_plot.pdf"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot.pdf"))
 
 

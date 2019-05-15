@@ -1,13 +1,13 @@
 ---
-title: "Border heterogeneity"
+title: "Border Frontiers"
 author: "Martin Kosík"
-date: "1 května 2019"
-output: html_document
+date: "May 1, 2019"
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=T, results='hide', message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(tidyverse)
@@ -15,19 +15,16 @@ library(here)
 library(sf)
 Sys.setlocale("LC_CTYPE", "russian") 
 library(mapview)
-#library(leaflet)
 library(mapedit)
 ```
 
+Load the geocoded dataset from Zhukov and Talibova (2018) and our Memorial data. 
 ```{r}
-
 selected_vars <- c("person_id", "nation", "arest_date", "process_date","live_place", 
                    "birth_place", "birth_year",  "surname", "name", "patronimic", "memory_book")
 
-memorial_lists <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+memorial_lists <- fread(here::here("memo_list/memorial_lists.tsv"), encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="", na.strings = "None")
-
-
 
 load(here::here("data/eventsClean_v1.RData"))
 
@@ -48,16 +45,24 @@ events <- readRDS(here::here("data/eventsClean_v2.RData"))
 
 events <- events %>% 
   mutate(BIRTH_DATE = as.numeric(BIRTH_DATE))
+```
 
-
+We drop possible duplicates. 
+```{r}
 events_distinct <- events %>% 
   distinct(surname, first_name, BIRTH_DATE, patronymic, SOURCE, ORIGIN_LONG, ORIGIN_LAT)
 
+```
+
+We merge Zhukov and Talibova (2018) dataset to our data based names, birth year, source.  
+```{r}
 merged <- memorial_lists %>% 
   left_join(events_distinct, by = c("surname", "name" = "first_name", "birth_year" = "BIRTH_DATE",
                            "patronimic" = "patronymic", "memory_book" = "SOURCE"))
+```
 
-
+We  drop observations with no or multiple matches. 
+```{r}
 merged <- merged %>% 
   dplyr::select(person_id, ORIGIN_LONG, ORIGIN_LAT) %>% 
   filter(!is.na(ORIGIN_LONG), !is.na(ORIGIN_LAT))
@@ -75,68 +80,38 @@ merged <- merged %>%
 rm(multiple_matches)
 ```
 
-
+We load the shape of USSR borders and convert it to Multiline object (instead of multiple polygon object). 
 ```{r}
-ussr_map <- st_read(here::here("data/ussr_shapefiles/1897RussianEmpire.shp"))
-
 ussr_map <- st_read(here::here("data/ussr_shapefiles/1926SovietUnion.shp"))
 
 st_crs(ussr_map) <- "+proj=longlat +datum=WGS84 +no_defs"
 
 ussr_borders <-  ussr_map %>% 
-    #group_by(COUNTYFP) %>% 
-    summarise(geometry = st_union(.))
-
-ussr_borders <-  ussr_map %>% 
-    #group_by(COUNTYFP) %>% 
     summarise(geometry = st_union(.)) %>% 
   st_boundary()
 
-
-
-# border_provinces <- c("Karelian ASSR", "Murmansk province", "Leningrad province", "Pskov province", 
-#                         "Belorussian ASSR", "Ukrainian ASSR", "Transcaucasian SFSR")
-
-
-
 ussr_map <- ussr_map %>% 
   dplyr::select(Id, NameENG, NameRUS)
+```
 
+In the following code chunk, I drew polygons along the Soviet border with other countries which I then interest with the Multiline object of Soviet boundaries. If I would not do this, the coastlines would be treated as borders too. Thus, do not run this code chunk (unless you want draw the polygons yourself).
+```{r eval=FALSE}
 
-ggplot(ussr_map) +
-    geom_sf(fill = "gray95", color = "gray50", size = 0.5) +
-    geom_sf(aes(fill = border_province))+
-    theme_void() +
-    coord_sf(crs = "+proj=longlat +datum=WGS84 +no_defs", ndiscr = F) + 
-    labs(fill = "Border province (in Europe)") + 
-    theme(legend.position="bottom")
-
-ggsave(here::here("plots/final/border_provinces_map.pdf"))
-
-
-mapview(ussr_borders)
-
-mapview(ussr_map)
 editMap(mapview(ussr_map))
 
 drawed_polygons <- editMap(mapview(ussr_borders))
 
 
 saveRDS(drawed_polygons, file = here::here("data/drawed_polygons.RData"))
+```
 
+
+```{r}
 drawed_polygons <- readRDS(here::here("data/drawed_polygons.RData"))
-
 
 mapview(drawed_polygons$drawn)
 
-
-
-#ussr_borders_lines <- st_cast(ussr_borders, to =  "MULTILINESTRING")
-
 border_lines <- st_intersection(ussr_borders, drawed_polygons$drawn)
-
-mapview(border_lines %>% 
-          st)
 
 border_lines %>% 
   st_transform(crs = 7801) %>% 
@@ -164,12 +139,11 @@ ggplot(ussr_map) +
 ggsave(here::here("plots/final/border_buffer_map.pdf"))
 
 
+```
 
+
+```{r}
 arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), crs = 4326) 
-
-arrests_sf <- arrests_sf 
-
-#distances_from_border <- st_distance(arrests_sf, border_lines)
 
 joined <-  arrests_sf %>%
   st_join(buffer_250km, suffix = c("", "_buffer")) %>% 
@@ -188,9 +162,6 @@ joined_df <- joined %>%
                               TRUE ~ "outside USSR"))
 
 
-joined_df %>% 
-  count(location)
-  
 joined_df <- joined_df %>% 
   dplyr::select(person_id, location)
 

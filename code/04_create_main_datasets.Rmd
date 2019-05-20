@@ -8,7 +8,7 @@ editor_options:
 ---
 
 ```{r setup, echo=T, results='hide', message=F, warning=F}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
 library(data.table)
 library(tidyverse)
 library(here)
@@ -26,7 +26,7 @@ events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF
 
 
 selected_vars <- c("person_id", "arest_date", "process_date", "rehabilitation_date", "nation")
-events <- fread("memo_list/memorial_lists.tsv", encoding="UTF-8", sep="\t", 
+events <- fread(here::here("memo_list/memorial_lists.tsv"), encoding="UTF-8", sep="\t", 
                         select = selected_vars, quote="")
 events <- events %>% 
   left_join(events_preds, "person_id") %>% 

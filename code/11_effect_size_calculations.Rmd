@@ -2,16 +2,90 @@
 title: "Effect size calculations"
 author: "Martin Kosík"
 date: "April 23, 2019"
-output: html_document
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo=T, results='hide', message=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
+library(tidyverse)
+library(here)
+library(readxl)
+library(broom)
+library(MSCMT)
+library(timetk)
+```
+
+```{r import files}
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+
+
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
+  mutate(log_n = log(1 + label ),
+         log_n_pred_full = log(1 + label + pred_adj_full_scaled),
+         log_n_pred = log(1 + label + prediction),
+         log_n_imp_date = log(1 + label_imp_date),
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         n_pred_full_imp_date =  label_imp_date + pred_adj_full_scaled_imp_date,
+         log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab),
+         log_n_pred_pars_imp_date = log(1 + label_imp_date + pred_adj_scaled_imp_date),
+         log_n_pred_imp_date = log(1 + label_imp_date + prediction_imp_date)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0),
+         ethnicity = as.factor(ethnicity),
+         YEAR_sq = YEAR^2, 
+         pre_treatment = ifelse(YEAR >= 1922 & YEAR < 1933, 1, 0),
+         hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
+         pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
+         war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
+         post_war = ifelse(YEAR >= 1945, 1, 0)) 
+```
+
+```{r geopolitical controls definition}
+min_by_year <- min_by_year %>% 
+  mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
+         geopol_finnish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Finnish")),
+         geopol_baltic_anex = as.numeric(YEAR == 1940 & (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_nazi = as.numeric(YEAR >= 1941 & YEAR <= 1943 &
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_postwar = as.numeric(YEAR >= 1944 & 
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_polish_war = as.numeric(YEAR == 1939 & (ethnicity == "Polish")),
+         geopol_polish_soviet = as.numeric(YEAR == 1940 & (ethnicity  == "Polish")),
+         geopol_polish_nazi = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Polish")),
+         geopol_polish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Polish")),
+         geopol_japnese_war = as.numeric(YEAR >= 1938 & YEAR <= 1939 &  (ethnicity == "Japanese")),
+         geopol_japnese_neutrality = as.numeric(YEAR >= 1938 & YEAR <= 1944 &  (ethnicity == "Japanese")),
+         geopol_japnese_ww2 = as.numeric(YEAR == 1945 &  (ethnicity == "Japanese")),
+         geopol_japnese_postwar = as.numeric(YEAR > 1945 &  (ethnicity == "Japanese")),
+         geopol_hungarian_war = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Hungarian")),
+         geopol_hungarian_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Hungarian")))
+
+```
+
+```{r year dummies}
+years <- 1922:1960
+
+year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
+                                                    as.numeric(min_by_year$YEAR >= .)} else {
+                                                    as.numeric(min_by_year$YEAR == .)}) %>% 
+  rename_all(funs( c(paste0("year_" ,years))))
+
+min_by_year <- bind_cols(min_by_year, year_dummies)
+
 ```
 
 ```{r}
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
 
 no_log_pred_full_imp_date_no_trends_geopol <- as.formula(paste("n_pred_full_imp_date ~ ", 
                          paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
@@ -35,9 +109,8 @@ fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pr
 
 ```
 
-60640
-```{r}
 
+```{r}
 arrests_in_year <- function(base_year_from = 1921, base_year_to = 1921){
   totals %>% 
   filter(YEAR >= base_year_from, YEAR <= base_year_from) %>% 
@@ -45,11 +118,11 @@ arrests_in_year <- function(base_year_from = 1921, base_year_to = 1921){
   pull(total_repression)
 }
 
-
 totals <- min_by_year %>% 
   filter(ethnicity == "German") %>% 
   mutate(total_repression = label_imp_date + pred_adj_full_scaled_imp_date) %>% 
   dplyr::select(YEAR, total_repression)
+
 
 new_data<- min_by_year %>% 
   filter(ethnicity == "German") %>% 
@@ -100,9 +173,7 @@ augment(lm(fmla_pred_full_imp_date_no_trends_geopol_from_1927, data = min_by_yea
          effect_log = actual - counterfactual,
          effect_pct_change_naive = 100 * (exp(effect_log) - 1),
          effect_count_based_on_pct = arrests_in_year() * (effect_pct_change_naive/100),
-         effect_count_based_on_pct_rounded = round(effect_count_based_on_pct)) %>% 
-  View("from41")
-
+         effect_count_based_on_pct_rounded = round(effect_count_based_on_pct))
 
 totals %>% 
   filter(YEAR > 1932) %>% 
@@ -122,10 +193,7 @@ effects_data <- lm(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year)
          effect_count_rounded = round(effect_count)) 
 
 
-no_log_pred_full_imp_date_no_trends_geopol
 
-summary(lm_robust(fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year, 
-                          clusters = min_by_year$ethnicity, se_type = "CR2"))
 
 pct_effects <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, data = min_by_year,
                         base_year_from = 1921, base_year_to = 1921){
@@ -175,28 +243,6 @@ pct_effects_time_window <- function(formula = fmla_window_pre_treat_pred_full_im
          effect_count_rounded_upper = round(effect_count_upper)) 
 }
 
-pct_effects_time_window()
-
-
-pct_effects(no_log_pred_full_imp_date_no_trends_geopol) %>% 
-  filter(nice_labs > 1932) %>% 
-  summarize(sum = sum(estimate))
-
-pct_effects() %>% 
-  View()
-
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol_from_1933, base_year_from = 1921, base_year_to = 1932) %>% 
-  total_effects()
-  
-  
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol) %>% 
-  total_effects()
-
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol) %>% 
-  total_effects(year_til = 1954)
-
-pct_effects(fmla_pred_full_imp_date_no_trends_geopol, base_year = 1921) %>% 
-  total_effects(year_from = 1932, year_til = 1954)
 
 
 total_effects <- function(data, year_from = 1932, year_til = 1961){
@@ -208,44 +254,57 @@ total_effects <- function(data, year_from = 1932, year_til = 1961){
 ```
 
 ## Synthetic control method
-```{r}
-tk_tbl(sc_placebo_pred_full_imp_date$placebo[[dep_var]]$gaps) %>% 
-  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
-  gather("ethnicity", dep_var, -c(date, index)) %>% 
-  filter(ethnicity == "German") %>% 
-  mutate(repressions_count = exp(dep_var) - 1, 
-         repressions_count_round = round(repressions_count)) %>% 
-  View()
-```
 
 ```{r}
-tk_tbl(sc_placebo_pred_full_imp_date$placebo[["n_pred_full_imp_date"]]$gaps) %>% 
-  mutate(date = as_date(str_c(index,"-01-01"))) %>% 
-  gather("ethnicity", n_pred_full_imp_date, -c(date, index)) %>% 
-  filter(ethnicity == "German") %>% 
-  mutate(n_pred_full_imp_date_round = round(n_pred_full_imp_date)) %>% 
-  View()
-```
-
-```{r}
-names(sc_placebo_pred_full_imp_date)
-synth_data <- sc_placebo_pred_full_imp_date$German$data.synth[["n_pred_full_imp_date"]] %>% 
-  tk_tbl() 
-
-treat_data <- sc_placebo_pred_full_imp_date$German$data.treat[["n_pred_full_imp_date"]] %>% 
-  tk_tbl() 
-
-treat_data %>% 
-  left_join(synth_data, by = "index", suffix = c("_treat", "_synth")) %>% 
-  mutate(effect_count = round(value_treat- value_synth)) %>% 
-  View()
-
-placebo_highlight_all(sc_placebo_pred_full_imp_date, "n_pred_full_imp_date")
-
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+  
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
+  mutate(log_n = log(1 + label ),
+         log_n_pred_full = log(1 + label + pred_adj_full_scaled),
+         log_n_pred = log(1 + label + prediction),
+         log_n_imp_date = log(1 + label_imp_date),
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         n_pred_full_imp_date = label_imp_date + pred_adj_full_scaled_imp_date,
+         log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0)) 
 
 ```
 
+```{r data preparation}
+data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "ethnicity_id", 
+                                time.variable="YEAR", unit.names.variable="ethnicity")
+
+```
+
+Definition of the variables
+```{r definiton of variables}
+dep_var <- "log_n_pred_full_imp_date"
+
+treatment.identifier <- "German"
+controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
+                                 treatment.identifier)
+times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
+
+
+times.pred <- cbind("log_n_pred_full_imp_date" = c("1921","1932"),
+                    "pop_total"                = c("1921","1932"),
+                    "clad_sim"                 = c("1921","1932"),
+                    "urb_rate"                 = c("1921","1932"))
+
+agg.fns <- rep("id", ncol(times.pred))
+
+```
+
+
 ```{r}
+sc_placebo_pred_full_imp_date <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep,
+                                       times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+
 synth_data <- sc_placebo_pred_full_imp_date$German$data.synth[["log_n_pred_full_imp_date"]] %>% 
   tk_tbl() 
 
@@ -274,32 +333,6 @@ total_effects_synth(effects_data)
 total_effects_synth(effects_data, year_from = 1932, year_til = 1940)
 total_effects_synth(effects_data, year_from = 1921, year_til = 1933)
 
-
-```
-
-```{r}
-dep_var <- "n_pred_full_imp_date"
-times.dep  <- cbind("n_pred_full_imp_date" = c("1921","1932"))
-
-sc_placebo_pred_full_imp_date_no_log <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
-
-
-placebo_highlight_all(sc_placebo_pred_full_imp_date_no_log, "n_pred_full_imp_date")
-
-
-synth_data <- sc_placebo_pred_full_imp_date_no_log$German$data.synth[["n_pred_full_imp_date"]] %>% 
-  tk_tbl() 
-
-treat_data <- sc_placebo_pred_full_imp_date_no_log$German$data.treat[["n_pred_full_imp_date"]] %>% 
-  tk_tbl() 
-
-effects_data_no_log <- treat_data %>% 
-  left_join(synth_data, by = "index", suffix = c("_treat", "_synth")) %>% 
-  mutate(count_synth = value_synth,
-         count_treat = value_treat,
-         effect_count = round(count_treat- count_synth)) 
-
-total_effects_synth(effects_data_no_log)
 
 ```
 

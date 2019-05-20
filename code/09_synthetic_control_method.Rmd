@@ -7,8 +7,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo=T, results='hide', message=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE,  fig.show = 'hide')
 library(tidyverse)
 library(broom)
 library(lubridate)
@@ -73,17 +73,13 @@ dep_var <- "log_n_pred_full_imp_date"
 treatment.identifier <- "German"
 controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
                                  treatment.identifier)
-times.dep  <- cbind(dep_var                 = c("1921","1932"))
-times.dep  <- cbind("log_n_pred_full_imp_date"                 = c("1921","1932"))
+times.dep  <- cbind("log_n_pred_full_imp_date" = c("1921","1932"))
 
-times.pred <- cbind("pop_total"             = c("1921","1932"),
-                    "clad_sim"              = c("1921","1932"),
-                    "urb_rate"              = c("1921","1932"))
 
-times.pred <- cbind("log_n_pred_full_imp_date"       = c("1921","1932"),
-                    "pop_total"             = c("1921","1932"),
-                    "clad_sim"              = c("1921","1932"),
-                    "urb_rate"              = c("1921","1932"))
+times.pred <- cbind("log_n_pred_full_imp_date" = c("1921","1932"),
+                    "pop_total"                = c("1921","1932"),
+                    "clad_sim"                 = c("1921","1932"),
+                    "urb_rate"                 = c("1921","1932"))
 
 agg.fns <- rep("id", ncol(times.pred))
 ```
@@ -187,13 +183,9 @@ sc_results_mean$combined %>%
 
 
 ```{r placebo highlight function}
-placebo_highlight_all(sc_placebo_pred_full, "log_n_pred_full")
-ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all.pdf"))
-
 placebo_highlight_all(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf"))
 ggsave(here::here("plots/for_presentation/placebo_highlight_all_imp_date.pdf"), scale = 0.7)
-
 
 
 placebo_highlight_all(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date")
@@ -212,7 +204,7 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_h
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
-ggsave(here::here("plots/synthetic_control/for_presentation/mspe_ratios_imp_date.pdf"), scale = 0.7)
+ggsave(here::here("plots/for_presentation/mspe_ratios_imp_date.pdf"), scale = 0.7)
 
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
@@ -316,7 +308,6 @@ tibble(ethnicity = names(sc_data$w), Weights = sc_data$w) %>%
 ### Robustness checks
 Only rehabilitated individuals
 ```{r}
-
 dep_var <- "log_n_pred_full_imp_date_rehab"
 times.dep  <- cbind("log_n_pred_full_imp_date_rehab" = c("1921","1932"))
 times.pred <- cbind("log_n_pred_full_imp_date"       = c("1921","1932"),

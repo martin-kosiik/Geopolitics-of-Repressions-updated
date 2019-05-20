@@ -2,13 +2,13 @@
 title: "Summary Statistics"
 author: "Martin Kosík"
 date: "3 dubna 2019"
-output: html_document
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, echo=T, results='hide', message=F, warning=F}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
 library(scales)
 library(knitr)
 library(kableExtra)
@@ -40,7 +40,7 @@ min_by_year %>%
                       "Labeled + Parsimon. Adj.", "Labeled + Full-matrix Adj."),format.args = list(big.mark = ""))%>%
   add_header_above(c(" " = 1, "Arrests" = 4)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
-  write_file("tables/total_arrests_tab.tex")
+  write_file(here::here("tables/total_arrests_tab.tex"))
 
   
 ```
@@ -61,7 +61,7 @@ min_by_year %>%
                       "Mean", "St.dev.", "Min", "Max", "Total"), format.args = list(big.mark = " "), digits = 0) %>% 
   add_header_above(c(" " = 1, "Only labeled data" = 5, "Labels + Ethnicity imputations (no adj.)" = 5)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
-  write_file("tables/descr_stats_by_ethnicity.tex")
+  write_file(here::here("tables/descr_stats_by_ethnicity.tex"))
 
 ```
 
@@ -80,7 +80,7 @@ min_by_year %>%
   add_header_above(c(" " = 1, "Labels + Arrest date imputations" = 5,
                      "Labels + Arrest date + Ethnicity imput. (no adj.)" = 5)) %>% 
   kable_styling(font_size = 8, latex_options = c("hold_position")) %>%  
-  write_file("tables/descr_stats_date_imp.tex")
+  write_file(here::here("tables/descr_stats_date_imp.tex"))
 
 ```
 
@@ -128,7 +128,7 @@ min_by_year %>%
         panel.grid.minor.y = element_blank(), 
         legend.position="bottom", 
         text = element_text(size=12))
-ggsave(here::here("plots/arrests/facet_by_year.pdf"), scale = 1.2)
+ggsave(here::here("plots/arrests/facet_by_year.pdf"))
 ```
 
 Visualisation of arrests by year by prediction adjustment. 
@@ -150,7 +150,7 @@ min_by_year %>%
         panel.grid.minor.y = element_blank(), 
         legend.position="bottom", 
         text = element_text(size=12))
-ggsave(here::here("plots/arrests/prediction_type_by_year.pdf"), scale = 1.2)
+ggsave(here::here("plots/arrests/prediction_type_by_year.pdf"))
 ```
 
 

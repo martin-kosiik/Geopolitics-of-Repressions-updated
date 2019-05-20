@@ -1,5 +1,5 @@
 ---
-title: "Geopolitics of repression"
+title: "Difference-in-differences results"
 author: "Martin Kosík"
 date: "January 1, 2019"
 output: github_document
@@ -8,7 +8,7 @@ editor_options:
 ---
 Load the necessary packages and functions
 ```{r setup, echo=T, results='hide', message=F, warning=F}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
 library(tidyverse)
 library(broom)
 library(stargazer)

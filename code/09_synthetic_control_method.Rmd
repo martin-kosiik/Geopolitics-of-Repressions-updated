@@ -2,7 +2,7 @@
 title: "Synthetic control"
 author: "Martin Kosík"
 date: "February 14, 2019"
-output: html_document
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -91,13 +91,6 @@ agg.fns <- rep("id", ncol(times.pred))
 
 ```{r}
 sc_results <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep, times.pred, agg.fns, seed=2019)
-
-dep_var <- "log_n_pred_full"
-times.dep  <- cbind("log_n_pred_full" = c("1921","1932"))
-sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, 
-                              times.dep, times.pred, agg.fns,
-                              seed=2019, placebo = TRUE, single.v=TRUE)
-
 
 
 dep_var <- "log_n_pred_full_imp_date"
@@ -199,13 +192,19 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_h
 
 placebo_highlight_all(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date")
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date.pdf"))
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_imp_date.pdf"), scale = 0.7)
+
+
 
 placebo_highlight_all(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date")
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_all_imp_date_robustnes.pdf"))
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_imp_date_robustnes.pdf"), scale = 0.7)
 
 
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date.pdf"))
+ggsave(here::here("plots/for_presentation/placebo_highlight_mspe_20lower_imp_date.pdf"), scale = 0.7)
+
 
 placebo_highlight_mspe(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", exclusion_ratio = 20)
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_highlight_mspe_20lower_imp_date_robustnss.pdf"))
@@ -213,9 +212,14 @@ ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/placebo_h
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date.pdf"))
+ggsave(here::here("plots/synthetic_control/for_presentation/mspe_ratios_imp_date.pdf"), scale = 0.7)
+
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date, "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_until_1939.pdf"))
+ggsave(here::here("plots/for_presentation/mspe_ratios_imp_date_until_1939.pdf"), scale = 0.7)
+
+
 
 placebo_mspe_barplot(sc_placebo_pred_full_imp_date_mean, "log_n_pred_full_imp_date", range_post = c("1933", "1960"))
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/mspe_ratios_imp_date_robustness.pdf"))
@@ -270,6 +274,7 @@ timetk::tk_tbl(sc_results$combined[[dep_var]]) %>%
   scale_y_continuous(trans = "mynaturallog" , breaks = c(0,2,10,100,1000,10000, 100000), labels = comma)
 
 ggsave(here::here("plots/synthetic_control/ethnicity_imputation/annual/comparison_plot_scaled.pdf"))
+ggsave(here::here("plots/for_presentation/comparison_plot_scaled.pdf"), scale = 0.7)
 
 
 
@@ -329,6 +334,8 @@ sc_results_rehabs <- mscmt(data_prep_mscmt, treatment.identifier, controls.ident
 
 placebo_highlight_all(sc_placebo_rehabs, "log_n_pred_full_imp_date_rehab")
 ggsave(here::here("plots/final/placebo_highlight_all_rehabs.pdf"))
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_rehabs.pdf"), scale = 0.7)
+
 
   
 opts_current$set(label = "sc_weights_rehabs")
@@ -364,6 +371,8 @@ sc_results_ethnicities_without_ind_state <- mscmt(data_prep_mscmt, treatment.ide
 
 placebo_highlight_all(sc_placebo_ethnicities_without_ind_state, "log_n_pred_full_imp_date")
 ggsave(here::here("plots/final/placebo_highlight_all_ethnicities_without_ind_state.pdf"))
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_ethnicities_without_ind_state.pdf"), scale = 0.7)
+
 
   
 opts_current$set(label = "sc_weights_without_ind_state")

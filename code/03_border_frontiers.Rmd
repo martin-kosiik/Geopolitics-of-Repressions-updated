@@ -8,14 +8,14 @@ editor_options:
 ---
 
 ```{r setup, echo=T, results='hide', message=F, warning=F}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
 library(data.table)
 library(tidyverse)
 library(here)
 library(sf)
 Sys.setlocale("LC_CTYPE", "russian") 
 library(mapview)
-library(mapedit)
+# library(mapedit) (if you want to draw polygons yourself)
 ```
 
 Load the geocoded dataset from Zhukov and Talibova (2018) and our Memorial data. 
@@ -109,16 +109,10 @@ saveRDS(drawed_polygons, file = here::here("data/drawed_polygons.RData"))
 ```{r}
 drawed_polygons <- readRDS(here::here("data/drawed_polygons.RData"))
 
-mapview(drawed_polygons$drawn)
+# you can check the drawed polygons with by runnung mapview(drawed_polygons$drawn)
 
 border_lines <- st_intersection(ussr_borders, drawed_polygons$drawn)
 
-border_lines %>% 
-  st_transform(crs = 7801) %>% 
-  st_buffer(dist = 250000, nQuadSegs = 1) %>% 
-  st_intersection(ussr_map %>% st_transform(crs = 7801)) %>% 
-  mapview()
-  
 
 buffer_250km <- border_lines %>% 
   st_transform(crs = 7801) %>% 
@@ -148,11 +142,6 @@ arrests_sf <- st_as_sf(merged, coords = c("ORIGIN_LONG", "ORIGIN_LAT"), crs = 43
 joined <-  arrests_sf %>%
   st_join(buffer_250km, suffix = c("", "_buffer")) %>% 
    st_join(ussr_map, suffix = c("", "_whole")) 
-
-
-outside_ussr <- joined %>% 
-  st_set_geometry(NULL) %>% 
-  filter(is.na(border_province))
 
 
 joined_df <- joined %>% 

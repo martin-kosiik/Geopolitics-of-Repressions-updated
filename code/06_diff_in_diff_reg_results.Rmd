@@ -137,19 +137,28 @@ fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date 
 
 
 ```{r}
-plot_effects_robust_se(formula = fmla_imp_date) +theme(axis.text.x = element_text(angle = 90 , hjust = 1))
-ggsave(here::here("plots/effects/annual/point_range_robust_cr2_date_imp.pdf"))
-
-
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol)
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"), scale = 0.7)
+
+
 
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, vcov = "CR0")
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr0.pdf"))
 
 
+
 plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_rehab)
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf"))
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_rehab, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf"), scale = 0.7)
+
+
 
 
 lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
@@ -176,6 +185,32 @@ lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
 
 
 ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"))
+
+lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
+          min_by_year, clusters = min_by_year$ethnicity, se_type = "stata") %>% 
+  estimatr::tidy() %>% 
+  as_tibble() %>% 
+  filter(str_detect(term, "german:")) %>% 
+ # rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = as.numeric(nice_labs))%>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=14),
+        axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+       y = "Coefficient") + 
+      scale_x_continuous(breaks=seq(1922,1960,3))
+
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"), scale = 0.7)
+
+
 ```
 
 Differnt base years
@@ -198,9 +233,21 @@ plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1
   theme(axis.text.x = element_text(angle = 60 , hjust = 1))
 ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1933.pdf"))
 
-plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927)+
-  theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1933,
+                       x_axis_breaks = seq(1933, 1960, 3))+
+  theme(axis.text.x = element_text(angle = 0 , hjust = 0.5))
+ggsave(here::here("plots/for_presentation/pred_full_imp_date_no_trends_geopol_cr2_base_1933.pdf"), scale = 0.7)
+
+
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927)
 ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1927.pdf"))
+
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927,
+                       x_axis_breaks = seq(1927, 1960, 3))+
+  theme(axis.text.x = element_text(angle = 0 , hjust = 0.5))
+ggsave(here::here("plots/for_presentation/pred_full_imp_date_no_trends_geopol_cr2_base_1927.pdf"), scale = 0.7)
 
 
 ```
@@ -212,6 +259,13 @@ min_by_year %>%
   plot_effects_robust_se(formula = fmla_pred_full_imp_date) 
 ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_ind_country.pdf"))
 
+min_by_year %>% 
+  filter(ind_country == 1) %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5) 
+ggsave(here::here("plots/for_presentation/pr_cr2_date_imp_full_years_ind_country.pdf"), scale = 0.7)
+
+
 
 
  min_by_year %>% 
@@ -219,5 +273,13 @@ ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_ful
   plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
  ggsave(here::here("plots/final/pr_cr2_date_imp_full_years_no_trends_not_ind_country.pdf"))
 
+ min_by_year %>% 
+  filter(ind_country == 0 | ethnicity == "German") %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+ ggsave(here::here("plots/for_presentation/pr_cr2_date_imp_full_years_no_trends_not_ind_country.pdf"), scale = 0.7)
+ 
+ 
+ 
 ```
 

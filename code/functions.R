@@ -26,7 +26,8 @@ mynaturallog_trans <- function (base = exp(1))
 
 # Plot coefficients of difference-in-differences with robust standard errors
 
-plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "CR2", level = 0.95){
+plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "CR2", level = 0.95, 
+                                   x_axis_breaks = seq(1922,1960,1), x_labels_angle = 60, x_labels_hjust = 1){
   model <- lm(formula,  data = data)
   model %>% 
     conf_int(vcov = vcov,  level = level,
@@ -45,8 +46,8 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
           panel.grid.major.x = element_blank(), 
           panel.grid.minor.x = element_blank(), 
           text = element_text(size=14),
-          axis.text.x = element_text(angle = 60, hjust = 1)) +
-    scale_x_continuous(breaks=seq(1922,1960,1))+
+          axis.text.x = element_text(angle = x_labels_angle, hjust = x_labels_hjust)) +
+    scale_x_continuous(breaks=x_axis_breaks)+
     labs(x = "Year", 
          #caption = "error bars show 95% confidence intervals \n 
          #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 

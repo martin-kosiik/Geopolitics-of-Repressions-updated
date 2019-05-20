@@ -1,0 +1,373 @@
+Difference-in-differences results
+================
+Martin Kosík
+January 1, 2019
+
+Load the necessary packages and functions
+
+``` r
+knitr::opts_chunk$set(echo = TRUE, fig.show = 'hide')
+library(tidyverse)
+library(broom)
+library(stargazer)
+library(here)
+library(readxl)
+library(knitr)
+library(kableExtra)
+library(estimatr)
+library(gghighlight)
+library(lubridate)
+library(clubSandwich)
+source(here::here("code/functions.R"))
+```
+
+Import the data
+
+``` r
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+  
+min_by_year <-  read_csv(here::here("data/min_by_year_preds.csv")) %>% 
+  mutate(log_n = log(1 + label ),
+         log_n_pred_full = log(1 + label + pred_adj_full_scaled),
+         log_n_pred = log(1 + label + prediction),
+         log_n_imp_date = log(1 + label_imp_date),
+         log_n_pred_full_imp_date = log(1 + label_imp_date + pred_adj_full_scaled_imp_date),
+         n_pred_full_imp_date =  label_imp_date + pred_adj_full_scaled_imp_date,
+         log_n_pred_full_imp_date_rehab = log(1 + label_rehab + pred_adj_full_scaled_rehab),
+         log_n_pred_pars_imp_date = log(1 + label_imp_date + pred_adj_scaled_imp_date),
+         log_n_pred_imp_date = log(1 + label_imp_date + prediction_imp_date)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0),
+         ethnicity = as.factor(ethnicity),
+         YEAR_sq = YEAR^2, 
+         pre_treatment = ifelse(YEAR >= 1922 & YEAR < 1933, 1, 0),
+         hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
+         pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
+         war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
+         post_war = ifelse(YEAR >= 1945, 1, 0)) 
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_integer(),
+    ##   ethnicity = col_character(),
+    ##   log_n = col_double(),
+    ##   log_n_imp_date = col_double(),
+    ##   log_n_rehab = col_double()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
+Geopolitical controls - definition
+
+``` r
+min_by_year <- min_by_year %>% 
+  mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
+         geopol_finnish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Finnish")),
+         geopol_baltic_anex = as.numeric(YEAR == 1940 & (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_nazi = as.numeric(YEAR >= 1941 & YEAR <= 1943 &
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_postwar = as.numeric(YEAR >= 1944 & 
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_polish_war = as.numeric(YEAR == 1939 & (ethnicity == "Polish")),
+         geopol_polish_soviet = as.numeric(YEAR == 1940 & (ethnicity  == "Polish")),
+         geopol_polish_nazi = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Polish")),
+         geopol_polish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Polish")),
+         geopol_japnese_war = as.numeric(YEAR >= 1938 & YEAR <= 1939 &  (ethnicity == "Japanese")),
+         geopol_japnese_neutrality = as.numeric(YEAR >= 1938 & YEAR <= 1944 &  (ethnicity == "Japanese")),
+         geopol_japnese_ww2 = as.numeric(YEAR == 1945 &  (ethnicity == "Japanese")),
+         geopol_japnese_postwar = as.numeric(YEAR > 1945 &  (ethnicity == "Japanese")),
+         geopol_hungarian_war = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Hungarian")),
+         geopol_hungarian_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Hungarian")))
+```
+
+Year dummies - definition
+
+``` r
+years <- 1922:1960
+
+year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
+                                                    as.numeric(min_by_year$YEAR >= .)} else {
+                                                    as.numeric(min_by_year$YEAR == .)}) %>% 
+  rename_all(funs( c(paste0("year_" ,years))))
+
+min_by_year <- bind_cols(min_by_year, year_dummies)
+```
+
+We create all necessary formulas
+
+``` r
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_full_imp_date_lin_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR +", paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq + ",  paste0(geopol_vars, collapse = " + ")))
+
+
+fmla_pred_full_imp_date_no_trends_geopol <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+```
+
+``` r
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+fmla_pred_full_imp_date_lin_trends_geopol_rehab <- as.formula(paste("log_n_pred_full_imp_date_rehab ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR +", paste0(geopol_vars, collapse = " + ")))
+
+fmla_pred_full_imp_date_geopol_rehab <- as.formula(paste("log_n_pred_full_imp_date_rehab ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq + ",  paste0(geopol_vars, collapse = " + ")))
+
+
+fmla_pred_full_imp_date_no_trends_geopol_rehab <- as.formula(paste("log_n_pred_full_imp_date_rehab ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+```
+
+``` r
+fmla_pred_full_imp_date_lin_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR"))
+
+fmla_pred_full_imp_date <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity + ethnicity: YEAR+ ethnicity: YEAR_sq"))
+
+
+fmla_pred_full_imp_date_no_trends <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity"))
+```
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol)
+```
+
+``` r
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_cr2.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol, vcov = "CR0")
+```
+
+``` r
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_cr0.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_rehab)
+```
+
+``` r
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_rehab, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_rehab_cr2.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+``` r
+lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
+          min_by_year, clusters = min_by_year$ethnicity, se_type = "stata") %>% 
+  estimatr::tidy() %>% 
+  as_tibble() %>% 
+  filter(str_detect(term, "german:")) %>% 
+ # rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = as.numeric(nice_labs))%>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=14),
+        axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+       y = "Coefficient") + 
+      scale_x_continuous(breaks=seq(1922,1960,1))
+```
+
+``` r
+ggsave(here::here("plots/final/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+lm_robust(fmla_pred_full_imp_date_no_trends_geopol,
+          min_by_year, clusters = min_by_year$ethnicity, se_type = "stata") %>% 
+  estimatr::tidy() %>% 
+  as_tibble() %>% 
+  filter(str_detect(term, "german:")) %>% 
+ # rename(conf.low = CI_L, conf.high = CI_U, estimate = beta) %>% 
+  mutate(nice_labs = str_replace(term,"german:year_",""),
+         nice_labs = as.numeric(nice_labs))%>% 
+  ggplot(mapping = aes(x = nice_labs, y = estimate, ymin = conf.low, ymax = conf.high, group = 1))+ 
+     geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
+  geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+  theme(axis.line = element_line(size = 1), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        text = element_text(size=14),
+        axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+  labs(x = "Year", 
+        #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+       y = "Coefficient") + 
+      scale_x_continuous(breaks=seq(1922,1960,3))
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/fmla_pred_full_imp_date_no_trends_geopol_stata_SE.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+Differnt base years
+
+``` r
+years_from_1933 <- 1933:1960
+years_from_1927 <- 1927:1960
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1933 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1933, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+fmla_pred_full_imp_date_no_trends_geopol_from_1927 <- as.formula(paste("log_n_pred_full_imp_date ~ ", 
+                         paste0("german:","year_", years_from_1927, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1933)+
+  theme(axis.text.x = element_text(angle = 60 , hjust = 1))
+```
+
+``` r
+ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1933.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1933,
+                       x_axis_breaks = seq(1933, 1960, 3))+
+  theme(axis.text.x = element_text(angle = 0 , hjust = 0.5))
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/pred_full_imp_date_no_trends_geopol_cr2_base_1933.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927)
+```
+
+``` r
+ggsave(here::here("plots/final/pred_full_imp_date_no_trends_geopol_cr2_base_1927.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends_geopol_from_1927,
+                       x_axis_breaks = seq(1927, 1960, 3))+
+  theme(axis.text.x = element_text(angle = 0 , hjust = 0.5))
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/pred_full_imp_date_no_trends_geopol_cr2_base_1927.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+Keeping or excluding the ethnic groups with independent state
+
+``` r
+min_by_year %>% 
+  filter(ind_country == 1) %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date) 
+```
+
+``` r
+ggsave(here::here("plots/effects/ethnicity_imputation/annual/pr_cr2_date_imp_full_years_ind_country.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+min_by_year %>% 
+  filter(ind_country == 1) %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5) 
+```
+
+``` r
+ggsave(here::here("plots/for_presentation/pr_cr2_date_imp_full_years_ind_country.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image
+
+``` r
+ min_by_year %>% 
+  filter(ind_country == 0 | ethnicity == "German") %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends)
+```
+
+``` r
+ ggsave(here::here("plots/final/pr_cr2_date_imp_full_years_no_trends_not_ind_country.pdf"))
+```
+
+    ## Saving 7 x 5 in image
+
+``` r
+ min_by_year %>% 
+  filter(ind_country == 0 | ethnicity == "German") %>% 
+  plot_effects_robust_se(formula = fmla_pred_full_imp_date_no_trends, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+```
+
+``` r
+ ggsave(here::here("plots/for_presentation/pr_cr2_date_imp_full_years_no_trends_not_ind_country.pdf"), scale = 0.7)
+```
+
+    ## Saving 4.9 x 3.5 in image

@@ -14,6 +14,23 @@ To succesfully replicate the analysis, follow the steps below:
 
 If you have any troubles with replication or any other questions, email me at  [martin.kosiik@gmail.com](mailto:martin.kosiik@gmail.com).
 
+## Rendered R Markdown files
+The following files are rendered  R Markdown documents that show the R code that produced all tables, figures, and other analysis in the thesis:
+
+  * [01_ethnicity_imputation_and_data_summary.md](../master/code/01_ethnicity_imputation_and_data_summary.md) | [R Markdown source](../master/code/01_ethnicity_imputation_and_data_summary.Rmd)
+  * [02_imputing_date_of_arrest.md](../master/code/02_imputing_date_of_arrest.md) | [R Markdown source](../master/code/02_imputing_date_of_arrest.Rmd)
+  * [03_border_frontiers.md](../master/code/03_border_frontiers.md) | [R Markdown source](../master/code/03_border_frontiers.Rmd)
+  * [04_create_main_datasets.md](../master/code/04_create_main_datasets.md) | [R Markdown source](../master/code/04_create_main_datasets.Rmd)
+  * [05_main_dataset_summary.md](../master/code/05_main_dataset_summary.md) | [R Markdown source](../master/code/05_main_dataset_summary.Rmd)
+  * [06_diff_in_diff_reg_results.md](../master/code/06_diff_in_diff_reg_results.md) | [R Markdown source](../master/code/06_diff_in_diff_reg_results.Rmd)
+  * [07_diff_in_diff_reg_tables.md](../master/code/07_diff_in_diff_reg_tables.md) | [R Markdown source](../master/code/07_diff_in_diff_reg_tables.Rmd)
+  * [08_diff_in_diff_robustness_checks.md](../master/code/08_diff_in_diff_robustness_checks.md) | [R Markdown source](../master/code/07_diff_in_diff_reg_tables.Rmd)
+  * [09_synthetic_control_method.md](../master/code/09_synthetic_control_method.md) | [R Markdown source](../master/code/09_synthetic_control_method.Rmd)
+  * [10_heterogeneity_by_border.md](../master/code/10_heterogeneity_by_border.md) | [R Markdown source](../master/code/10_heterogeneity_by_border.Rmd)
+  * [11_effect_size_calculations.md](../master/code/11_effect_size_calculations.md) | [R Markdown source](../master/code/11_effect_size_calculations.Rmd)
+  * [Functions used throughout the project](../master/code/functions.R)
+
+
 ## Abstract
   This thesis studies how geopolitical concerns influence attitudes of a state toward its ethnic minorities.
     Using  data digitized from archival sources on  more than 2 million individual arrests by the Soviet secret police, I apply difference-in-differences and synthetic control method to estimate how changing German-Soviet relations influenced repressions of Germans in the Soviet Union. 

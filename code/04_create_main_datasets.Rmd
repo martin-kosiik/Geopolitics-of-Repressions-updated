@@ -21,8 +21,10 @@ source(here::here("code/functions.R"))
 
 Load, pre-process and join all necessary datasets
 ```{r}
-events_preds <- fread(here::here("data/events_predictions.csv"), encoding = "UTF-8") %>% 
-  dplyr::select(person_id, ethnicity, prediction)
+events_preds <- fread(here::here("data/events_simulated_predictions.csv"), encoding = "UTF-8") #%>%   dplyr::select(person_id, ethnicity, prediction)
+
+events_preds <- events_preds %>% 
+  mutate_at(vars(starts_with("pred_")), funs(ifelse(prediction == 1, ., ethnicity)))
 
 
 selected_vars <- c("person_id", "arest_date", "process_date", "rehabilitation_date", "nation")
@@ -55,6 +57,7 @@ events <- events %>%
   left_join(border_arrests, by = "person_id")
 
 rm(list = c("arrest_date_imputation", "border_arrests"))
+gc()
 ```
 
 Plot the arrests by year for data with and without imputated year of arrest
@@ -77,6 +80,25 @@ events %>%
         text = element_text(size=12))
 
 ggsave(here::here("plots/arrests/date_imputation_line.pdf"))
+```
+
+Plot the arrests by year for different simulations 
+```{r}
+min_by_year_preds %>% 
+  ggplot(aes(x = year_pred, y = n, col = sim_number)) + geom_line() +
+  facet_wrap(~ ethnicity_pred) + 
+  scale_y_continuous(trans = "mylog10" , breaks = c(0,10,100,1000,10000, 100000), labels = comma)+
+  #scale_x_continuous(breaks = c(1920, 1930, 1940, 1950)) + 
+  labs(y = "Number of Arrests", x = "Year", 
+       #caption = expression("Values on y-axis are plotted on the"~log[10](1 + y)~"scale."),
+       col = element_blank()) + theme_minimal() +
+  theme(axis.line = element_line(size = 1), 
+       # panel.grid.major.x = element_blank(), 
+        panel.grid.minor.y = element_blank(), 
+        legend.position="bottom", 
+        text = element_text(size=12))
+
+ggsave(here::here("plots/arrests/date_sim_imputation_line.pdf"))
 ```
 
 Load the confusion matrix and save the summary table
@@ -124,6 +146,30 @@ spec_sens_data %>%
 
 Define a function that creates the main dataset. First the arrests are counted, then the imputations are performed. 
 ```{r}
+
+get_arrests_by_year_multi_imp <- function(data){
+
+pred_vars <- str_subset(names(data), "pred_[:digit:]")
+year_vars <- str_subset(names(data), "YEAR_[:digit:]")
+
+
+min_by_year_preds <- data %>% 
+  as.data.table() %>% 
+  .[!is.na(prediction) & !is.na(source_date_arrest)] %>% 
+  melt(measure.vars = list(pred_vars, year_vars), value.name = c("ethnicity_pred","year_pred"),
+       variable.name = "sim_number") %>%
+#  melt(measure.vars = year_vars, value.name = "year_pred", variable.name = "sim_number_year") %>%   head()
+  .[, .(n = .N), by = c("year_pred", "sim_number", "ethnicity_pred")] %>% 
+  .[year_pred >= 1921 & !is.na(year_pred) & year_pred < 1961 ] %>% 
+  complete(year_pred, sim_number, ethnicity_pred, fill = list(n = 0)) %>% 
+  dplyr::rename(YEAR = year_pred, ethnicity = ethnicity_pred)
+
+min_by_year_preds
+
+}
+
+
+
 get_arrests_by_year <- function(data){
 
 min_by_year_preds <- data %>% 
@@ -176,10 +222,14 @@ min_by_year_all
 
 Create and save the different types of datasets (only rehabilitated indviduals, border areas, etc.).
 ```{r}
+
 all_dates <- events %>% 
   filter(!is.na(source_date_arrest)) %>% 
-  get_arrests_by_year() %>% 
-  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+  get_arrests_by_year_multi_imp()
+
+write_csv(all_dates, here::here("data/min_by_year_preds_multi_imp.csv")) 
+
+
 
 only_labeled_dates <- events %>% 
   filter(!is.na(source_date_arrest), source_date_arrest == "label") %>% 
@@ -188,20 +238,17 @@ only_labeled_dates <- events %>%
 
 rehabs <- events %>% 
   filter(!is.na(source_date_arrest), rehabilitation == 1) %>% 
-  get_arrests_by_year() %>% 
-  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n)
+  get_arrests_by_year_multi_imp() 
 
 non_border_provinces <- events %>% 
   filter(!is.na(source_date_arrest),  location == "outside 250 km border buffer") %>% 
-  get_arrests_by_year() %>% 
-  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>% 
-  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_non_border"))
+  get_arrests_by_year_multi_imp() %>% 
+  dplyr::rename(n_non_border = n)
 
 border_provinces <- events %>% 
   filter(!is.na(source_date_arrest), location == "within 250 km border buffer") %>% 
-  get_arrests_by_year() %>% 
-  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>%
-  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_border"))
+  get_arrests_by_year_multi_imp() %>% 
+  dplyr::rename(n_border = n)
 
 
 
@@ -218,4 +265,36 @@ min_by_year_all_border <- non_border_provinces %>%
 write_csv(min_by_year_all_border, here::here("data/min_by_year_borders.csv")) 
 
 ```
+
+```{r}
+border_arrests_western <- fread(here::here("data/border_arrests_western.csv")) %>% 
+  rename(location_only_western = location)
+
+
+events <- events %>% 
+  left_join(border_arrests_western, by = "person_id")
+
+```
+
+```{r}
+non_border_provinces <- events %>% 
+  filter(!is.na(source_date_arrest),  location_only_western == "outside 250 km of western border buffer") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>% 
+  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_non_border"))
+
+border_provinces <- events %>% 
+  filter(!is.na(source_date_arrest), location_only_western == "within 250 km of western border buffer") %>% 
+  get_arrests_by_year() %>% 
+  dplyr::select(YEAR, ethnicity, label, prediction, pred_adj_scaled, pred_adj_full_scaled, n, log_n) %>%
+  rename_at(vars(-YEAR, -ethnicity), function(x) paste0(x,"_border"))
+
+min_by_year_all_border <- non_border_provinces %>% 
+  left_join(border_provinces, by = c("YEAR", "ethnicity")) 
+
+write_csv(min_by_year_all_border, here::here("data/min_by_year_borders_only_western.csv")) 
+
+
+```
+
 

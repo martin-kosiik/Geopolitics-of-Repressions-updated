@@ -264,3 +264,162 @@ ggsave(here::here("plots/final/mspe_ratios_non_border_provinces_until_1939.pdf")
 
 
 
+# Only western border
+
+
+## Difference-in-differences
+```{r import files}
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+
+
+min_by_year <-  read_csv(here::here("data/min_by_year_borders_only_western.csv")) %>% 
+  mutate(log_n_pred_full_non_border = log(1 + label_non_border + pred_adj_full_scaled_non_border),
+         log_n_pred_full_border = log(1 + label_border + pred_adj_full_scaled_border)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0),
+         ethnicity = as.factor(ethnicity),
+         YEAR_sq = YEAR^2, 
+         pre_treatment = ifelse(YEAR >= 1922 & YEAR < 1933, 1, 0),
+         hostility = ifelse(YEAR >= 1933 & YEAR <= 1939, 1, 0), 
+         pact = ifelse(YEAR > 1939 & YEAR < 1941, 1, 0), 
+         war = ifelse(YEAR >= 1941 & YEAR < 1945, 1, 0),
+         post_war = ifelse(YEAR >= 1945, 1, 0)) 
+```
+
+```{r geopolitical controls definition}
+min_by_year <- min_by_year %>% 
+  mutate(geopol_finnish_war = as.numeric(YEAR >= 1939 & YEAR < 1945 & (ethnicity == "Finnish")),
+         geopol_finnish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Finnish")),
+         geopol_baltic_anex = as.numeric(YEAR == 1940 & (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_nazi = as.numeric(YEAR >= 1941 & YEAR <= 1943 &
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_baltic_postwar = as.numeric(YEAR >= 1944 & 
+                                           (ethnicity %in% c("Estonian", "Latvian", "Lithuanian"))),
+         geopol_polish_war = as.numeric(YEAR == 1939 & (ethnicity == "Polish")),
+         geopol_polish_soviet = as.numeric(YEAR == 1940 & (ethnicity  == "Polish")),
+         geopol_polish_nazi = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Polish")),
+         geopol_polish_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Polish")),
+         geopol_japnese_war = as.numeric(YEAR >= 1938 & YEAR <= 1939 &  (ethnicity == "Japanese")),
+         geopol_japnese_neutrality = as.numeric(YEAR >= 1938 & YEAR <= 1944 &  (ethnicity == "Japanese")),
+         geopol_japnese_ww2 = as.numeric(YEAR == 1945 &  (ethnicity == "Japanese")),
+         geopol_japnese_postwar = as.numeric(YEAR > 1945 &  (ethnicity == "Japanese")),
+         geopol_hungarian_war = as.numeric(YEAR >= 1941 & YEAR < 1945 & (ethnicity == "Hungarian")),
+         geopol_hungarian_postwar = as.numeric(YEAR >=  1945 & (ethnicity == "Hungarian")))
+
+```
+
+```{r year dummies}
+years <- 1922:1960
+
+year_dummies <- map_dfc(years, ~  if (dplyr::last(years) == .){
+                                                    as.numeric(min_by_year$YEAR >= .)} else {
+                                                    as.numeric(min_by_year$YEAR == .)}) %>% 
+  rename_all(funs( c(paste0("year_" ,years))))
+
+min_by_year <- bind_cols(min_by_year, year_dummies)
+
+```
+
+
+```{r formulas defined}
+geopol_vars <- str_subset(names(min_by_year), "geopol")
+
+border_no_trends_geopol <- as.formula(paste("log_n_border ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+
+
+non_border_no_trends_geopol <- as.formula(paste("log_n_non_border ~ ", 
+                         paste0("german:","year_", years, collapse = " + "),  "+ as.factor(YEAR) +
+                         ethnicity+ ",  paste0(geopol_vars, collapse = " + ")))
+```
+
+```{r}
+
+plot_effects_robust_se(formula = border_no_trends_geopol, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+ggsave(here::here("plots/for_presentation/point_range_robust_cr2_border_provinces_western.pdf"), scale = 0.7)
+
+
+
+plot_effects_robust_se(formula = non_border_no_trends_geopol, x_axis_breaks = seq(1922, 1960, 3), 
+                       x_labels_angle = 0, x_labels_hjust = 0.5)
+ggsave(here::here("plots/for_presentation/point_range_robust_cr2_non_border_provinces_western.pdf"), scale = 0.7)
+```
+
+
+## Synthetic control method
+
+```{r}
+ethnicity_controls <- read_excel(here::here("data/ethnicity_info.xlsx")) %>%
+  mutate(ethnicity_id = as.numeric(1:n()),
+         urb_rate_pct = urb_rate * 100)
+
+min_by_year <-  read_csv(here::here("data/min_by_year_borders_only_western.csv")) %>% 
+  mutate(log_n_pred_full_non_border = log(1 + label_non_border + pred_adj_full_scaled_non_border),
+         log_n_pred_full_border = log(1 + label_border + pred_adj_full_scaled_border)) %>% 
+  left_join(ethnicity_controls, by = "ethnicity") %>% 
+  mutate(german = ifelse(ethnicity == "German", 1, 0),
+         post_german = german * ifelse(YEAR >= 1933, 1, 0)) 
+
+
+```
+
+
+```{r data preparation}
+data_prep_mscmt <- listFromLong(as.data.frame(min_by_year), unit.variable = "ethnicity_id", 
+                                time.variable="YEAR", unit.names.variable="ethnicity")
+
+```
+
+```{r definiton of variables}
+dep_var <- "log_n_border"
+
+treatment.identifier <- "German"
+controls.identifier  <- setdiff(colnames(data_prep_mscmt[[1]]),
+                                 treatment.identifier)
+times.dep  <- cbind(dep_var                 = c("1921","1932"))
+times.dep  <- cbind("log_n_border"                 = c("1921","1932"))
+
+times.pred <- cbind("log_n_border"       = c("1921","1932"),
+                    "pop_total"             = c("1921","1932"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+
+#agg.fns <- rep("mean", ncol(times.pred))                       
+agg.fns <- rep("id", ncol(times.pred))
+```
+
+```{r border placebo plot}
+sc_placebo_border <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, 
+                              times.dep, times.pred, agg.fns,
+                              seed=2019, placebo = TRUE, single.v=TRUE)
+
+placebo_highlight_all(sc_placebo_border, "log_n_border")
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_border_provinces_western.pdf"), scale = 0.7)
+
+
+```
+
+```{r non-border placebo plot}
+dep_var <- "log_n_non_border"
+times.dep  <- cbind("log_n_non_border"      = c("1921","1932"))
+
+times.pred <- cbind("log_n_non_border"      = c("1921","1932"),
+                    "pop_total"             = c("1921","1932"),
+                    "clad_sim"              = c("1921","1932"),
+                    "urb_rate"              = c("1921","1932"))
+
+sc_placebo_non_border <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, 
+                              times.dep, times.pred, agg.fns,
+                              seed=2019, placebo = TRUE, single.v=TRUE)
+
+placebo_highlight_all(sc_placebo_non_border, "log_n_non_border")
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_non_border_provinces_western.pdf"), scale = 0.7)
+
+
+
+```

@@ -379,3 +379,21 @@ placebo_mspe_barplot(sc_placebo_ethnicities_without_ind_state,
                      "log_n_pred_full_imp_date", range_post = c("1933", "1939"))
 ggsave(here::here("plots/final/mspe_ratios_ethnicities_without_ind_state_until_1939.pdf"))
 ```
+
+
+
+```{r}
+dep_var <- "log_n_pred_full"
+times.dep  <- cbind("log_n_pred_full" = c("1921","1932"))
+
+sc_placebo_pred_full <- mscmt(data_prep_mscmt, treatment.identifier, controls.identifier, times.dep,
+                                       times.pred, agg.fns, seed=2019, placebo = TRUE, single.v=TRUE)
+
+placebo_highlight_all(sc_placebo_pred_full, "log_n_pred_full")
+ggsave(here::here("plots/for_presentation/placebo_highlight_all_no_date_imputation.pdf"), scale = 0.7)
+
+placebo_mspe_barplot(sc_placebo_pred_full, 
+                     "log_n_pred_full", range_post = c("1933", "1960"))
+
+```
+

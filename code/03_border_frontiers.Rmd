@@ -32,7 +32,7 @@ memorial_lists <- fread(here::here("memo_list/memorial_lists.tsv"), encoding="UT
 
 memorial_lists <- memorial_lists %>% 
   mutate(live_or_birth_place = ifelse(is.na(live_place), birth_place, live_place),
-         live_or_birth_place_lat = stri_trans_general(live_or_birth_place, "russian-latin/bgn"),
+         live_or_birth_place_lat = stri_trans_general(live_or_birth_place, "russian-latin/bgn")
          )
 
 memorial_lists %>% 

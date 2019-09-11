@@ -55,6 +55,61 @@ plot_effects_robust_se <- function(data = min_by_year, formula = fmla, vcov = "C
 }
 
 
+
+### Multiple imputations
+get_coefs_multi_imp <- function(formula = fmla_pred_full_imp_date_no_trends_geopol, level = 0.95, vcov = "stata", 
+                                data = min_by_year){
+  coefs_data <- data %>% 
+    nest(-sim_number) %>% 
+    mutate(lm_model = map(data, ~ lm_robust(formula = formula, data = .,
+                                            se_type = vcov, clusters = .$ethnicity)),
+           coefs = map(lm_model, estimatr::tidy)) %>%
+    unnest(coefs) %>% 
+    filter(str_detect(term, "german:")) %>% 
+    dplyr::rename(beta = estimate, SE = std.error)
+  
+  
+  coefs_data %>% 
+    group_by(term, df) %>% 
+    summarize(beta_mean = mean(beta), within_var = mean(SE^2), between_var = sum((beta - mean(beta))^2)/(n() - 1), 
+              number_of_sims = max(sim_number)) %>% 
+    mutate(SE_pooled = sqrt(within_var + between_var + between_var/number_of_sims),
+           fmi = (1 + number_of_sims) * (between_var/ SE_pooled^2),
+           df_pooled = (number_of_sims - 1) / fmi^2,
+           df_pooled = round(df_pooled),
+           df_correction = (df + 1)/(df + 3) * df * (1 - fmi),
+           df_pooled_adj = (df_pooled * df_correction)/(df_pooled + df_correction), 
+           df_pooled_adj = round(df_pooled_adj),
+           conf.low = beta_mean - qt(level, df = df_pooled) * SE_pooled,
+           conf.high = beta_mean + qt(level, df = df_pooled) * SE_pooled) #%>%   View()
+}
+
+
+plot_coefs_multi_imp <- function(data = coefs_data,
+                                 x_axis_breaks = seq(1922,1960,1), x_labels_angle = 60, x_labels_hjust = 1){
+  data %>% 
+    ungroup() %>% 
+    mutate(nice_labs = str_replace(term,"german:year_","")
+           , nice_labs = as.numeric(nice_labs)
+           #,nice_labs = ifelse(as.numeric(nice_labs)== max(as.numeric(nice_labs)), str_c(nice_labs, "+"), nice_labs)
+    ) %>% 
+    ggplot(mapping = aes(x = nice_labs, y = beta_mean, ymin = conf.low, ymax = conf.high, group = 1))+ 
+    geom_vline(xintercept= 1932.5, col = "red", linetype = "dashed", size = 1)+
+    geom_pointrange()+  geom_hline(yintercept= 0) + theme_minimal() + 
+    theme(axis.line = element_line(size = 1), 
+          panel.grid.major.x = element_blank(), 
+          panel.grid.minor.x = element_blank(), 
+          text = element_text(size=14),
+          axis.text.x = element_text(angle = x_labels_angle, hjust = x_labels_hjust)) +
+    scale_x_continuous(breaks=x_axis_breaks)+
+    labs(x = "Year", 
+         #caption = "error bars show 95% confidence intervals \n 
+         #                      SE are based on the cluster-robust estimator by Pustejovsky and Tipton (2018)", 
+         y = "Coefficient")
+}
+
+
+
 # Synthetic control method - plots
 
 placebo_highlight_all <- function(placebo_data = sc_placebo, dep_var = dep_var){

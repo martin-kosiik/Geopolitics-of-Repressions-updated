@@ -154,32 +154,15 @@ coefs_data <- min_by_year %>%
   unnest(coefs)
 
 
-coefs_data <- min_by_year %>% 
-  nest(-sim_number) %>% 
-  mutate(lm_model = map(data, ~ lm_robust(formula = formula, data = .,
-                                          se_type = vcov, clusters = .$ethnicity)),
-         coefs = map(lm_model, estimatr::tidy)) %>%
-  unnest(coefs) %>% 
-  filter(str_detect(term, "german:")) %>% 
-  dplyr::rename(beta = estimate, SE = std.error)
 
-
-coefs_data %>% 
-  group_by(term, df) %>% 
-  summarize(beta_mean = mean(beta), within_var = mean(SE^2), between_var = sum((beta - mean(beta))^2)/(n() - 1), 
-            number_of_sims = max(sim_number)) %>% 
-  mutate(SE_pooled = sqrt(within_var + between_var + between_var/number_of_sims),
-         fmi = (1 + number_of_sims) * (between_var/ SE_pooled^2),
-         df_pooled = (number_of_sims - 1) / fmi^2,
-         df_pooled = round(df_pooled),
-         df_correction = (df + 1)/(df + 3) * df * (1 - fmi),
-         df_pooled_adj = (df_pooled * df_correction)/(df_pooled + df_correction), 
-         df_pooled_adj = round(df_pooled_adj),
-         conf.low = beta_mean - qt(level, df = df_pooled) * SE_pooled,
-         conf.high = beta_mean + qt(level, df = df_pooled) * SE_pooled) #%>%   View()
 
 ```
 
+```{r}
+
+
+plot_coefs_multi_imp()
+```
 
 
 ```{r}
